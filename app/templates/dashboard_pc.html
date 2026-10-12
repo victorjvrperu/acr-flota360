@@ -941,7 +941,8 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div id="editar-campo-horometro">
               <label class="block font-bold text-gray-400 uppercase mb-1">Registro Horómetro Actual (h) *</label>
-              <input type="number" step="0.1" name="horometro_actual" required class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none">
+              <input type="number" step="0.1" name="horometro_actual" id="editar-input-horometro-actual" oninput="validarEdicionHorometroLive()" required class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none transition-all">
+              <div id="editar-aviso-horometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al valor registrado (<span id="editar-valor-ant-h"></span> h)</div>
             </div>
             <div id="editar-campo-horometro-prox">
               <label class="block font-bold text-gray-400 uppercase mb-1">Próx. Servicio (h) *</label>
@@ -949,7 +950,8 @@
             </div>
             <div id="editar-campo-km">
               <label class="block font-bold text-gray-400 uppercase mb-1">Registro Kilometraje (Km)</label>
-              <input type="number" step="0.1" name="odometro_actual" value="0.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none">
+              <input type="number" step="0.1" name="odometro_actual" id="editar-input-odometro-actual" oninput="validarEdicionOdometroLive()" value="0.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none transition-all">
+              <div id="editar-aviso-odometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al valor registrado (<span id="editar-valor-ant-km"></span> km)</div>
             </div>
           </div>
         </div>
@@ -1636,9 +1638,12 @@
       }
     }
 
+    let equipoEnEdicion = null;
+
     function abrirModalEditarEquipo(equipoId) {
       const eq = equiposCache.find(e => e.id === equipoId);
       if (!eq) return;
+      equipoEnEdicion = eq;
 
       const form = document.getElementById('form-editar-equipo');
       form.equipo_id.value = eq.id;
@@ -1659,11 +1664,70 @@
       form.soat_vencimiento.value = eq.soat_vencimiento ? eq.soat_vencimiento.split('T')[0] : '';
       form.estado_operativo.value = eq.estado_operativo || 'operativo';
 
+      // Resetear avisos rojos previos
+      const hInput = document.getElementById('editar-input-horometro-actual');
+      if (hInput) {
+        hInput.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/40', 'ring-2', 'ring-rose-500');
+        hInput.classList.add('border-gray-700', 'text-machinery');
+      }
+      const hAviso = document.getElementById('editar-aviso-horometro-menor');
+      if (hAviso) hAviso.classList.add('hidden');
+
+      const kmInput = document.getElementById('editar-input-odometro-actual');
+      if (kmInput) {
+        kmInput.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/40', 'ring-2', 'ring-rose-500');
+        kmInput.classList.add('border-gray-700', 'text-blue-400');
+      }
+      const kmAviso = document.getElementById('editar-aviso-odometro-menor');
+      if (kmAviso) kmAviso.classList.add('hidden');
+
       toggleCamposControl('editar');
 
       const m = document.getElementById('modal-editar-equipo');
       m.classList.remove('hidden');
       m.classList.add('flex');
+    }
+
+    function validarEdicionHorometroLive() {
+      if (!equipoEnEdicion) return;
+      const input = document.getElementById('editar-input-horometro-actual');
+      const aviso = document.getElementById('editar-aviso-horometro-menor');
+      const valAnt = equipoEnEdicion.horometro_actual || 0.0;
+      const val = parseFloat(input.value) || 0.0;
+
+      if (valAnt > 0 && val < valAnt) {
+        input.classList.remove('border-gray-700', 'text-machinery');
+        input.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/40', 'ring-2', 'ring-rose-500');
+        if (aviso) {
+          document.getElementById('editar-valor-ant-h').textContent = valAnt;
+          aviso.classList.remove('hidden');
+        }
+      } else {
+        input.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/40', 'ring-2', 'ring-rose-500');
+        input.classList.add('border-gray-700', 'text-machinery');
+        if (aviso) aviso.classList.add('hidden');
+      }
+    }
+
+    function validarEdicionOdometroLive() {
+      if (!equipoEnEdicion) return;
+      const input = document.getElementById('editar-input-odometro-actual');
+      const aviso = document.getElementById('editar-aviso-odometro-menor');
+      const valAnt = equipoEnEdicion.odometro_actual || 0.0;
+      const val = parseFloat(input.value) || 0.0;
+
+      if (valAnt > 0 && val < valAnt) {
+        input.classList.remove('border-gray-700', 'text-blue-400');
+        input.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/40', 'ring-2', 'ring-rose-500');
+        if (aviso) {
+          document.getElementById('editar-valor-ant-km').textContent = valAnt;
+          aviso.classList.remove('hidden');
+        }
+      } else {
+        input.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/40', 'ring-2', 'ring-rose-500');
+        input.classList.add('border-gray-700', 'text-blue-400');
+        if (aviso) aviso.classList.add('hidden');
+      }
     }
 
     function cerrarModalEditarEquipo() {
@@ -1697,6 +1761,12 @@
         proyecto_actual_id: eqExistente ? eqExistente.proyecto_actual_id : null,
         operador_asignado_id: eqExistente ? eqExistente.operador_asignado_id : null
       };
+
+      if (equipoEnEdicion && equipoEnEdicion.horometro_actual > 0 && payload.horometro_actual < equipoEnEdicion.horometro_actual) {
+        if (!confirm(`⚠️ ALERTA DE HORÓMETRO MENOR: El valor ingresado (${payload.horometro_actual} h) es MENOR al registrado anteriormente (${equipoEnEdicion.horometro_actual} h).\n\n¿Está seguro de continuar con una lectura menor?`)) {
+          return;
+        }
+      }
 
       try {
         const res = await fetch(`/api/v1/heavy/equipos/${equipoId}`, {

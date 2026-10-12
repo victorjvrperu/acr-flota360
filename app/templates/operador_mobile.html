@@ -430,7 +430,15 @@
 
         <div>
           <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1" id="lbl-medicion-input">Lectura de Horómetro Inicial (h) *</label>
-          <input type="number" step="0.1" id="wizard-horometro-inicio" placeholder="Ej: 245.5" class="w-full bg-carbon border-2 border-gray-700 text-machinery font-mono font-black text-3xl text-center rounded-xl py-3 px-4 focus:border-machinery focus:outline-none">
+          <input type="number" step="0.1" id="wizard-horometro-inicio" oninput="validarHorometroInicioLive()" placeholder="Ej: 245.5" class="w-full bg-carbon border-2 border-gray-700 text-machinery font-mono font-black text-3xl text-center rounded-xl py-3 px-4 focus:border-machinery focus:outline-none transition-all">
+          <div id="aviso-lectura-anterior" class="mt-1.5 flex justify-between items-center text-[11px] font-bold text-gray-400 bg-carbon/80 px-3 py-1.5 rounded-lg border border-gray-800">
+            <span>Última lectura registrada:</span>
+            <span class="font-mono text-machinery font-black" id="lbl-valor-anterior-paso4">-</span>
+          </div>
+          <div id="alerta-horometro-menor" class="hidden mt-2 p-3 rounded-xl bg-rose-950/90 border-2 border-alertRed text-rose-300 text-xs font-black flex items-center gap-2 animate-pulse">
+            <span class="text-2xl shrink-0">🚨</span>
+            <span id="txt-alerta-horometro-menor">⚠️ ATENCIÓN: La lectura ingresada es MENOR a la registrada anteriormente.</span>
+          </div>
         </div>
 
         <div>
@@ -767,7 +775,11 @@
 
         <div>
           <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1" id="cierre-input-label">Horómetro Final (h) *</label>
-          <input type="number" step="0.1" id="wizard-horometro-fin" oninput="calcularHorasFinLive()" placeholder="Ej: 252.0" class="w-full bg-carbon border-2 border-gray-700 text-alertGreen font-mono font-black text-3xl text-center rounded-xl py-3 px-4 focus:border-alertGreen focus:outline-none">
+          <input type="number" step="0.1" id="wizard-horometro-fin" oninput="calcularHorasFinLive()" placeholder="Ej: 252.0" class="w-full bg-carbon border-2 border-gray-700 text-alertGreen font-mono font-black text-3xl text-center rounded-xl py-3 px-4 focus:border-alertGreen focus:outline-none transition-all">
+          <div id="alerta-horometro-fin-menor" class="hidden mt-2 p-3 rounded-xl bg-rose-950/90 border-2 border-alertRed text-rose-300 text-xs font-black flex items-center gap-2 animate-pulse">
+            <span class="text-2xl shrink-0">🚨</span>
+            <span id="txt-alerta-horometro-fin-menor">⚠️ ATENCIÓN: La lectura final es MENOR a la lectura inicial registrada.</span>
+          </div>
         </div>
 
         <div class="bg-carbon/90 p-3 rounded-xl border border-gray-800 text-center">
@@ -1299,6 +1311,21 @@
         if (fotoTitle4) fotoTitle4.textContent = '📸 Foto Obligatoria del Tablero (Con Horómetro)';
         if (fotoBtn4) fotoBtn4.textContent = 'Tomar Foto del Tablero';
       }
+
+      // Actualizar visualmente la última lectura registrada
+      const lecturaAnterior = esKm ? (eq.odometro_actual || 0) : (eq.horometro_actual || 0);
+      const unidadMed = esKm ? 'km' : 'h';
+      const lblAnt4 = document.getElementById('lbl-valor-anterior-paso4');
+      if (lblAnt4) lblAnt4.textContent = `${lecturaAnterior} ${unidadMed}`;
+
+      // Resetear avisos y estados rojos en caso de cambio de selección
+      const alertaBox4 = document.getElementById('alerta-horometro-menor');
+      if (alertaBox4) alertaBox4.classList.add('hidden');
+      if (inputVal4) {
+        inputVal4.value = '';
+        inputVal4.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+        inputVal4.classList.add('border-gray-700', 'text-machinery');
+      }
     }
 
     // ==========================================
@@ -1568,18 +1595,62 @@
     // ==========================================
     // PASO 4: HORÓMETRO INICIAL Y FOTO TABLERO
     // ==========================================
+    function validarHorometroInicioLive() {
+      const eqId = parseInt(document.getElementById('select-maquinaria')?.value);
+      const eq = catalogosLocales.equipos.find(e => e.id === eqId);
+      const esKm = (eq && (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
+      const tipoNombre = esKm ? 'kilometraje' : 'horómetro';
+      const unidad = esKm ? 'km' : 'h';
+      const lecturaAnterior = esKm ? (eq ? (eq.odometro_actual || 0) : 0) : (eq ? (eq.horometro_actual || 0) : 0);
+
+      const input = document.getElementById('wizard-horometro-inicio');
+      const alertaBox = document.getElementById('alerta-horometro-menor');
+      const alertaTxt = document.getElementById('txt-alerta-horometro-menor');
+      const errBox = document.getElementById('err-ini-4');
+
+      const val = parseFloat(input.value);
+
+      if (!isNaN(val) && val > 0 && lecturaAnterior > 0 && val < lecturaAnterior) {
+        // MARCAR EN ROJO Y AVISAR
+        input.classList.remove('border-gray-700', 'text-machinery', 'focus:border-machinery');
+        input.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+
+        alertaTxt.textContent = `🚨 ¡LECTURA MENOR DETECTADA! El ${tipoNombre} ingresado (${val} ${unidad}) es MENOR al registrado anteriormente (${lecturaAnterior} ${unidad}). Verifique el tablero.`;
+        alertaBox.classList.remove('hidden');
+        if (errBox) errBox.classList.add('hidden');
+        return false;
+      } else {
+        // RESTAURAR ESTILO NORMAL
+        input.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+        input.classList.add('border-gray-700', 'text-machinery', 'focus:border-machinery');
+        alertaBox.classList.add('hidden');
+        return true;
+      }
+    }
+
     function avanzarPaso4Horometro() {
       const eqId = parseInt(document.getElementById('select-maquinaria')?.value);
       const eq = catalogosLocales.equipos.find(e => e.id === eqId);
       const esKm = (eq && (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
       const tipoNombre = esKm ? 'kilometraje' : 'horómetro';
       const unidad = esKm ? 'km' : 'h';
+      const lecturaAnterior = esKm ? (eq ? (eq.odometro_actual || 0) : 0) : (eq ? (eq.horometro_actual || 0) : 0);
 
       const valorMedicion = parseFloat(document.getElementById('wizard-horometro-inicio')?.value);
       const errBox = document.getElementById('err-ini-4');
 
       if (isNaN(valorMedicion) || valorMedicion <= 0) {
         errBox.textContent = `⚠️ Ingrese la lectura actual de ${tipoNombre} inicial (${unidad}).`;
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (lecturaAnterior > 0 && valorMedicion < lecturaAnterior) {
+        const input = document.getElementById('wizard-horometro-inicio');
+        input.classList.remove('border-gray-700', 'text-machinery', 'focus:border-machinery');
+        input.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+
+        errBox.textContent = `🚨 ¡NO SE PUEDE CONTINUAR! El ${tipoNombre} ingresado (${valorMedicion} ${unidad}) es MENOR al registrado anteriormente (${lecturaAnterior} ${unidad}). Verifique el tablero de la máquina.`;
         errBox.classList.remove('hidden');
         return;
       }
@@ -1799,21 +1870,54 @@
       if (fotoTitle) fotoTitle.textContent = esKm ? '📸 Foto Obligatoria del Tablero Final (Odómetro)' : '📸 Foto Obligatoria del Tablero Final (Horómetro)';
       if (fotoBtn) fotoBtn.textContent = esKm ? 'Tomar Foto del Odómetro Final' : 'Tomar Foto del Tablero Final';
 
+      // Resetear alertas y estilos previos en el input de cierre
+      const alertaFinBox = document.getElementById('alerta-horometro-fin-menor');
+      if (alertaFinBox) alertaFinBox.classList.add('hidden');
+      if (inputFin) {
+        inputFin.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+        inputFin.classList.add('border-gray-700', 'text-alertGreen');
+      }
+
       irVentana('win-cie-1');
     }
 
     function calcularHorasFinLive() {
       const esKm = (turnoEnCurso && (turnoEnCurso.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
       const unidad = esKm ? 'km' : 'h';
+      const tipoNombre = esKm ? 'kilometraje' : 'horómetro';
       const valIni = turnoEnCurso ? (turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio)) : 0;
-      const valFin = parseFloat(document.getElementById('wizard-horometro-fin').value) || 0;
-      
-      let diff = 0;
-      if (valFin >= valIni && valIni > 0) {
-        diff = valFin - valIni;
+      const inputFin = document.getElementById('wizard-horometro-fin');
+      const valFin = parseFloat(inputFin.value) || 0;
+      const alertaBox = document.getElementById('alerta-horometro-fin-menor');
+      const alertaTxt = document.getElementById('txt-alerta-horometro-fin-menor');
+      const liveTot = document.getElementById('live-horas-trabajadas');
+      const errBox = document.getElementById('err-cie-1');
+
+      if (valFin > 0 && valIni > 0 && valFin < valIni) {
+        // MARCAR EN ROJO Y AVISAR
+        inputFin.classList.remove('border-gray-700', 'text-alertGreen', 'focus:border-alertGreen');
+        inputFin.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+        if (alertaTxt) {
+          alertaTxt.textContent = `🚨 ¡LECTURA MENOR DETECTADA! El ${tipoNombre} final (${valFin} ${unidad}) es MENOR al inicial registrado (${valIni} ${unidad}).`;
+        }
+        if (alertaBox) alertaBox.classList.remove('hidden');
+        if (errBox) errBox.classList.add('hidden');
+        liveTot.textContent = `0 ${unidad}`;
+        liveTot.className = "text-2xl font-mono font-black text-alertRed";
+      } else {
+        // RESTAURAR ESTILO NORMAL
+        inputFin.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+        inputFin.classList.add('border-gray-700', 'text-alertGreen', 'focus:border-alertGreen');
+        if (alertaBox) alertaBox.classList.add('hidden');
+        liveTot.className = "text-2xl font-mono font-black text-machinery";
+
+        let diff = 0;
+        if (valFin >= valIni && valIni > 0) {
+          diff = valFin - valIni;
+        }
+        const diffStr = esKm ? `${Math.round(diff)}` : `${diff.toFixed(1)}`;
+        liveTot.textContent = `${diffStr} ${unidad}`;
       }
-      const diffStr = esKm ? `${Math.round(diff)}` : `${diff.toFixed(1)}`;
-      document.getElementById('live-horas-trabajadas').textContent = `${diffStr} ${unidad}`;
     }
 
     function avanzarCierrePaso1() {
@@ -1821,7 +1925,8 @@
       const unidad = esKm ? 'km' : 'h';
       const tipoNombre = esKm ? 'kilometraje' : 'horómetro';
       const valIni = turnoEnCurso ? (turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio)) : 0;
-      const valFin = parseFloat(document.getElementById('wizard-horometro-fin')?.value);
+      const inputFin = document.getElementById('wizard-horometro-fin');
+      const valFin = parseFloat(inputFin?.value);
       const errBox = document.getElementById('err-cie-1');
 
       if (isNaN(valFin) || valFin <= 0) {
@@ -1830,7 +1935,9 @@
         return;
       }
       if (valFin < valIni) {
-        errBox.textContent = `⚠️ El ${tipoNombre} final (${valFin} ${unidad}) no puede ser menor al inicial (${valIni} ${unidad}).`;
+        inputFin.classList.remove('border-gray-700', 'text-alertGreen', 'focus:border-alertGreen');
+        inputFin.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+        errBox.textContent = `🚨 ¡NO SE PUEDE CONTINUAR! El ${tipoNombre} final (${valFin} ${unidad}) es MENOR al inicial registrado (${valIni} ${unidad}). Verifique el tablero.`;
         errBox.classList.remove('hidden');
         return;
       }
