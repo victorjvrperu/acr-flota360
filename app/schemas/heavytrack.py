@@ -17,12 +17,12 @@ class LoginRequest(BaseModel):
 
 
 class VerificarAccesoRequest(BaseModel):
-    dni: str = Field(..., example="41827912")
+    dni: str = Field(..., example="00000000")
     clave: str = Field(..., example="1234")
 
 
 class CambiarClaveRequest(BaseModel):
-    dni: str = Field(..., example="41827912")
+    dni: str = Field(..., example="00000000")
     clave_actual: str = Field(..., example="1234")
     nueva_clave: str = Field(..., example="5678")
 
