@@ -135,23 +135,27 @@
   <!-- HEADER PERSISTENTE CON LOGO, OPERADOR Y CONECTIVIDAD         -->
   <!-- ============================================================ -->
   <header class="bg-graphite border-b border-gray-800 p-3 sticky top-0 z-50 shadow-md">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center gap-2.5">
-        <img src="/static/img/logo_acr360_white.png" alt="ACR Flota 360°" class="h-7 w-auto max-w-[130px] object-contain shrink-0">
-        <div class="border-l border-gray-700/80 pl-2">
-          <span class="text-[10px] text-machinery font-black block truncate max-w-[120px]" id="header-operador-badge">👷 SIN SESIÓN</span>
+    <div class="flex items-center justify-between gap-1.5">
+      <div class="flex items-center gap-2 min-w-0">
+        <img src="/static/img/logo_acr360_white.png" alt="ACR Flota 360°" class="h-7 w-auto max-w-[110px] sm:max-w-[130px] object-contain shrink-0">
+        <div class="border-l border-gray-700/80 pl-2 min-w-0 flex items-center gap-1.5">
+          <span class="text-[10px] text-machinery font-black block truncate max-w-[85px] sm:max-w-[120px]" id="header-operador-badge">👷 SIN SESIÓN</span>
+          <button type="button" id="btn-cerrar-sesion-header" onclick="abrirModalCerrarSesion()" class="hidden text-[10px] bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-lg font-bold transition items-center gap-1 shrink-0 shadow-sm" title="Cerrar sesión del operador">
+            <span>🚪</span> <span class="hidden xs:inline sm:inline">Salir</span>
+          </button>
         </div>
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
-        <!-- Indicador GPS -->
-        <div id="gps-status-badge" class="network-badge bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px]">
-          <span>📍</span> <span id="gps-status-text">GPS: OFF</span>
-        </div>
+        <!-- Botón / Indicador Interactivo de GPS -->
+        <button type="button" id="btn-gps-toggle-header" onclick="toggleSeguimientoGPS()" class="network-badge bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none" title="Toca para activar/desactivar seguimiento GPS">
+          <span id="gps-status-icon">📍</span> <span id="gps-status-text">GPS: OFF</span>
+        </button>
         <!-- Conectividad -->
         <div id="network-status-banner" class="network-badge badge-online">
           <span class="pulse-dot bg-emerald"></span>
-          <span>🟢 En línea</span>
+          <span class="hidden sm:inline">🟢 En línea</span>
+          <span class="sm:hidden">🟢</span>
         </div>
       </div>
     </div>
@@ -187,6 +191,27 @@
           </p>
         </div>
 
+        <!-- Tarjeta de Sesión Activa / Opción Cerrar Sesión -->
+        <div id="card-sesion-activa-bienvenida" class="hidden bg-carbon/95 border border-machinery/40 rounded-2xl p-3.5 text-left space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-[10px] uppercase font-black text-machinery tracking-wider flex items-center gap-1.5">
+              <span>👷</span> <span>Operador Identificado</span>
+            </span>
+            <span class="text-[10px] bg-emerald-950/80 text-emerald-400 border border-emerald-700 px-2 py-0.5 rounded-full font-bold">
+              Sesión Activa
+            </span>
+          </div>
+          <div class="flex items-center justify-between gap-2 pt-0.5">
+            <div class="min-w-0">
+              <div class="font-extrabold text-white text-sm truncate" id="bienvenida-op-nombre">-</div>
+              <div class="text-[10px] text-gray-400 font-mono truncate" id="bienvenida-op-dni">DNI: -</div>
+            </div>
+            <button type="button" onclick="abrirModalCerrarSesion()" class="shrink-0 px-3 py-1.5 bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 text-xs font-bold rounded-xl transition flex items-center gap-1.5 active:scale-95 shadow-sm">
+              <span>🚪</span> <span>Cerrar Sesión</span>
+            </button>
+          </div>
+        </div>
+
         <!-- Indicadores Rápidos -->
         <div class="grid grid-cols-3 gap-2 pt-1 text-[11px]">
           <div class="bg-carbon/90 border border-gray-800/90 rounded-2xl p-3 flex flex-col items-center">
@@ -206,8 +231,27 @@
           </div>
         </div>
 
+        <!-- Control de Seguimiento por GPS Satelital -->
+        <div class="bg-carbon/95 border border-gray-800 rounded-2xl p-3.5 text-left space-y-2.5">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="text-lg">🛰️</span>
+              <div>
+                <span class="text-xs font-black text-white uppercase block">Seguimiento por GPS</span>
+                <span class="text-[10px] text-gray-400 block">Ubicación y telemetría en tiempo real</span>
+              </div>
+            </div>
+            <span id="bienvenida-gps-badge" class="text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-950/80 text-rose-400 border border-rose-800">
+              DESACTIVADO
+            </span>
+          </div>
+          <button type="button" id="btn-bienvenida-gps-toggle" onclick="toggleSeguimientoGPS()" class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-carbon border border-emerald-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
+            <span>📍</span> <span id="btn-bienvenida-gps-text">Activar Seguimiento GPS</span>
+          </button>
+        </div>
+
         <!-- Botón Principal: INICIAR CHECK IN -->
-        <div class="pt-2">
+        <div class="pt-1">
           <button onclick="pulsarIniciarCheckIn()" class="btn-industrial w-full bg-machinery hover:bg-machineryActive text-carbon text-base font-black flex items-center justify-center gap-2.5 shadow-xl shadow-machinery/25">
             <span class="text-xl">🟢</span>
             <span>INICIAR CHECK IN</span>
@@ -724,6 +768,42 @@
         </div>
       </div>
 
+      <!-- CARD TELEMETRÍA Y SEGUIMIENTO POR GPS -->
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-4 shadow-xl space-y-3">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="text-xl">🛰️</span>
+            <div>
+              <div class="text-xs font-black text-white uppercase tracking-wider">Seguimiento por GPS</div>
+              <div class="text-[10px] text-gray-400">Telemetría satelital en tiempo real</div>
+            </div>
+          </div>
+          <span id="encurso-gps-pill" class="text-[10px] font-black px-2.5 py-1 rounded-full bg-rose-950 text-rose-400 border border-rose-800">
+            DESACTIVADO
+          </span>
+        </div>
+
+        <div class="p-3 bg-carbon rounded-xl border border-gray-800 space-y-1.5 text-xs font-mono">
+          <div class="flex justify-between items-center text-[11px]">
+            <span class="text-gray-400">Coordenadas:</span>
+            <span class="font-bold text-machinery" id="encurso-gps-coords">-- , --</span>
+          </div>
+          <div class="flex justify-between items-center text-[10px]">
+            <span class="text-gray-400">Último reporte:</span>
+            <span class="text-gray-300" id="encurso-gps-hora">Sin transmisión</span>
+          </div>
+          <div class="flex justify-between items-center text-[10px]">
+            <span class="text-gray-400">Frecuencia de envío:</span>
+            <span class="text-emerald-400 font-bold">Cada 45 seg. al servidor</span>
+          </div>
+        </div>
+
+        <button type="button" id="btn-encurso-gps-toggle" onclick="toggleSeguimientoGPS()" class="w-full py-3 px-4 rounded-xl font-black text-xs uppercase transition-all flex items-center justify-center gap-2 border shadow-lg bg-emerald-600 hover:bg-emerald-500 text-carbon border-emerald-400 active:scale-95">
+          <span>📍</span> <span id="btn-encurso-gps-text">ACTIVAR SEGUIMIENTO POR GPS</span>
+        </button>
+      </div>
+
+      <!-- CARD CIERRE DE JORNADA -->
       <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-3 text-center">
         <span class="text-4xl block">🏁</span>
         <h3 class="text-base font-black text-white uppercase">Cierre de Jornada</h3>
@@ -733,6 +813,12 @@
         <button onclick="iniciarPasarelaCierre()" class="btn-industrial w-full bg-alertGreen hover:bg-emerald-600 text-carbon mt-2">
           FINALIZAR EL USO (CHECK OUT) ➔
         </button>
+
+        <div class="pt-2 border-t border-gray-800/80">
+          <button type="button" onclick="abrirModalCerrarSesion()" class="text-xs font-bold text-rose-400 hover:text-rose-300 flex items-center justify-center gap-1.5 mx-auto py-1">
+            <span>🚪</span> <span>Cerrar sesión de operador</span>
+          </button>
+        </div>
       </div>
 
     </section>
@@ -1014,10 +1100,15 @@
           </div>
         </div>
 
-        <!-- Botón para volver a iniciar nuevo registro -->
-        <button onclick="volverAlInicioDespuesDeCierre()" class="btn-industrial w-full bg-machinery hover:bg-machineryActive text-carbon font-black text-sm">
-          VOLVER AL INICIO ➔
-        </button>
+        <!-- Botones de Acción Posterior al Cierre -->
+        <div class="space-y-2 pt-1">
+          <button onclick="volverAlInicioDespuesDeCierre()" class="btn-industrial w-full bg-machinery hover:bg-machineryActive text-carbon font-black text-sm">
+            VOLVER AL INICIO ➔
+          </button>
+          <button type="button" onclick="abrirModalCerrarSesion()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-rose-300 border border-gray-700 rounded-xl text-xs font-bold transition flex items-center justify-center gap-1.5 active:scale-95">
+            <span>🚪</span> <span>Cerrar Sesión</span>
+          </button>
+        </div>
 
       </div>
     </section>
@@ -1063,6 +1154,50 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL: CERRAR SESIÓN DEL OPERADOR                           -->
+  <!-- ============================================================ -->
+  <div id="modal-cerrar-sesion" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-gray-700 rounded-2xl p-5 max-w-sm w-full space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-2.5">
+        <h3 class="text-sm font-black text-white uppercase flex items-center gap-2">
+          <span class="text-lg">🚪</span> Cerrar Sesión
+        </h3>
+        <button onclick="cerrarModalCerrarSesion()" class="text-gray-400 hover:text-white font-black text-xl leading-none">&times;</button>
+      </div>
+
+      <div class="space-y-3 text-center">
+        <div class="w-14 h-14 mx-auto rounded-full bg-rose-950/70 border border-rose-800/80 flex items-center justify-center text-3xl shadow-inner">
+          👷‍♂️
+        </div>
+        <div class="space-y-1">
+          <h4 class="text-base font-black text-white" id="modal-logout-op-nombre">¿Cerrar tu sesión?</h4>
+          <p class="text-xs text-gray-300" id="modal-logout-op-desc">
+            Se cerrará la sesión activa y se detendrá el seguimiento en este dispositivo.
+          </p>
+        </div>
+
+        <div id="modal-logout-alerta-turno" class="hidden p-3 bg-amber-950/60 border border-amber-700/80 text-amber-300 rounded-xl text-left text-xs space-y-1">
+          <div class="font-bold flex items-center gap-1.5">
+            <span>⚠️</span> <span>TURNO EN CURSO ACTIVO</span>
+          </div>
+          <p class="text-[11px] text-amber-200/90 leading-tight">
+            Tienes una jornada abierta en la máquina <strong id="modal-logout-eq-nombre" class="text-white">-</strong>. Si sales ahora, el turno continuará registrado en el equipo hasta el Check Out.
+          </p>
+        </div>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <button type="button" onclick="ejecutarCerrarSesion()" class="btn-industrial w-full bg-alertRed hover:bg-rose-600 text-white font-black">
+          🚪 SÍ, CERRAR SESIÓN
+        </button>
+        <button type="button" onclick="cerrarModalCerrarSesion()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs uppercase rounded-xl transition border border-gray-700">
+          Cancelar y Volver
+        </button>
+      </div>
     </div>
   </div>
 
@@ -1345,19 +1480,51 @@
 
     function actualizarUIOperador() {
       const badgeTop = document.getElementById('header-operador-badge');
+      const btnSalirHeader = document.getElementById('btn-cerrar-sesion-header');
+      const cardBienvenida = document.getElementById('card-sesion-activa-bienvenida');
+      const bienvenidaOpNombre = document.getElementById('bienvenida-op-nombre');
+      const bienvenidaOpDni = document.getElementById('bienvenida-op-dni');
+
       if (!operadorActivo) {
-        badgeTop.textContent = "👷 SIN SESIÓN";
-        detenerRastreoGPS();
+        if (badgeTop) badgeTop.textContent = "👷 SIN SESIÓN";
+        if (btnSalirHeader) {
+          btnSalirHeader.classList.add('hidden');
+          btnSalirHeader.classList.remove('flex');
+        }
+        if (cardBienvenida) cardBienvenida.classList.add('hidden');
+        if (!turnoEnCurso) {
+          detenerRastreoGPS();
+        } else {
+          actualizarUIGPS();
+        }
         return;
       }
 
-      badgeTop.textContent = `👷 ${operadorActivo.nombres.split(' ')[0]}`;
+      const primerNombre = (operadorActivo.nombres || '').split(' ')[0] || 'Operador';
+      if (badgeTop) badgeTop.textContent = `👷 ${primerNombre}`;
+      if (btnSalirHeader) {
+        btnSalirHeader.classList.remove('hidden');
+        btnSalirHeader.classList.add('flex');
+      }
+
+      if (cardBienvenida) {
+        cardBienvenida.classList.remove('hidden');
+        if (bienvenidaOpNombre) bienvenidaOpNombre.textContent = `${operadorActivo.nombres} ${operadorActivo.apellidos}`;
+        if (bienvenidaOpDni) bienvenidaOpDni.textContent = `DNI: ${operadorActivo.dni} • Brevete: ${operadorActivo.brevete_categoria || 'A-IIIc'}`;
+      }
+
       const p2Nom = document.getElementById('op-nombre-paso2');
       const p2Dni = document.getElementById('op-dni-paso2');
       if (p2Nom) p2Nom.textContent = `${operadorActivo.nombres} ${operadorActivo.apellidos}`;
       if (p2Dni) p2Dni.textContent = `DNI: ${operadorActivo.dni} • Brevete: ${operadorActivo.brevete_categoria || 'A-IIIc'}`;
 
-      iniciarRastreoGPS();
+      // Iniciar GPS si el operador lo tenía activado previamente en este dispositivo
+      const gpsPref = localStorage.getItem('heavy_gps_activo');
+      if (gpsPref === 'true') {
+        iniciarRastreoGPS(false);
+      } else {
+        actualizarUIGPS();
+      }
     }
 
     // ==========================================
@@ -2072,59 +2239,180 @@
     }
 
     // ==========================================
-    // GPS CONDICIONAL
+    // SISTEMA DE SEGUIMIENTO GPS Y TELEMETRÍA
     // ==========================================
     let gpsWatchId = null;
     let gpsIntervalTimer = null;
+    let gpsTransmisionesCount = 0;
 
-    function iniciarRastreoGPS() {
-      if (!navigator.geolocation || !operadorActivo) return;
+    function actualizarUIGPS() {
+      const isActivo = (gpsIntervalTimer !== null || gpsWatchId !== null);
 
-      const badge = document.getElementById('gps-status-badge');
-      const text = document.getElementById('gps-status-text');
-      if (badge && text) {
-        badge.className = 'network-badge bg-emerald-950/80 text-emerald-300 border border-emerald-600 animate-pulse text-[10px]';
-        text.textContent = 'GPS: ACTIVO';
+      // 1. Header Button
+      const btnHeader = document.getElementById('btn-gps-toggle-header');
+      const textHeader = document.getElementById('gps-status-text');
+      const iconHeader = document.getElementById('gps-status-icon');
+      if (btnHeader && textHeader) {
+        if (isActivo) {
+          btnHeader.className = 'network-badge bg-emerald-950/80 text-emerald-300 border border-emerald-600 animate-pulse text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none';
+          textHeader.textContent = 'GPS: ACTIVO';
+          if (iconHeader) iconHeader.textContent = '🛰️';
+          btnHeader.title = 'GPS Satelital Activo. Toca para desactivar';
+        } else {
+          btnHeader.className = 'network-badge bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none';
+          textHeader.textContent = 'GPS: OFF';
+          if (iconHeader) iconHeader.textContent = '📍';
+          btnHeader.title = 'GPS Desactivado. Toca para activar seguimiento';
+        }
       }
 
+      // 2. Pantalla win-en-curso
+      const pillEncurso = document.getElementById('encurso-gps-pill');
+      const btnEncurso = document.getElementById('btn-encurso-gps-toggle');
+      const btnEncursoTxt = document.getElementById('btn-encurso-gps-text');
+      const coordsEncurso = document.getElementById('encurso-gps-coords');
+      const horaEncurso = document.getElementById('encurso-gps-hora');
+
+      if (pillEncurso) {
+        if (isActivo) {
+          pillEncurso.className = 'text-[10px] font-black px-2.5 py-1 rounded-full bg-emerald-950 text-emerald-400 border border-emerald-700 animate-pulse';
+          pillEncurso.textContent = 'ACTIVO (TRANSMITIENDO)';
+        } else {
+          pillEncurso.className = 'text-[10px] font-black px-2.5 py-1 rounded-full bg-rose-950 text-rose-400 border border-rose-800';
+          pillEncurso.textContent = 'DESACTIVADO';
+        }
+      }
+
+      if (btnEncurso && btnEncursoTxt) {
+        if (isActivo) {
+          btnEncurso.className = 'w-full py-3 px-4 rounded-xl font-black text-xs uppercase transition-all flex items-center justify-center gap-2 border shadow-lg bg-rose-950 hover:bg-rose-900 text-rose-200 border-rose-700 active:scale-95';
+          btnEncursoTxt.textContent = 'DESACTIVAR SEGUIMIENTO GPS';
+        } else {
+          btnEncurso.className = 'w-full py-3 px-4 rounded-xl font-black text-xs uppercase transition-all flex items-center justify-center gap-2 border shadow-lg bg-emerald-600 hover:bg-emerald-500 text-carbon border-emerald-400 active:scale-95';
+          btnEncursoTxt.textContent = 'ACTIVAR SEGUIMIENTO POR GPS';
+        }
+      }
+
+      if (coordsEncurso) {
+        if (ultimaPosicionGPS && ultimaPosicionGPS.lat) {
+          coordsEncurso.textContent = `${ultimaPosicionGPS.lat.toFixed(5)}, ${ultimaPosicionGPS.lng.toFixed(5)}`;
+        } else if (isActivo) {
+          coordsEncurso.textContent = 'Obteniendo señal GPS...';
+        } else {
+          coordsEncurso.textContent = '-- , --';
+        }
+      }
+
+      if (horaEncurso) {
+        if (ultimaPosicionGPS && ultimaPosicionGPS.horaEnvio) {
+          horaEncurso.textContent = `${ultimaPosicionGPS.horaEnvio} (Reportes: ${gpsTransmisionesCount})`;
+        } else if (isActivo) {
+          horaEncurso.textContent = 'Conectando con satélites...';
+        } else {
+          horaEncurso.textContent = 'Sin transmisión';
+        }
+      }
+
+      // 3. Pantalla win-bienvenida
+      const pillBienvenida = document.getElementById('bienvenida-gps-badge');
+      const btnBienvenida = document.getElementById('btn-bienvenida-gps-toggle');
+      const btnBienvenidaTxt = document.getElementById('btn-bienvenida-gps-text');
+
+      if (pillBienvenida) {
+        if (isActivo) {
+          pillBienvenida.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-emerald-950/80 text-emerald-400 border border-emerald-700 animate-pulse';
+          pillBienvenida.textContent = 'ACTIVO';
+        } else {
+          pillBienvenida.className = 'text-[10px] font-bold px-2.5 py-0.5 rounded-full bg-rose-950/80 text-rose-400 border border-rose-800';
+          pillBienvenida.textContent = 'DESACTIVADO';
+        }
+      }
+
+      if (btnBienvenida && btnBienvenidaTxt) {
+        if (isActivo) {
+          btnBienvenida.className = 'w-full py-2.5 px-3 bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95';
+          btnBienvenidaTxt.textContent = 'Desactivar Seguimiento GPS';
+        } else {
+          btnBienvenida.className = 'w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-carbon border border-emerald-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-md';
+          btnBienvenidaTxt.textContent = 'Activar Seguimiento GPS';
+        }
+      }
+    }
+
+    function iniciarRastreoGPS(notificar = false) {
+      if (!navigator.geolocation) {
+        mostrarNotificacionToast("⚠️ Geolocalización no soportada en este navegador", "warning");
+        return;
+      }
+
+      localStorage.setItem('heavy_gps_activo', 'true');
+
+      // Intentar obtener posición inmediata
       navigator.geolocation.getCurrentPosition(
         pos => {
-          ultimaPosicionGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude, timestamp: new Date().toISOString() };
+          const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+          ultimaPosicionGPS = {
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            timestamp: new Date().toISOString(),
+            horaEnvio: hora
+          };
+          gpsTransmisionesCount++;
+          actualizarUIGPS();
+
+          if (turnoEnCurso && turnoEnCurso.equipo_id && operadorActivo && navigator.onLine) {
+            enviarPuntoTelemetria(turnoEnCurso.equipo_id, operadorActivo.id, pos.coords.latitude, pos.coords.longitude);
+          }
+
+          if (notificar) {
+            mostrarNotificacionToast(`🛰️ GPS Activo: Señal satelital fijada (${pos.coords.latitude.toFixed(4)}, ${pos.coords.longitude.toFixed(4)})`, "success");
+          }
         },
-        err => console.warn("GPS:", err.message),
+        err => {
+          console.warn("GPS error:", err.message);
+          actualizarUIGPS();
+          if (notificar) {
+            let msg = "⚠️ No se pudo obtener la posición GPS.";
+            if (err.code === 1) msg = "⚠️ Permiso de ubicación denegado. Habilita el GPS en tu navegador o teléfono.";
+            mostrarNotificacionToast(msg, "warning");
+          }
+        },
         { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
       );
 
+      // Iniciar temporizador cada 45 segundos
       if (gpsIntervalTimer) clearInterval(gpsIntervalTimer);
       gpsIntervalTimer = setInterval(() => {
-        if (!operadorActivo) {
+        if (localStorage.getItem('heavy_gps_activo') !== 'true') {
           detenerRastreoGPS();
           return;
         }
+
         navigator.geolocation.getCurrentPosition(
           pos => {
-            ultimaPosicionGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude, timestamp: new Date().toISOString() };
-            if (turnoEnCurso && turnoEnCurso.equipo_id && navigator.onLine) {
-              fetch('/api/v1/heavy/telemetria/gps', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  equipo_id: turnoEnCurso.equipo_id,
-                  operador_id: operadorActivo.id,
-                  latitud: pos.coords.latitude,
-                  longitud: pos.coords.longitude,
-                  timestamp: new Date().toISOString()
-                })
-              }).catch(e => console.warn("Telemetría:", e));
+            const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            ultimaPosicionGPS = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              timestamp: new Date().toISOString(),
+              horaEnvio: hora
+            };
+            gpsTransmisionesCount++;
+            actualizarUIGPS();
+
+            if (turnoEnCurso && turnoEnCurso.equipo_id && operadorActivo && navigator.onLine) {
+              enviarPuntoTelemetria(turnoEnCurso.equipo_id, operadorActivo.id, pos.coords.latitude, pos.coords.longitude);
             }
           },
           err => console.warn("GPS periódico:", err.message),
           { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
         );
       }, 45000);
+
+      actualizarUIGPS();
     }
 
-    function detenerRastreoGPS() {
+    function detenerRastreoGPS(notificar = false) {
       if (gpsWatchId !== null) {
         navigator.geolocation.clearWatch(gpsWatchId);
         gpsWatchId = null;
@@ -2133,12 +2421,137 @@
         clearInterval(gpsIntervalTimer);
         gpsIntervalTimer = null;
       }
-      const badge = document.getElementById('gps-status-badge');
-      const text = document.getElementById('gps-status-text');
-      if (badge && text) {
-        badge.className = 'network-badge bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px]';
-        text.textContent = 'GPS: OFF';
+      localStorage.setItem('heavy_gps_activo', 'false');
+      actualizarUIGPS();
+      if (notificar) {
+        mostrarNotificacionToast("📍 Seguimiento GPS desactivado por el operador", "info");
       }
+    }
+
+    function toggleSeguimientoGPS() {
+      const isActivo = (gpsIntervalTimer !== null || gpsWatchId !== null);
+      if (isActivo) {
+        detenerRastreoGPS(true);
+      } else {
+        iniciarRastreoGPS(true);
+      }
+    }
+
+    function enviarPuntoTelemetria(equipoId, operadorId, lat, lng) {
+      fetch('/api/v1/heavy/telemetria/gps', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          equipo_id: equipoId,
+          operador_id: operadorId,
+          latitud: lat,
+          longitud: lng,
+          timestamp: new Date().toISOString()
+        })
+      }).catch(e => console.warn("Telemetría:", e));
+    }
+
+    // ==========================================
+    // GESTIÓN DE SESIÓN DEL OPERADOR (LOGOUT)
+    // ==========================================
+    function abrirModalCerrarSesion() {
+      const modal = document.getElementById('modal-cerrar-sesion');
+      if (!modal) {
+        if (confirm("¿Deseas cerrar tu sesión?")) {
+          ejecutarCerrarSesion();
+        }
+        return;
+      }
+
+      const opNom = document.getElementById('modal-logout-op-nombre');
+      const alertaTurno = document.getElementById('modal-logout-alerta-turno');
+      const eqNom = document.getElementById('modal-logout-eq-nombre');
+
+      if (operadorActivo) {
+        if (opNom) opNom.textContent = `¿Cerrar sesión de ${operadorActivo.nombres}?`;
+      } else {
+        if (opNom) opNom.textContent = "¿Deseas cerrar tu sesión?";
+      }
+
+      if (turnoEnCurso && turnoEnCurso.equipo_nombre) {
+        if (alertaTurno) alertaTurno.classList.remove('hidden');
+        if (eqNom) eqNom.textContent = turnoEnCurso.equipo_nombre;
+      } else {
+        if (alertaTurno) alertaTurno.classList.add('hidden');
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalCerrarSesion() {
+      const modal = document.getElementById('modal-cerrar-sesion');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function ejecutarCerrarSesion() {
+      cerrarModalCerrarSesion();
+
+      // Detener GPS
+      detenerRastreoGPS(false);
+
+      // Limpiar variable y almacenamiento
+      operadorActivo = null;
+      localStorage.removeItem('heavy_operador_activo');
+
+      // Limpiar campos de login
+      const inDni = document.getElementById('login-dni');
+      const inClave = document.getElementById('login-clave');
+      if (inDni) inDni.value = '';
+      if (inClave) inClave.value = '';
+      const infoColab = document.getElementById('info-colaborador-detectado');
+      if (infoColab) {
+        infoColab.textContent = '';
+        infoColab.classList.add('hidden');
+      }
+
+      actualizarUIOperador();
+      actualizarUIGPS();
+
+      if (!turnoEnCurso) {
+        irVentana('win-bienvenida');
+      }
+
+      mostrarNotificacionToast("👋 Sesión de operador cerrada correctamente", "success");
+    }
+
+    // ==========================================
+    // NOTIFICACIONES TOAST FLOTANTES
+    // ==========================================
+    function mostrarNotificacionToast(mensaje, tipo = 'info') {
+      let toast = document.getElementById('flota-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'flota-toast';
+        toast.className = 'fixed bottom-5 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold transition-all duration-300 pointer-events-none text-center';
+        document.body.appendChild(toast);
+      }
+
+      const estilos = {
+        success: 'bg-emerald-950 text-emerald-300 border border-emerald-600 shadow-emerald-950/70',
+        error: 'bg-rose-950 text-rose-300 border border-rose-700 shadow-rose-950/70',
+        warning: 'bg-amber-950 text-amber-300 border border-amber-600 shadow-amber-950/70',
+        info: 'bg-carbon text-machinery border border-machinery/80 shadow-black/90'
+      };
+
+      toast.className = `fixed bottom-5 left-1/2 -translate-x-1/2 z-50 max-w-sm w-[90%] px-4 py-3 rounded-2xl shadow-2xl text-xs font-bold transition-all duration-300 pointer-events-none text-center ${estilos[tipo] || estilos.info}`;
+      toast.innerHTML = mensaje;
+      toast.style.opacity = '1';
+      toast.style.transform = 'translate(-50%, 0)';
+
+      clearTimeout(toast._timeout);
+      toast._timeout = setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translate(-50%, 15px)';
+      }, 3500);
     }
 
     // ==========================================
