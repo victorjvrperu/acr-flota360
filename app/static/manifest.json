@@ -1,0 +1,17 @@
+{
+  "name": "ACR Flota 360° | Control de Maquinaria y Equipos",
+  "short_name": "ACR Flota 360",
+  "description": "Sistema Offline-First de Control de Maquinaria Pesada y Combustible en Obra",
+  "start_url": "/mobile",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0B0F17",
+  "theme_color": "#01A95B",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23121417'/><path d='M25 70 L50 25 L75 70 Z' fill='%23FFB800'/></svg>",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

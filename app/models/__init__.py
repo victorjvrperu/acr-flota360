@@ -1,0 +1,43 @@
+from app.models.heavytrack import (
+    Proyecto,
+    Personal,
+    MaquinariaEquipo,
+    TurnoOperacion,
+    ControlCombustible,
+    IncidenteCheckpoint,
+    OrdenMantenimiento,
+    InventarioRepuesto,
+    Proveedor,
+    MantenimientoRepuesto,
+    RolPersonal,
+    EstadoProyecto,
+    TipoMaquinaria,
+    EstadoOperativo,
+    SeveridadIncidente,
+    EstadoIncidente,
+    TipoOrdenMantenimiento,
+    EstadoOrdenMantenimiento,
+    EstadoSync
+)
+
+__all__ = [
+    "Proyecto",
+    "Personal",
+    "MaquinariaEquipo",
+    "TurnoOperacion",
+    "ControlCombustible",
+    "IncidenteCheckpoint",
+    "OrdenMantenimiento",
+    "InventarioRepuesto",
+    "Proveedor",
+    "MantenimientoRepuesto",
+    "RolPersonal",
+    "EstadoProyecto",
+    "TipoMaquinaria",
+    "EstadoOperativo",
+    "SeveridadIncidente",
+    "EstadoIncidente",
+    "TipoOrdenMantenimiento",
+    "EstadoOrdenMantenimiento",
+    "EstadoSync"
+]

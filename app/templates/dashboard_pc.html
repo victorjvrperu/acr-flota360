@@ -1,0 +1,2434 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-[#121417]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACR Flota 360° | Control de Maquinaria y Proyectos</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Industry/Modern -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Leaflet.js para Mapa GPS en Vivo -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            carbon: '#121417',
+            graphite: '#1E2228',
+            graphiteLight: '#282D35',
+            machinery: '#01A95B',
+            machineryHover: '#008C4A',
+            alertRed: '#EF4444',
+            alertYellow: '#F59E0B',
+            alertGreen: '#10B981'
+          },
+          fontFamily: {
+            sans: ['Outfit', 'Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    body { font-family: 'Outfit', sans-serif; background-color: #121417; }
+    /* Custom Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #121417; }
+    ::-webkit-scrollbar-thumb { background: #282D35; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #01A95B; }
+  </style>
+</head>
+<body class="h-full text-gray-100 flex overflow-hidden">
+
+  <!-- SIDEBAR NAVEGACIÓN PC ESCRITORIO -->
+  <aside id="sidebar" class="w-64 bg-graphite border-r border-gray-800 flex flex-col justify-between shrink-0 transition-all duration-300 z-40">
+    <div>
+      <!-- Brand Logo Oficial ACR FLOTA 360° -->
+      <div class="h-20 flex items-center justify-center px-5 border-b border-gray-800/80 bg-graphite">
+        <a href="javascript:void(0)" onclick="mostrarSeccion('dashboard')" class="flex items-center justify-center w-full py-2 hover:opacity-90 transition">
+          <img src="/static/img/logo_acr360_white.png" alt="ACR Flota 360°" class="h-10 w-auto max-w-[210px] object-contain">
+        </a>
+      </div>
+
+      <!-- Navigation Links -->
+      <nav id="sidebar-nav" class="p-4 space-y-1.5 text-sm font-medium">
+        <button type="button" onclick="mostrarSeccion('dashboard')" data-tab="dashboard" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-machinery/15 text-machinery border border-machinery/40 font-bold transition text-left cursor-pointer shadow-sm">
+          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+          <span>Dashboard</span>
+        </button>
+        <button type="button" onclick="mostrarSeccion('flota')" data-tab="flota" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          <span>Maquinaria y Flota</span>
+        </button>
+        <button type="button" onclick="mostrarSeccion('personal')" data-tab="personal" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          <span>Operadores (Datos)</span>
+        </button>
+        <button type="button" onclick="mostrarSeccion('proyectos')" data-tab="proyectos" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          <span>Frentes</span>
+        </button>
+        <button type="button" onclick="mostrarSeccion('almacen')" data-tab="almacen" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+          <span>Almacén & Repuestos</span>
+        </button>
+        <button type="button" onclick="mostrarSeccion('proveedores')" data-tab="proveedores" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+          <span>Proveedores</span>
+        </button>
+        <button type="button" onclick="mostrarSeccion('turnos')" data-tab="turnos" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-alertGreen shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <span>Bitácora de Operaciones</span>
+        </button>
+      </nav>
+    </div>
+
+    <!-- Switch to Mobile View Quick Link -->
+    <div class="p-4 border-t border-gray-800 space-y-2">
+      <a href="/mobile" target="_blank" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-machinery text-carbon font-bold text-xs uppercase tracking-wider hover:bg-machineryHover transition shadow-md">
+        📱 Abrir App Móvil Operador
+      </a>
+      <a href="/docs" target="_blank" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-carbon border border-gray-700 text-gray-400 font-medium text-xs hover:text-white transition">
+        📄 API Docs (OpenAPI)
+      </a>
+    </div>
+  </aside>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-1 flex flex-col overflow-hidden bg-carbon">
+    
+    <!-- Header Superior -->
+    <header class="h-20 bg-graphite/60 backdrop-blur-md border-b border-gray-800 px-8 flex items-center justify-between shrink-0">
+      <div class="flex items-center gap-4">
+        <button id="toggleSidebar" class="p-2 rounded-lg bg-graphiteLight text-gray-300 hover:text-white">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div>
+          <h2 id="header-seccion-titulo" class="text-xl font-black text-white">DASHBOARD GENERAL</h2>
+          <p id="header-seccion-subtitulo" class="text-xs text-gray-400">Indicadores industriales en tiempo real, horas operadas y semáforo preventivo</p>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-4">
+        <!-- Indicador de Servidor -->
+        <div class="flex items-center gap-2 bg-graphiteLight px-3 py-1.5 rounded-full border border-gray-700 text-xs text-gray-300">
+          <span class="w-2 h-2 rounded-full bg-alertGreen animate-pulse"></span>
+          <span>FastAPI MySQL Sync Online</span>
+        </div>
+        <!-- Botón Registrar Personal -->
+        <button onclick="abrirModalPersonal()" class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-bold text-machinery flex items-center gap-1.5 transition">
+          <span>👷‍♂️</span> + Registrar Personal
+        </button>
+        <!-- Botón Reporte PDF Oficial -->
+        <a href="/api/v1/heavy/reportes/pdf" target="_blank" class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-semibold text-gray-200 flex items-center gap-1.5 transition">
+          <svg class="w-4 h-4 text-machinery" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+          Reporte PDF
+        </a>
+        <!-- Botón WhatsApp Gerencia -->
+        <button onclick="enviarWhatsAppGerencia()" class="px-3.5 py-2 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-600 rounded-lg text-xs font-bold text-emerald-300 flex items-center gap-1.5 transition shadow-[0_0_12px_rgba(16,185,129,0.3)]">
+          <span>📲</span> WhatsApp Gerencia
+        </button>
+      </div>
+    </header>
+
+    <!-- Scrollable Body Content -->
+    <div id="main-scroll-container" class="flex-1 overflow-y-auto p-8 space-y-8">
+
+      <!-- SECCIÓN 1: DASHBOARD GENERAL (KPIS Y GRÁFICOS) -->
+      <div id="seccion-dashboard" class="tab-seccion space-y-8">
+        <!-- TARJETAS KPI INDUSTRIALES -->
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+          <!-- Horas Totales -->
+          <div class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-machinery/50 transition">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Horas Trabajadas</span>
+              <div class="p-2 rounded-lg bg-machinery/10 text-machinery">⏱️</div>
+            </div>
+            <div class="text-3xl font-black text-white" id="kpi-horas">4,242.5 h</div>
+            <p class="text-xs text-alertGreen font-medium mt-1">↑ +8.5h registradas hoy</p>
+          </div>
+
+          <!-- Equipos en Taller -->
+          <div class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-alertYellow/50 transition">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Equipos en Taller</span>
+              <div class="p-2 rounded-lg bg-alertYellow/10 text-alertYellow">🔧</div>
+            </div>
+            <div class="text-3xl font-black text-white" id="kpi-taller">1 / 5</div>
+            <p class="text-xs text-alertYellow font-medium mt-1">1 unidad en reparación preventiva</p>
+          </div>
+
+          <!-- Alertas < 25h de Mantenimiento -->
+          <div class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-alertRed/50 transition">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Alertas Preventivas (&lt;25h)</span>
+              <div class="p-2 rounded-lg bg-alertRed/10 text-alertRed">⚠️</div>
+            </div>
+            <div class="text-3xl font-black text-alertRed" id="kpi-alertas">2 Críticas</div>
+            <p class="text-xs text-alertRed font-medium mt-1">EX-01 (7.5h) y VOL-04 (Vencido)</p>
+          </div>
+
+          <!-- Combustible del Mes -->
+          <div class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-machinery/50 transition">
+            <div class="flex justify-between items-start mb-2">
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Consumo Mes (Galones)</span>
+              <div class="p-2 rounded-lg bg-machinery/10 text-machinery">⛽</div>
+            </div>
+            <div class="text-3xl font-black text-white" id="kpi-combustible">153.5 Gal</div>
+            <p class="text-xs text-gray-400 font-medium mt-1">S/ 2,839.75 invertidos</p>
+          </div>
+        </div>
+
+        <!-- SECCIÓN GRÁFICOS INTERACTIVOS (CHART.JS) -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Gráfico Barras: Horas por Proyecto -->
+          <div class="lg:col-span-2 bg-graphite border border-gray-800 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-base font-bold text-white uppercase tracking-wide">Horas Operadas por Frente de Obra</h3>
+                <p class="text-xs text-gray-400">Distribución de carga de maquinaria según proyecto activo</p>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded bg-machinery/10 text-machinery font-bold">OCTUBRE 2026</span>
+            </div>
+            <div class="h-64">
+              <canvas id="chartProyectos"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico Doughnut: Estado de Flota -->
+          <div class="bg-graphite border border-gray-800 rounded-xl p-6 flex flex-col justify-between">
+            <div>
+              <h3 class="text-base font-bold text-white uppercase tracking-wide">Semáforo de Estado de Flota</h3>
+              <p class="text-xs text-gray-400">Salud preventiva según horómetro de servicio</p>
+            </div>
+            <div class="h-52 relative flex items-center justify-center my-2">
+              <canvas id="chartSemaforo"></canvas>
+            </div>
+            <div class="grid grid-cols-3 gap-2 text-center text-xs font-bold pt-2 border-t border-gray-800">
+              <div><span class="block text-alertGreen">3</span> Operativos</div>
+              <div><span class="block text-alertYellow">1</span> &lt;25h Próx</div>
+              <div><span class="block text-alertRed">1</span> Vencido</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- MAPA GPS EN TIEMPO REAL (LEAFLET.JS) -->
+        <div class="mt-6 bg-graphite border border-gray-800 rounded-xl p-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+            <div>
+              <h3 class="text-base font-black text-white uppercase tracking-wide flex items-center gap-2">
+                <span>📍</span> Monitoreo Satelital GPS en Vivo
+              </h3>
+              <p class="text-xs text-gray-400">Ubicación en tiempo real de maquinaria pesada activa con operadores en turno</p>
+            </div>
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                Satelital Activo (Gratis)
+              </span>
+
+              <!-- Selector de Capas Satelitales Gratuitas -->
+              <div class="inline-flex rounded-lg bg-carbon border border-gray-700 p-0.5 text-xs font-bold">
+                <button type="button" onclick="cambiarCapaMapa('satelite')" id="btn-capa-sat" class="px-2.5 py-1 rounded-md bg-machinery text-carbon font-black transition">
+                  🛰️ Satelital HD
+                </button>
+                <button type="button" onclick="cambiarCapaMapa('hibrido')" id="btn-capa-hib" class="px-2.5 py-1 rounded-md text-gray-300 hover:text-white transition">
+                  🗺️ Híbrido
+                </button>
+                <button type="button" onclick="cambiarCapaMapa('calles')" id="btn-capa-cal" class="px-2.5 py-1 rounded-md text-gray-300 hover:text-white transition">
+                  🏙️ Calles
+                </button>
+              </div>
+
+              <button onclick="centrarMapaFlota()" class="px-3 py-1.5 bg-graphiteLight hover:bg-machinery hover:text-carbon text-gray-200 text-xs rounded-lg font-bold border border-gray-700 transition">
+                🎯 Centrar
+              </button>
+              <button onclick="togglePantallaCompletaMapa()" id="btn-mapa-expandir" class="px-2.5 py-1.5 bg-graphiteLight hover:bg-gray-700 text-gray-300 text-xs rounded-lg font-bold border border-gray-700 transition" title="Pantalla Completa">
+                ⛶ Expandir
+              </button>
+            </div>
+          </div>
+          <!-- Contenedor del Mapa Leaflet -->
+          <div id="mapa-flota-gps" class="w-full h-96 rounded-xl overflow-hidden border border-gray-800 shadow-inner z-0 transition-all"></div>
+          <div class="flex items-center justify-between mt-3 text-[11px] text-gray-400">
+            <span class="flex items-center gap-1.5">
+              <span>💡</span>
+              <span>El GPS se activa en el celular del operador únicamente durante su turno activo para proteger la privacidad fuera de obra.</span>
+            </span>
+            <span id="mapa-flota-contador" class="font-bold text-machinery">0 equipos transmitiendo</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- TABLA DE CONTROL DE FLOTA Y HORÓMETROS -->
+      <div id="seccion-flota" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+              <span class="w-3 h-3 bg-machinery rounded-sm"></span>
+              Inventario de Maquinaria y Equipos
+            </h3>
+            <p class="text-xs text-gray-400">Control de horómetros actuales, estado operativo, documentación y semáforo preventivo (250h)</p>
+          </div>
+
+          <!-- Filtros Rápidos -->
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <select id="filtroTipo" onchange="filtrarTabla()" class="bg-carbon border border-gray-700 text-gray-200 text-xs rounded-lg px-3 py-2 font-medium focus:border-machinery focus:outline-none">
+              <option value="">🚜 Todos los Tipos</option>
+              <option value="pesada">Maquinaria Pesada</option>
+              <option value="camion">Camiones / Volquetes</option>
+              <option value="liviano">Liviano / Supervisión</option>
+            </select>
+            <button onclick="abrirModalNuevoEquipo()" class="px-3.5 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(255,184,0,0.25)] flex items-center gap-1.5">
+              + Registrar Equipo
+            </button>
+          </div>
+        </div>
+
+        <!-- Tabla -->
+        <div class="overflow-x-auto rounded-lg border border-gray-800">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+              <tr>
+                <th class="py-3.5 px-4">Equipo / Código</th>
+                <th class="py-3.5 px-4">Modelo & Serie / Placa</th>
+                <th class="py-3.5 px-4">Modalidad</th>
+                <th class="py-3.5 px-4">Lectura Actual</th>
+                <th class="py-3.5 px-4">Próx. Servicio</th>
+                <th class="py-3.5 px-4">Póliza / SOAT</th>
+                <th class="py-3.5 px-4">Semáforo</th>
+                <th class="py-3.5 px-4 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-flota-body" class="divide-y divide-gray-800 font-medium">
+              <!-- Dinámico vía JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: FRENTES DE OBRA Y PROYECTOS -->
+      <div id="seccion-proyectos" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+              <span class="w-3 h-3 bg-machinery rounded-sm"></span>
+              Gestión de Frentes de Obra y Proyectos
+            </h3>
+            <p class="text-xs text-gray-400">Control multi-frente de construcción y minería, despliegue de maquinaria y horas trabajadas por sector</p>
+          </div>
+          <button onclick="abrirModalNuevoProyecto()" class="px-4 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(255,184,0,0.25)] flex items-center gap-1.5">
+            + Nuevo Frente de Obra
+          </button>
+        </div>
+
+        <!-- Tarjetas Resumen de Frentes de Obra -->
+        <div id="grid-frentes-cards" class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <!-- Dinámico -->
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-gray-800">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+              <tr>
+                <th class="py-3.5 px-4">Código Frente</th>
+                <th class="py-3.5 px-4">Nombre del Frente / Tramo</th>
+                <th class="py-3.5 px-4">Ubicación / Sector</th>
+                <th class="py-3.5 px-4 text-center">Maquinaria Desplegada</th>
+                <th class="py-3.5 px-4 text-center">Horas Acumuladas</th>
+                <th class="py-3.5 px-4">Estado</th>
+                <th class="py-3.5 px-4 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-proyectos-body" class="divide-y divide-gray-800 font-medium">
+              <!-- Dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: BITÁCORA DE OPERACIONES (MAQUINARIA REGISTRADA POR PERSONAL EN VIVO) -->
+      <div id="seccion-turnos" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+              <span class="w-3 h-3 bg-machinery rounded-sm"></span>
+              Bitácora de Operaciones y Maquinaria Registrada
+            </h3>
+            <p class="text-xs text-gray-400">Historial en vivo de turnos reportados desde celulares de campo (online/offline) con identificación del personal a cargo y evidencia fotográfica</p>
+          </div>
+          <button onclick="cargarTablaTurnos()" class="px-3.5 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 flex items-center gap-1.5 transition">
+            🔄 Actualizar Bitácora
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-gray-800">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+              <tr>
+                <th class="py-3.5 px-4">Fecha</th>
+                <th class="py-3.5 px-4">Maquinaria / Equipo</th>
+                <th class="py-3.5 px-4">Personal a Cargo (Operador)</th>
+                <th class="py-3.5 px-4">Frente de Obra</th>
+                <th class="py-3.5 px-4 text-center">Horómetro (h)</th>
+                <th class="py-3.5 px-4 text-center">Total Horas</th>
+                <th class="py-3.5 px-4 text-center">Odómetro (Km)</th>
+                <th class="py-3.5 px-4 text-center">Total Km</th>
+                <th class="py-3.5 px-4 text-center">Fotos Evidencia</th>
+                <th class="py-3.5 px-4 text-center">Sincronización</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-turnos-body" class="divide-y divide-gray-800 font-medium">
+              <!-- Dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: CONTROL DE PERSONAL Y OPERADORES -->
+      <div id="seccion-personal" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+              <span class="w-3 h-3 bg-machinery rounded-sm"></span>
+              Padrón de Personal y Operadores
+            </h3>
+            <p class="text-xs text-gray-400">Control de brevetes, categorías profesionales, teléfonos y PINs de acceso para app móvil</p>
+          </div>
+          <button onclick="abrirModalPersonal()" class="px-4 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(255,184,0,0.25)] flex items-center gap-1.5">
+            + Registrar Colaborador
+          </button>
+        </div>
+
+        <div class="overflow-x-auto rounded-lg border border-gray-800">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+              <tr>
+                <th class="py-3.5 px-4">DNI</th>
+                <th class="py-3.5 px-4">Colaborador</th>
+                <th class="py-3.5 px-4">Rol / Puesto</th>
+                <th class="py-3.5 px-4">Brevete</th>
+                <th class="py-3.5 px-4">Categoría</th>
+                <th class="py-3.5 px-4">Vencimiento Brevete</th>
+                <th class="py-3.5 px-4">Certificación</th>
+                <th class="py-3.5 px-4">Teléfono</th>
+                <th class="py-3.5 px-4">Clave Acceso</th>
+                <th class="py-3.5 px-4 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-personal-body" class="divide-y divide-gray-800 font-medium">
+              <!-- Dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: ALMACÉN Y CONTROL DE REPUESTOS -->
+      <div id="seccion-almacen" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+              <span class="w-3 h-3 bg-machinery rounded-sm"></span>
+              Almacén de Repuestos & Filtros Críticos
+            </h3>
+            <p class="text-xs text-gray-400">Control de stock mínimo, ubicación en taller y costos unitarios</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto rounded-lg border border-gray-800">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+              <tr>
+                <th class="py-3.5 px-4">Código de Parte</th>
+                <th class="py-3.5 px-4">Descripción de Repuesto</th>
+                <th class="py-3.5 px-4">Categoría</th>
+                <th class="py-3.5 px-4 text-center">Stock Actual / Mínimo</th>
+                <th class="py-3.5 px-4 text-right">Precio Unitario</th>
+                <th class="py-3.5 px-4">Ubicación Bahía</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-repuestos-body" class="divide-y divide-gray-800 font-medium">
+              <!-- Dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECCIÓN: PROVEEDORES OFICIALES -->
+      <div id="seccion-proveedores" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+              <span class="w-3 h-3 bg-machinery rounded-sm"></span>
+              Directorio de Proveedores Oficiales
+            </h3>
+            <p class="text-xs text-gray-400">Talleres autorizados, distribuidores CAT/Komatsu/Volvo y plantas de combustible</p>
+          </div>
+        </div>
+        <div class="overflow-x-auto rounded-lg border border-gray-800">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+              <tr>
+                <th class="py-3.5 px-4">RUC</th>
+                <th class="py-3.5 px-4">Razón Social</th>
+                <th class="py-3.5 px-4">Rubro / Especialidad</th>
+                <th class="py-3.5 px-4">Teléfono de Contacto</th>
+                <th class="py-3.5 px-4">Correo Comercial</th>
+                <th class="py-3.5 px-4">Dirección</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-proveedores-body" class="divide-y divide-gray-800 font-medium">
+              <!-- Dinámico -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- MODAL: REGISTRAR PERSONAL -->
+  <div id="modal-personal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
+        <h3 class="text-base font-black text-white uppercase flex items-center gap-2">
+          <span class="text-xl">👷‍♂️</span> Registrar Personal / Operador
+        </h3>
+        <button onclick="cerrarModalPersonal()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+
+      <form onsubmit="registrarPersonalSubmit(event)" class="space-y-3.5 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="block font-bold text-gray-400 uppercase">DNI (8 dígitos) *</label>
+              <button type="button" onclick="consultarReniecManual()" id="btn-reniec-consulta" class="text-[10px] font-black text-machinery hover:underline flex items-center gap-1 cursor-pointer" title="Consultar en la base de datos nacional RENIEC">
+                🔍 Consultar RENIEC
+              </button>
+            </div>
+            <div class="relative">
+              <input type="text" id="personal-dni-input" name="dni" required maxlength="8" placeholder="Ej: 41827912" oninput="alCambiarDni(this.value)" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+              <div id="reniec-spinner" class="absolute right-3 top-2.5 hidden">
+                <svg class="animate-spin h-4 w-4 text-machinery" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+              </div>
+            </div>
+            <span id="reniec-status-badge" class="text-[10px] font-bold block mt-1"></span>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Rol / Cargo *</label>
+            <select name="rol" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+              <option value="operador">Operador de Maquinaria</option>
+              <option value="jefe_mantenimiento">Jefe de Área / Mantenimiento</option>
+              <option value="gerencia">Gerencia / Dirección</option>
+              <option value="sistemas_admin">Sistemas / Administrador</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Nombres *</label>
+            <input type="text" id="personal-nombres-input" name="nombres" required placeholder="Juan Carlos" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Apellidos *</label>
+            <input type="text" id="personal-apellidos-input" name="apellidos" required placeholder="Mamani Condori" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Teléfono Móvil</label>
+            <input type="text" name="telefono" placeholder="+51 987 654 321" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Clave de Acceso Personal *</label>
+            <input type="text" name="pin_acceso" maxlength="12" value="1234" required placeholder="Clave personal" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-machinery font-mono font-bold text-center focus:border-machinery focus:outline-none">
+            <span class="text-[10px] text-gray-500 mt-1 block">El colaborador usará su <strong>DNI y esta Clave</strong> para ingresar (podrá cambiarla).</span>
+          </div>
+        </div>
+
+        <div class="border-t border-gray-800 pt-3">
+          <span class="text-[11px] font-bold text-machinery uppercase tracking-wider block mb-2">Datos de Licencia de Conducir (Brevete)</span>
+          <div class="grid grid-cols-3 gap-2">
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">N° Brevete</label>
+              <input type="text" name="brevete_numero" placeholder="Q45892147" class="w-full bg-carbon border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold">
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría</label>
+              <select name="brevete_categoria" class="w-full bg-carbon border border-gray-700 rounded-lg px-2 py-2 text-white font-bold">
+                <option value="A-IIIc">A-IIIc (Pesada)</option>
+                <option value="A-IIIb">A-IIIb (Camión)</option>
+                <option value="A-IIb">A-IIb (Cisterna)</option>
+                <option value="A-I">A-I (Liviano)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Vencimiento</label>
+              <input type="date" name="brevete_vencimiento" class="w-full bg-carbon border border-gray-700 rounded-lg px-2 py-2 text-white font-bold">
+            </div>
+          </div>
+        </div>
+
+        <!-- SECCIÓN: CERTIFICACIÓN / HOMOLOGACIÓN DE OPERADOR -->
+        <div class="border-t border-gray-800 pt-3">
+          <div class="flex items-center justify-between mb-1.5">
+            <div>
+              <span class="text-[11px] font-bold text-machinery uppercase tracking-wider block">¿Cuenta con Certificado / Homologación?</span>
+              <span class="text-[10px] text-gray-400 block">Cursos de maquinaria, homologación 3G/4G o acreditaciones</span>
+            </div>
+            <div class="flex items-center gap-1 bg-carbon p-1 rounded-lg border border-gray-700 shrink-0">
+              <button type="button" id="btn-cert-no" onclick="seleccionarCertificado(false)" class="px-3 py-1 rounded text-xs font-black transition bg-gray-700 text-white">
+                NO
+              </button>
+              <button type="button" id="btn-cert-si" onclick="seleccionarCertificado(true)" class="px-3 py-1 rounded text-xs font-black transition text-gray-400 hover:text-white">
+                SÍ
+              </button>
+              <input type="hidden" name="tiene_certificacion" id="input-tiene-certificacion" value="0">
+            </div>
+          </div>
+
+          <!-- Campos desplegables si es SÍ -->
+          <div id="seccion-campos-certificado" class="hidden space-y-3 bg-carbon/70 p-3.5 rounded-xl border border-emerald-900/50 mt-2">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nombre / Entidad del Certificado</label>
+                <input type="text" name="certificado_nombre" id="input-cert-nombre" placeholder="Ej: Operador Excavadora TECSUP / Rigger" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Vencimiento del Certificado</label>
+                <input type="date" name="certificado_vencimiento" id="input-cert-venc" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Subir Certificado Digital (PDF o Imagen)</label>
+              <label class="w-full flex items-center justify-center gap-2.5 bg-graphite border-2 border-dashed border-gray-700 hover:border-machinery rounded-xl py-3 px-3 cursor-pointer transition">
+                <span class="text-xl">📎</span>
+                <span class="text-xs font-bold text-gray-300" id="label-archivo-cert">Seleccionar PDF, JPG o PNG...</span>
+                <input type="file" id="input-archivo-certificado" accept=".pdf,image/*" class="hidden" onchange="subirArchivoCertificado(this)">
+              </label>
+              <input type="hidden" name="certificado_archivo_url" id="input-cert-url" value="">
+              <div id="preview-cert-box" class="hidden mt-1.5 p-2 bg-emerald-950/60 border border-emerald-800 rounded-lg flex items-center justify-between text-[11px]">
+                <span id="preview-cert-nombre" class="font-bold text-emerald-300 truncate max-w-[220px]"></span>
+                <a id="preview-cert-href" href="#" target="_blank" class="px-2 py-0.5 bg-emerald-900 text-white rounded font-bold hover:bg-emerald-800 transition">Ver Digital ↗</a>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
+          <button type="button" onclick="cerrarModalPersonal()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+          <button type="submit" class="px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Guardar Colaborador</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REASIGNAR EQUIPO A FRENTE Y OPERADOR -->
+  <div id="modal-asignar-equipo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
+        <div>
+          <h3 class="text-base font-black text-white uppercase flex items-center gap-2">
+            <span>📍</span> Reasignar Frente y Personal a Cargo
+          </h3>
+          <span class="text-xs text-machinery font-bold block mt-0.5" id="asignar-equipo-titulo">Equipo: -</span>
+        </div>
+        <button onclick="cerrarModalAsignar()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+
+      <form onsubmit="guardarAsignacionSubmit(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="asignar-equipo-id" name="equipo_id">
+
+        <div>
+          <label class="block font-bold text-gray-400 uppercase mb-1">Frente de Obra / Proyecto Asignado</label>
+          <select id="select-asignar-frente" name="proyecto_id" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+            <!-- Dinámico -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-400 uppercase mb-1">Personal / Operador a Cargo Asignado</label>
+          <select id="select-asignar-operador" name="operador_id" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+            <!-- Dinámico -->
+          </select>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
+          <button type="button" onclick="cerrarModalAsignar()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+          <button type="submit" class="px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Guardar Asignación</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVO FRENTE DE OBRA / PROYECTO -->
+  <div id="modal-proyecto" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
+        <h3 class="text-base font-black text-white uppercase flex items-center gap-2">
+          <span>🏗️</span> Nuevo Frente de Obra / Proyecto
+        </h3>
+        <button onclick="cerrarModalNuevoProyecto()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+
+      <form onsubmit="registrarProyectoSubmit(event)" class="space-y-3.5 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Código del Frente *</label>
+            <input type="text" name="codigo" required placeholder="Ej: FRT-CANTERA" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold uppercase focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Estado</label>
+            <select name="estado" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+              <option value="activo">Activo</option>
+              <option value="pausado">Pausado</option>
+              <option value="cerrado">Cerrado</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-400 uppercase mb-1">Nombre Descriptivo del Frente *</label>
+          <input type="text" name="nombre" required placeholder="Ej: Frente Cantera Sur - Chancado Km 48" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-400 uppercase mb-1">Ubicación / Sector Geográfico *</label>
+          <input type="text" name="ubicacion" required placeholder="Ej: Moquegua - Quebrada Honda Km 48" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-400 uppercase mb-1">Fecha de Apertura / Inicio</label>
+          <input type="date" name="fecha_inicio" id="input-fecha-inicio-frente" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
+          <button type="button" onclick="cerrarModalNuevoProyecto()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+          <button type="submit" class="px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Crear Frente de Obra</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR NUEVA MAQUINARIA / EQUIPO -->
+  <div id="modal-nuevo-equipo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative my-8">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
+        <div>
+          <h3 class="text-base font-black text-white uppercase flex items-center gap-2">
+            <span>🚜</span> Registrar Nueva Maquinaria / Equipo
+          </h3>
+          <p class="text-xs text-gray-400 mt-0.5">Ingresa los datos técnicos, control de uso y documentación</p>
+        </div>
+        <button onclick="cerrarModalNuevoEquipo()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <form onsubmit="registrarEquipoSubmit(event)" class="space-y-4 text-xs">
+        <!-- 1. IDENTIFICACIÓN Y MODELO -->
+        <div class="bg-carbon/70 p-3.5 rounded-xl border border-gray-800 space-y-3">
+          <div class="text-[11px] font-black uppercase text-machinery tracking-wider flex items-center gap-1.5">
+            <span>📋</span> 1. Identificación del Equipo
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Nombre del Equipo *</label>
+              <input type="text" name="nombre" required placeholder="Ej: Excavadora Oruga CAT 336D" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Código Interno *</label>
+              <input type="text" name="codigo_interno" required placeholder="Ej: EX-05 o VOL-02" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold uppercase focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">Marca *</label>
+              <input type="text" name="marca" required placeholder="Caterpillar" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">Modelo *</label>
+              <input type="text" name="modelo" required placeholder="336D2L" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">N° Serie / Chasis</label>
+              <input type="text" name="serie_chasis" placeholder="CAT0336D09124" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-mono focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">Placa de Rodaje</label>
+              <input type="text" name="placa" placeholder="B7X-892 (opcional)" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white uppercase font-bold focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. MODALIDAD DE CONTROL Y LECTURA -->
+        <div class="bg-carbon/70 p-3.5 rounded-xl border border-gray-800 space-y-3">
+          <div class="text-[11px] font-black uppercase text-machinery tracking-wider flex items-center gap-1.5">
+            <span>⏱️</span> 2. Control de Uso & Registros
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Control por KM o Horómetro *</label>
+              <select name="tipo_control" id="nuevo-tipo-control" onchange="toggleCamposControl('nuevo')" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+                <option value="HOROMETRO" selected>⏱️ Horómetro (Maquinaria Pesada)</option>
+                <option value="KILOMETRAJE">🚗 Kilometraje (Camionetas / Camiones / Livianos)</option>
+                <option value="AMBOS">🔄 Dual (Horómetro + Kilometraje)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">Tipo de Unidad *</label>
+              <select name="tipo" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+                <option value="pesada">Maquinaria Pesada</option>
+                <option value="camion">Camión / Volquete</option>
+                <option value="liviano">Liviano / Supervisión</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div id="nuevo-campo-horometro">
+              <label class="block font-bold text-gray-400 uppercase mb-1">Registro Horómetro (h) *</label>
+              <input type="number" step="0.1" name="horometro_actual" required value="0.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div id="nuevo-campo-horometro-prox">
+              <label class="block font-bold text-gray-400 uppercase mb-1">Próx. Servicio (h) *</label>
+              <input type="number" step="0.1" name="horometro_proximo_servicio" required value="250.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div id="nuevo-campo-km">
+              <label class="block font-bold text-gray-400 uppercase mb-1">Registro Kilometraje (Km)</label>
+              <input type="number" step="0.1" name="odometro_actual" value="0.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. PÓLIZA Y SOAT -->
+        <div class="bg-carbon/70 p-3.5 rounded-xl border border-gray-800 space-y-3">
+          <div class="text-[11px] font-black uppercase text-machinery tracking-wider flex items-center gap-1.5">
+            <span>🛡️</span> 3. Documentación (Póliza & SOAT)
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="bg-graphite/50 p-2.5 rounded-lg border border-gray-800 space-y-2">
+              <div class="font-bold text-gray-300 uppercase text-[11px] flex items-center gap-1">
+                <span>📄</span> Póliza de Seguro
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">N° de Póliza</label>
+                <input type="text" name="poliza_seguro" placeholder="Ej: POL-RIMAC-2026-99" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento Póliza</label>
+                <input type="date" name="poliza_vencimiento" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+              </div>
+            </div>
+
+            <div class="bg-graphite/50 p-2.5 rounded-lg border border-gray-800 space-y-2">
+              <div class="font-bold text-gray-300 uppercase text-[11px] flex items-center gap-1">
+                <span>📑</span> SOAT
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">N° de SOAT</label>
+                <input type="text" name="soat_numero" placeholder="Ej: SOAT-POSITIVA-8812" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento SOAT</label>
+                <input type="date" name="soat_vencimiento" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-800">
+          <button type="button" onclick="cerrarModalNuevoEquipo()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+          <button type="submit" class="px-5 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Registrar Maquinaria</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR MAQUINARIA / EQUIPO -->
+  <div id="modal-editar-equipo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative my-8">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
+        <div>
+          <h3 class="text-base font-black text-white uppercase flex items-center gap-2">
+            <span>✏️</span> Editar Información de Maquinaria / Equipo
+          </h3>
+          <p class="text-xs text-gray-400 mt-0.5">Modifica especificaciones técnicas, horas, kilometraje y documentos</p>
+        </div>
+        <button onclick="cerrarModalEditarEquipo()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-editar-equipo" onsubmit="actualizarEquipoSubmit(event)" class="space-y-4 text-xs">
+        <input type="hidden" name="equipo_id">
+
+        <!-- 1. IDENTIFICACIÓN Y MODELO -->
+        <div class="bg-carbon/70 p-3.5 rounded-xl border border-gray-800 space-y-3">
+          <div class="text-[11px] font-black uppercase text-machinery tracking-wider flex items-center gap-1.5">
+            <span>📋</span> 1. Identificación del Equipo
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Nombre del Equipo *</label>
+              <input type="text" name="nombre" required placeholder="Ej: Excavadora Oruga CAT 336D" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Código Interno *</label>
+              <input type="text" name="codigo_interno" required class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold uppercase focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">Marca *</label>
+              <input type="text" name="marca" required class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">Modelo *</label>
+              <input type="text" name="modelo" required class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">N° Serie / Chasis</label>
+              <input type="text" name="serie_chasis" placeholder="CAT0336D09124" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-mono focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">Placa de Rodaje</label>
+              <input type="text" name="placa" placeholder="B7X-892" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white uppercase font-bold focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. MODALIDAD DE CONTROL Y LECTURA -->
+        <div class="bg-carbon/70 p-3.5 rounded-xl border border-gray-800 space-y-3">
+          <div class="text-[11px] font-black uppercase text-machinery tracking-wider flex items-center gap-1.5">
+            <span>⏱️</span> 2. Control de Uso & Registros
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Control por KM o Horómetro *</label>
+              <select name="tipo_control" id="editar-tipo-control" onchange="toggleCamposControl('editar')" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+                <option value="HOROMETRO">⏱️ Horómetro (Maquinaria Pesada)</option>
+                <option value="KILOMETRAJE">🚗 Kilometraje (Camionetas / Camiones / Livianos)</option>
+                <option value="AMBOS">🔄 Dual (Horómetro + Kilometraje)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">Tipo de Unidad *</label>
+              <select name="tipo" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+                <option value="pesada">Maquinaria Pesada</option>
+                <option value="camion">Camión / Volquete</option>
+                <option value="liviano">Liviano / Supervisión</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-gray-400 uppercase mb-1">Estado Operativo *</label>
+              <select name="estado_operativo" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+                <option value="operativo">🟢 Operativo</option>
+                <option value="mantenimiento">🟡 En Mantenimiento</option>
+                <option value="fuera_servicio">🔴 Fuera de Servicio</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div id="editar-campo-horometro">
+              <label class="block font-bold text-gray-400 uppercase mb-1">Registro Horómetro Actual (h) *</label>
+              <input type="number" step="0.1" name="horometro_actual" required class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div id="editar-campo-horometro-prox">
+              <label class="block font-bold text-gray-400 uppercase mb-1">Próx. Servicio (h) *</label>
+              <input type="number" step="0.1" name="horometro_proximo_servicio" required class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            </div>
+            <div id="editar-campo-km">
+              <label class="block font-bold text-gray-400 uppercase mb-1">Registro Kilometraje (Km)</label>
+              <input type="number" step="0.1" name="odometro_actual" value="0.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. PÓLIZA Y SOAT -->
+        <div class="bg-carbon/70 p-3.5 rounded-xl border border-gray-800 space-y-3">
+          <div class="text-[11px] font-black uppercase text-machinery tracking-wider flex items-center gap-1.5">
+            <span>🛡️</span> 3. Documentación (Póliza & SOAT)
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div class="bg-graphite/50 p-2.5 rounded-lg border border-gray-800 space-y-2">
+              <div class="font-bold text-gray-300 uppercase text-[11px] flex items-center gap-1">
+                <span>📄</span> Póliza de Seguro
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">N° de Póliza</label>
+                <input type="text" name="poliza_seguro" placeholder="Ej: POL-RIMAC-2026-99" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento Póliza</label>
+                <input type="date" name="poliza_vencimiento" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+              </div>
+            </div>
+
+            <div class="bg-graphite/50 p-2.5 rounded-lg border border-gray-800 space-y-2">
+              <div class="font-bold text-gray-300 uppercase text-[11px] flex items-center gap-1">
+                <span>📑</span> SOAT
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">N° de SOAT</label>
+                <input type="text" name="soat_numero" placeholder="Ej: SOAT-POSITIVA-8812" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento SOAT</label>
+                <input type="date" name="soat_vencimiento" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between pt-3 border-t border-gray-800">
+          <button type="button" onclick="eliminarEquipoDesdeModal()" class="px-3.5 py-2 bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg font-bold text-xs flex items-center gap-1.5 transition">
+            🗑️ Eliminar Equipo
+          </button>
+          <div class="flex items-center gap-3">
+            <button type="button" onclick="cerrarModalEditarEquipo()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+            <button type="submit" class="px-5 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Guardar Cambios</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: VISUALIZADOR DE FOTO DE EVIDENCIA -->
+  <div id="modal-foto-preview" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-gray-700 rounded-2xl max-w-lg w-full p-4 relative space-y-3">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-2">
+        <h3 class="text-sm font-black text-white uppercase flex items-center gap-2" id="foto-preview-titulo">
+          📸 Evidencia Fotográfica
+        </h3>
+        <button onclick="document.getElementById('modal-foto-preview').classList.add('hidden'); document.getElementById('modal-foto-preview').classList.remove('flex');" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+      </div>
+      <div class="bg-carbon rounded-xl p-2 flex items-center justify-center min-h-[250px] max-h-[70vh] overflow-hidden">
+        <img id="foto-preview-img" src="" alt="Evidencia" class="max-h-[65vh] max-w-full rounded-lg object-contain">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let equiposCache = [];
+    let frentesCache = [];
+    let personalCache = [];
+    let turnosCache = [];
+
+    // ==========================================
+    // SISTEMA DE NAVEGACIÓN POR PESTAÑAS (SPA)
+    // ==========================================
+    function mostrarSeccion(tabKey) {
+      const config = {
+        'dashboard': {
+          id: 'seccion-dashboard',
+          titulo: 'DASHBOARD GENERAL',
+          subtitulo: 'Indicadores industriales en tiempo real, horas operadas y semáforo preventivo'
+        },
+        'flota': {
+          id: 'seccion-flota',
+          titulo: 'MAQUINARIA Y FLOTA',
+          subtitulo: 'Inventario de maquinaria pesada, registro de horómetros/KM, pólizas y SOAT'
+        },
+        'proyectos': {
+          id: 'seccion-proyectos',
+          titulo: 'FRENTES DE OBRA Y PROYECTOS',
+          subtitulo: 'Control multi-frente de construcción y minería, despliegue de maquinaria y horas'
+        },
+        'turnos': {
+          id: 'seccion-turnos',
+          titulo: 'BITÁCORA DE OPERACIONES',
+          subtitulo: 'Historial en vivo de turnos reportados desde celulares de campo con evidencia'
+        },
+        'personal': {
+          id: 'seccion-personal',
+          titulo: 'PERSONAL & OPERADORES',
+          subtitulo: 'Padrón de operadores, vencimiento de brevetes y accesos para app móvil'
+        },
+        'almacen': {
+          id: 'seccion-almacen',
+          titulo: 'ALMACÉN & REPUESTOS',
+          subtitulo: 'Control de repuestos críticos, filtros, stock mínimo y costos'
+        },
+        'proveedores': {
+          id: 'seccion-proveedores',
+          titulo: 'DIRECTORIO DE PROVEEDORES',
+          subtitulo: 'Talleres autorizados, distribuidores oficiales y plantas de combustible'
+        }
+      };
+
+      if (!config[tabKey]) tabKey = 'dashboard';
+
+      // 1. Ocultar todas las secciones
+      document.querySelectorAll('.tab-seccion').forEach(sec => {
+        sec.classList.add('hidden');
+      });
+
+      // 2. Mostrar la sección activa
+      const seccionActiva = document.getElementById(config[tabKey].id);
+      if (seccionActiva) {
+        seccionActiva.classList.remove('hidden');
+      }
+
+      // 3. Scroll del contenedor al inicio
+      const scrollContainer = document.getElementById('main-scroll-container');
+      if (scrollContainer) scrollContainer.scrollTop = 0;
+
+      // 4. Actualizar botones del sidebar
+      document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+        const btnTab = btn.getAttribute('data-tab');
+        if (btnTab === tabKey) {
+          btn.className = 'nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-machinery/15 text-machinery border border-machinery/40 font-bold transition text-left cursor-pointer shadow-sm ring-1 ring-machinery/30';
+        } else {
+          btn.className = 'nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer border border-transparent';
+        }
+      });
+
+      // 5. Actualizar título en header
+      const titEl = document.getElementById('header-seccion-titulo');
+      const subEl = document.getElementById('header-seccion-subtitulo');
+      if (titEl) titEl.textContent = config[tabKey].titulo;
+      if (subEl) subEl.textContent = config[tabKey].subtitulo;
+
+      // 6. Si es dashboard, redimensionar gráficos y mapa satelital si existen
+      if (tabKey === 'dashboard') {
+        setTimeout(() => {
+          if (window.chartProyectosInstance) window.chartProyectosInstance.resize();
+          if (window.chartSemaforoInstance) window.chartSemaforoInstance.resize();
+          if (mapaFlotaInstance) {
+            mapaFlotaInstance.invalidateSize();
+            actualizarMapaGPS();
+          }
+        }, 80);
+      }
+
+      // 7. Sincronizar URL hash
+      if (window.location.hash !== '#' + tabKey) {
+        history.replaceState(null, '', '#' + tabKey);
+      }
+    }
+
+    window.addEventListener('hashchange', () => {
+      const hash = window.location.hash.replace('#', '') || 'dashboard';
+      mostrarSeccion(hash);
+    });
+
+    // Inicialización de Gráficos y Datos
+    document.addEventListener("DOMContentLoaded", async () => {
+      // Fecha hoy por defecto para nuevos frentes
+      const inputFecha = document.getElementById('input-fecha-inicio-frente');
+      if (inputFecha) inputFecha.value = new Date().toISOString().split('T')[0];
+
+      // Configurar toggle sidebar
+      const toggleSidebarBtn = document.getElementById('toggleSidebar');
+      if (toggleSidebarBtn) {
+        toggleSidebarBtn.addEventListener('click', () => {
+          const sidebar = document.getElementById('sidebar');
+          if (sidebar) sidebar.classList.toggle('hidden');
+        });
+      }
+
+      await cargarFrentesProyectos();
+      await cargarTablaPersonal();
+      await cargarTablaFlota();
+      await cargarTablaTurnos();
+      await cargarDashboard();
+      cargarTablaRepuestos();
+      cargarTablaProveedores();
+
+      // Cargar sección inicial por URL hash o 'dashboard'
+      const hashInicial = window.location.hash.replace('#', '') || 'dashboard';
+      mostrarSeccion(hashInicial);
+    });
+
+    // ==========================================
+    // 1. GESTIÓN MULTI-FRENTE / PROYECTOS
+    // ==========================================
+    async function cargarFrentesProyectos() {
+      try {
+        const res = await fetch('/api/v1/heavy/proyectos');
+        frentesCache = await res.json();
+
+        // Actualizar selector de filtro de frentes en la tabla de flota
+        const filtroFrente = document.getElementById('filtroFrente');
+        if (filtroFrente) {
+          const valActual = filtroFrente.value;
+          filtroFrente.innerHTML = '<option value="">📍 Todos los Frentes</option>' +
+            frentesCache.map(f => `<option value="${f.id}">${f.codigo} | ${f.nombre}</option>`).join('');
+          filtroFrente.value = valActual;
+        }
+
+        // Actualizar selectores en modales
+        const selectAsigFrente = document.getElementById('select-asignar-frente');
+        if (selectAsigFrente) {
+          selectAsigFrente.innerHTML = '<option value="">En Base / Taller Central</option>' +
+            frentesCache.map(f => `<option value="${f.id}">${f.codigo} | ${f.nombre} (${f.ubicacion})</option>`).join('');
+        }
+        const selectNuevoEqFrente = document.getElementById('select-nuevo-equipo-frente');
+        if (selectNuevoEqFrente) {
+          selectNuevoEqFrente.innerHTML = '<option value="">En Base / Sin Frente Asignado</option>' +
+            frentesCache.map(f => `<option value="${f.id}">${f.codigo} | ${f.nombre}</option>`).join('');
+        }
+        const selectEditarEqFrente = document.getElementById('select-editar-equipo-frente');
+        if (selectEditarEqFrente) {
+          selectEditarEqFrente.innerHTML = '<option value="">En Base / Sin Frente Asignado</option>' +
+            frentesCache.map(f => `<option value="${f.id}">${f.codigo} | ${f.nombre}</option>`).join('');
+        }
+
+        // Renderizar Tarjetas Resumen de Frentes
+        const gridCards = document.getElementById('grid-frentes-cards');
+        if (gridCards) {
+          gridCards.innerHTML = '';
+          if (frentesCache.length === 0) {
+            gridCards.innerHTML = `
+              <div class="col-span-full bg-carbon/60 border border-dashed border-gray-800 rounded-xl p-6 text-center text-gray-500">
+                <span class="text-2xl mb-1.5 block">🏗️</span>
+                <p class="font-bold text-gray-300 text-xs">Padrón de Frentes en Blanco (0 Frentes)</p>
+                <p class="text-[11px] text-gray-500 mt-0.5">Usa el botón "+ Nuevo Frente de Obra" para registrar tus frentes uno a uno.</p>
+              </div>
+            `;
+          } else {
+            frentesCache.forEach(f => {
+              const card = document.createElement('div');
+              card.className = 'bg-carbon/80 border border-gray-800 rounded-xl p-4 hover:border-machinery/40 transition group';
+              card.innerHTML = `
+                <div class="flex items-center justify-between mb-2">
+                  <span class="text-xs font-black font-mono px-2 py-0.5 rounded bg-machinery/10 text-machinery border border-machinery/30">${f.codigo}</span>
+                  <span class="text-[10px] font-bold uppercase ${f.estado === 'activo' ? 'text-alertGreen' : 'text-gray-400'}">● ${f.estado}</span>
+                </div>
+                <h4 class="font-bold text-white text-sm mb-1 group-hover:text-machinery transition truncate">${f.nombre}</h4>
+                <p class="text-[11px] text-gray-400 mb-3 truncate">📍 ${f.ubicacion}</p>
+                <div class="flex items-center justify-between text-xs pt-2 border-t border-gray-800/80">
+                  <span class="font-bold text-gray-300">🚜 ${f.equipos_count || 0} Equipos</span>
+                  <span class="font-mono text-machinery font-bold">⏱️ ${f.horas_totales || 0} h</span>
+                </div>
+              `;
+              gridCards.appendChild(card);
+            });
+          }
+        }
+
+        // Renderizar Tabla de Frentes
+        const tbody = document.getElementById('tabla-proyectos-body');
+        if (tbody) {
+          tbody.innerHTML = '';
+          if (frentesCache.length === 0) {
+            tbody.innerHTML = `
+              <tr>
+                <td colspan="7" class="py-10 text-center text-gray-500 text-xs italic">
+                  No hay frentes de obra registrados todavía. Haz clic en <strong>"+ Nuevo Frente de Obra"</strong> para comenzar a llenar uno a uno.
+                </td>
+              </tr>
+            `;
+          } else {
+            frentesCache.forEach(f => {
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-graphiteLight/50 transition';
+              tr.innerHTML = `
+                <td class="py-3.5 px-4 font-mono font-bold text-machinery">${f.codigo}</td>
+                <td class="py-3.5 px-4 font-bold text-white">${f.nombre}</td>
+                <td class="py-3.5 px-4 text-xs text-gray-300">${f.ubicacion}</td>
+                <td class="py-3.5 px-4 text-center font-bold text-white font-mono">${f.equipos_count || 0} unid.</td>
+                <td class="py-3.5 px-4 text-center font-mono font-bold text-machinery">${f.horas_totales || 0} h</td>
+                <td class="py-3.5 px-4">
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase ${f.estado === 'activo' ? 'bg-emerald-950/80 text-emerald-400 border border-emerald-800' : 'bg-gray-800 text-gray-400'}">
+                    ${f.estado}
+                  </span>
+                </td>
+                <td class="py-3.5 px-4 text-center">
+                  <div class="flex items-center justify-center gap-1.5">
+                    <button onclick="filtrarPorFrenteEspecifico(${f.id})" class="px-2.5 py-1 bg-graphiteLight hover:bg-machinery hover:text-carbon text-gray-200 text-xs rounded font-bold border border-gray-700 transition">
+                      Ver Flota
+                    </button>
+                    <button onclick="eliminarProyecto(${f.id})" class="px-2 py-1 bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs rounded border border-rose-800 transition">
+                      Eliminar
+                    </button>
+                  </div>
+                </td>
+              `;
+              tbody.appendChild(tr);
+            });
+          }
+        }
+
+      } catch (err) {
+        console.error("Error cargando frentes:", err);
+      }
+    }
+
+    async function eliminarProyecto(id) {
+      if (!confirm("¿Está seguro de eliminar este frente de obra?")) return;
+      try {
+        const res = await fetch(`/api/v1/heavy/proyectos/${id}`, { method: 'DELETE' });
+        if (res.ok) {
+          await cargarFrentes();
+        } else {
+          alert("No se pudo eliminar el frente de obra.");
+        }
+      } catch (err) {
+        alert("Error de conexión al eliminar.");
+      }
+    }
+
+    function abrirModalNuevoProyecto() {
+      const m = document.getElementById('modal-proyecto');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function cerrarModalNuevoProyecto() {
+      const m = document.getElementById('modal-proyecto');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    async function registrarProyectoSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const payload = {
+        codigo: form.codigo.value.trim().toUpperCase(),
+        nombre: form.nombre.value.trim(),
+        ubicacion: form.ubicacion.value.trim(),
+        fecha_inicio: form.fecha_inicio.value,
+        estado: form.estado.value
+      };
+
+      try {
+        const res = await fetch('/api/v1/heavy/proyectos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("⚠️ " + (err.detail || "Error al crear frente"));
+          return;
+        }
+
+        cerrarModalNuevoProyecto();
+        form.reset();
+        alert("✅ Nuevo Frente de Obra registrado exitosamente.");
+        await cargarFrentesProyectos();
+        await cargarTablaFlota();
+        await cargarDashboard();
+      } catch (err) {
+        alert("Error de conexión al crear frente.");
+      }
+    }
+
+    function filtrarPorFrenteEspecifico(frenteId) {
+      mostrarSeccion('flota');
+      const filtro = document.getElementById('filtroFrente');
+      if (filtro) {
+        filtro.value = frenteId;
+        filtrarTabla();
+      }
+    }
+
+    // ==========================================
+    // 2. CONTROL DE FLOTA Y ASIGNACIÓN DE PERSONAL
+    // ==========================================
+    async function cargarTablaFlota() {
+      try {
+        const res = await fetch('/api/v1/heavy/equipos');
+        equiposCache = await res.json();
+        renderTabla(equiposCache);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+
+    function formatVencimientoBadge(label, numero, fechaStr) {
+      if (!numero && !fechaStr) {
+        return `<div class="text-[10px] text-gray-500 font-medium py-0.5"><span>${label}:</span> <span class="italic">Sin reg.</span></div>`;
+      }
+      let badgeClase = 'text-gray-400 bg-gray-800/80 border-gray-700';
+      let badgeTexto = fechaStr || 'S/F';
+      if (fechaStr) {
+        const hoy = new Date();
+        hoy.setHours(0,0,0,0);
+        const venc = new Date(fechaStr + 'T00:00:00');
+        const diffDias = Math.round((venc - hoy) / (1000 * 60 * 60 * 24));
+        if (diffDias < 0) {
+          badgeClase = 'text-rose-400 bg-rose-950/80 border-rose-800';
+          badgeTexto = `Vencido (${Math.abs(diffDias)}d)`;
+        } else if (diffDias <= 15) {
+          badgeClase = 'text-amber-400 bg-amber-950/80 border-amber-800 animate-pulse';
+          badgeTexto = `Vence en ${diffDias}d`;
+        } else {
+          badgeClase = 'text-emerald-400 bg-emerald-950/80 border-emerald-800';
+          badgeTexto = `Vigente (${fechaStr})`;
+        }
+      }
+      const numLabel = numero ? `<span class="text-gray-300 font-mono text-[10px] truncate max-w-[85px]" title="${numero}">${numero}</span>` : '';
+      return `
+        <div class="text-[11px] flex items-center justify-between gap-1.5 py-0.5">
+          <span class="font-bold text-gray-400 text-[10px] uppercase">${label}:</span>
+          <div class="flex items-center gap-1">
+            ${numLabel}
+            <span class="px-1.5 py-0.2 rounded font-mono text-[9px] border ${badgeClase}">
+              ${badgeTexto}
+            </span>
+          </div>
+        </div>
+      `;
+    }
+
+    function toggleCamposControl(modal) {
+      const select = document.getElementById(`${modal}-tipo-control`);
+      if (!select) return;
+      const val = select.value;
+      const campoH = document.getElementById(`${modal}-campo-horometro`);
+      const campoHProx = document.getElementById(`${modal}-campo-horometro-prox`);
+      const campoKm = document.getElementById(`${modal}-campo-km`);
+
+      if (val === 'HOROMETRO') {
+        if (campoH) campoH.style.opacity = '1';
+        if (campoHProx) campoHProx.style.opacity = '1';
+        if (campoKm) campoKm.style.opacity = '0.5';
+      } else if (val === 'KILOMETRAJE') {
+        if (campoH) campoH.style.opacity = '0.5';
+        if (campoHProx) campoHProx.style.opacity = '0.5';
+        if (campoKm) campoKm.style.opacity = '1';
+      } else {
+        if (campoH) campoH.style.opacity = '1';
+        if (campoHProx) campoHProx.style.opacity = '1';
+        if (campoKm) campoKm.style.opacity = '1';
+      }
+    }
+
+    function renderTabla(lista) {
+      const tbody = document.getElementById('tabla-flota-body');
+      tbody.innerHTML = '';
+
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" class="py-16 text-center">
+              <div class="max-w-md mx-auto space-y-4">
+                <div class="w-16 h-16 rounded-2xl bg-emerald-950/60 border border-emerald-500/30 flex items-center justify-center mx-auto text-3xl shadow-[0_0_30px_rgba(1,169,91,0.2)]">
+                  🚜
+                </div>
+                <div>
+                  <h4 class="text-base font-black text-white uppercase tracking-wider">Flota Lista para Cargar</h4>
+                  <p class="text-xs text-gray-400 mt-1 leading-relaxed">No hay equipos registrados actualmente. Comienza agregando tu primera maquinaria o vehículo con sus datos operativos.</p>
+                </div>
+                <button onclick="abrirModalNuevoEquipo()" class="inline-flex items-center gap-2 px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-xl shadow-lg transition">
+                  <span>➕</span> Registrar Primer Equipo
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      lista.forEach(eq => {
+        const semaforoBadges = {
+          verde: '<span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-400 border border-emerald-800">🟢 Operativo</span>',
+          amarillo: '<span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-amber-950/80 text-amber-400 border border-amber-800 animate-pulse">🟡 &lt; 25h Serv</span>',
+          rojo: '<span class="px-2 py-0.5 rounded-full text-[10px] font-black uppercase bg-rose-950/80 text-rose-400 border border-rose-800">🔴 Vencido</span>'
+        };
+
+        const tipoControlBadges = {
+          'HOROMETRO': '<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-amber-950/70 text-amber-300 border border-amber-800">⏱️ Horómetro</span>',
+          'KILOMETRAJE': '<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-blue-950/70 text-blue-300 border border-blue-800">🚗 Km</span>',
+          'AMBOS': '<span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/70 text-emerald-300 border border-emerald-800">🔄 Dual (h/Km)</span>'
+        };
+
+        let lecturaHtml = '';
+        if (eq.tipo_control === 'KILOMETRAJE') {
+          lecturaHtml = `<div class="font-mono font-bold text-blue-400">${(eq.odometro_actual || 0).toLocaleString()} Km</div>`;
+        } else if (eq.tipo_control === 'AMBOS') {
+          lecturaHtml = `
+            <div class="font-mono font-bold text-machinery">${(eq.horometro_actual || 0).toFixed(1)} h</div>
+            <div class="font-mono text-[11px] text-blue-400">${(eq.odometro_actual || 0).toLocaleString()} Km</div>
+          `;
+        } else {
+          lecturaHtml = `<div class="font-mono font-bold text-machinery">${(eq.horometro_actual || 0).toFixed(1)} h</div>`;
+        }
+
+        const polizaBadge = formatVencimientoBadge('Póliza', eq.poliza_seguro, eq.poliza_vencimiento);
+        const soatBadge = formatVencimientoBadge('SOAT', eq.soat_numero, eq.soat_vencimiento);
+
+        const nombreEquipo = eq.nombre || `${eq.marca} ${eq.modelo}`;
+        const nombreEscapado = nombreEquipo.replace(/'/g, "\\'");
+        const serieInfo = eq.serie_chasis ? `<span class="text-[10px] text-gray-400 font-mono">S/N: ${eq.serie_chasis}</span>` : '';
+        const placaInfo = eq.placa ? `<span class="text-[10px] font-mono px-1 py-0.5 rounded bg-carbon border border-gray-700 text-machinery font-bold">${eq.placa}</span>` : '';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-graphiteLight/50 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4">
+            <div class="font-black text-white text-sm hover:text-machinery transition cursor-pointer" onclick="abrirModalEditarEquipo(${eq.id})">${nombreEquipo}</div>
+            <div class="text-xs font-mono font-bold text-machinery mt-0.5">Cod: ${eq.codigo_interno}</div>
+          </td>
+          <td class="py-3 px-4">
+            <div class="font-bold text-white text-xs">${eq.marca} ${eq.modelo}</div>
+            <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
+              ${serieInfo}
+              ${placaInfo}
+            </div>
+          </td>
+          <td class="py-3 px-4">
+            ${tipoControlBadges[eq.tipo_control] || tipoControlBadges['HOROMETRO']}
+          </td>
+          <td class="py-3 px-4">${lecturaHtml}</td>
+          <td class="py-3 px-4">
+            <div class="font-mono text-xs text-gray-300">${(eq.horometro_proximo_servicio || 0).toFixed(1)} h</div>
+            <div class="font-mono text-[11px] font-bold ${eq.horas_para_servicio < 0 ? 'text-alertRed' : eq.horas_para_servicio <= 25 ? 'text-alertYellow' : 'text-alertGreen'}">
+              ${eq.horas_para_servicio > 0 ? eq.horas_para_servicio.toFixed(1) + 'h rest' : 'VENCIDO'}
+            </div>
+          </td>
+          <td class="py-3 px-4 min-w-[155px]">
+            <div class="space-y-0.5">
+              ${polizaBadge}
+              ${soatBadge}
+            </div>
+          </td>
+          <td class="py-3 px-4">${semaforoBadges[eq.semaforo_mantenimiento] || semaforoBadges.verde}</td>
+          <td class="py-3 px-4 text-center">
+            <div class="flex items-center justify-center gap-1.5">
+              <button onclick="abrirModalEditarEquipo(${eq.id})" class="px-2.5 py-1 bg-graphiteLight hover:bg-machinery hover:text-carbon text-gray-200 text-xs rounded font-bold border border-gray-700 transition" title="Editar Equipo y Documentación">
+                ✏️ Editar
+              </button>
+              <button onclick="eliminarEquipo(${eq.id}, '${nombreEscapado}')" class="px-2 py-1 bg-rose-950/60 hover:bg-rose-900 text-rose-300 hover:text-white text-xs rounded font-bold border border-rose-900/60 transition" title="Eliminar Equipo">
+                🗑️
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filtrarTabla() {
+      const tipo = document.getElementById('filtroTipo')?.value;
+      let filtrados = equiposCache;
+      if (tipo) {
+        filtrados = filtrados.filter(e => e.tipo === tipo);
+      }
+      renderTabla(filtrados);
+    }
+
+    function abrirModalAsignar(equipoId) {
+      const eq = equiposCache.find(e => e.id === equipoId);
+      if (!eq) return;
+
+      document.getElementById('asignar-equipo-id').value = eq.id;
+      document.getElementById('asignar-equipo-titulo').textContent = `${eq.codigo_interno} | ${eq.marca} ${eq.modelo}`;
+      
+      const selectFrente = document.getElementById('select-asignar-frente');
+      if (selectFrente) selectFrente.value = eq.proyecto_actual_id || '';
+
+      const selectOp = document.getElementById('select-asignar-operador');
+      if (selectOp) selectOp.value = eq.operador_asignado_id || '';
+
+      const m = document.getElementById('modal-asignar-equipo');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function cerrarModalAsignar() {
+      const m = document.getElementById('modal-asignar-equipo');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    async function guardarAsignacionSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const equipoId = parseInt(form.equipo_id.value);
+      const proyectoId = form.proyecto_id.value ? parseInt(form.proyecto_id.value) : null;
+      const operadorId = form.operador_id.value ? parseInt(form.operador_id.value) : null;
+
+      try {
+        const res = await fetch(`/api/v1/heavy/equipos/${equipoId}/asignar`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ proyecto_id: proyectoId, operador_id: operadorId })
+        });
+
+        if (!res.ok) {
+          alert("Error al reasignar equipo");
+          return;
+        }
+
+        cerrarModalAsignar();
+        alert("✅ Maquinaria reasignada correctamente al frente y operador.");
+        await cargarTablaFlota();
+        await cargarFrentesProyectos();
+      } catch (err) {
+        alert("Error de conexión al reasignar.");
+      }
+    }
+
+    function abrirModalNuevoEquipo() {
+      const m = document.getElementById('modal-nuevo-equipo');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+      toggleCamposControl('nuevo');
+    }
+
+    function cerrarModalNuevoEquipo() {
+      const m = document.getElementById('modal-nuevo-equipo');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    async function registrarEquipoSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const payload = {
+        nombre: form.nombre.value.trim(),
+        codigo_interno: form.codigo_interno.value.trim().toUpperCase(),
+        tipo: form.tipo.value,
+        tipo_control: form.tipo_control.value,
+        marca: form.marca.value.trim(),
+        modelo: form.modelo.value.trim(),
+        serie_chasis: form.serie_chasis.value.trim() || null,
+        placa: form.placa.value.trim().toUpperCase() || null,
+        anio: 2023,
+        horometro_actual: parseFloat(form.horometro_actual.value) || 0.0,
+        horometro_proximo_servicio: parseFloat(form.horometro_proximo_servicio.value) || 250.0,
+        odometro_actual: parseFloat(form.odometro_actual.value) || 0.0,
+        intervalo_servicio: 250.0,
+        poliza_seguro: form.poliza_seguro.value.trim() || null,
+        poliza_vencimiento: form.poliza_vencimiento.value || null,
+        soat_numero: form.soat_numero.value.trim() || null,
+        soat_vencimiento: form.soat_vencimiento.value || null,
+        proyecto_actual_id: null,
+        operador_asignado_id: null,
+        estado_operativo: "operativo"
+      };
+
+      try {
+        const res = await fetch('/api/v1/heavy/equipos', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("⚠️ " + (err.detail || "Error al registrar"));
+          return;
+        }
+
+        cerrarModalNuevoEquipo();
+        form.reset();
+        alert("✅ Maquinaria registrada en la flota con éxito.");
+        await cargarTablaFlota();
+        await cargarFrentesProyectos();
+        await cargarDashboard();
+      } catch (err) {
+        alert("Error de conexión al registrar maquinaria.");
+      }
+    }
+
+    function abrirModalEditarEquipo(equipoId) {
+      const eq = equiposCache.find(e => e.id === equipoId);
+      if (!eq) return;
+
+      const form = document.getElementById('form-editar-equipo');
+      form.equipo_id.value = eq.id;
+      form.nombre.value = eq.nombre || `${eq.marca} ${eq.modelo}`;
+      form.codigo_interno.value = eq.codigo_interno || '';
+      form.marca.value = eq.marca || '';
+      form.modelo.value = eq.modelo || '';
+      form.serie_chasis.value = eq.serie_chasis || '';
+      form.placa.value = eq.placa || '';
+      form.tipo_control.value = eq.tipo_control || 'HOROMETRO';
+      form.tipo.value = eq.tipo || 'pesada';
+      form.horometro_actual.value = eq.horometro_actual ?? 0.0;
+      form.horometro_proximo_servicio.value = eq.horometro_proximo_servicio ?? 250.0;
+      form.odometro_actual.value = eq.odometro_actual ?? 0.0;
+      form.poliza_seguro.value = eq.poliza_seguro || '';
+      form.poliza_vencimiento.value = eq.poliza_vencimiento ? eq.poliza_vencimiento.split('T')[0] : '';
+      form.soat_numero.value = eq.soat_numero || '';
+      form.soat_vencimiento.value = eq.soat_vencimiento ? eq.soat_vencimiento.split('T')[0] : '';
+      form.estado_operativo.value = eq.estado_operativo || 'operativo';
+
+      toggleCamposControl('editar');
+
+      const m = document.getElementById('modal-editar-equipo');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function cerrarModalEditarEquipo() {
+      const m = document.getElementById('modal-editar-equipo');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    async function actualizarEquipoSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const equipoId = parseInt(form.equipo_id.value);
+      const eqExistente = equiposCache.find(e => e.id === equipoId);
+      const payload = {
+        nombre: form.nombre.value.trim(),
+        codigo_interno: form.codigo_interno.value.trim().toUpperCase(),
+        marca: form.marca.value.trim(),
+        modelo: form.modelo.value.trim(),
+        serie_chasis: form.serie_chasis.value.trim() || null,
+        placa: form.placa.value.trim().toUpperCase() || null,
+        tipo_control: form.tipo_control.value,
+        tipo: form.tipo.value,
+        horometro_actual: parseFloat(form.horometro_actual.value) || 0.0,
+        horometro_proximo_servicio: parseFloat(form.horometro_proximo_servicio.value) || 0.0,
+        odometro_actual: parseFloat(form.odometro_actual.value) || 0.0,
+        poliza_seguro: form.poliza_seguro.value.trim() || null,
+        poliza_vencimiento: form.poliza_vencimiento.value || null,
+        soat_numero: form.soat_numero.value.trim() || null,
+        soat_vencimiento: form.soat_vencimiento.value || null,
+        estado_operativo: form.estado_operativo.value,
+        proyecto_actual_id: eqExistente ? eqExistente.proyecto_actual_id : null,
+        operador_asignado_id: eqExistente ? eqExistente.operador_asignado_id : null
+      };
+
+      try {
+        const res = await fetch(`/api/v1/heavy/equipos/${equipoId}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("⚠️ " + (err.detail || "Error al actualizar"));
+          return;
+        }
+
+        cerrarModalEditarEquipo();
+        alert("✅ Maquinaria y documentación actualizadas correctamente.");
+        await cargarTablaFlota();
+        await cargarFrentesProyectos();
+        await cargarDashboard();
+      } catch (err) {
+        alert("Error de conexión al actualizar maquinaria.");
+      }
+    }
+
+    async function eliminarEquipo(equipoId, nombre) {
+      const confirmacion = confirm(`¿Estás seguro de que deseas eliminar permanentemente el equipo "${nombre}"?\n\nEsta acción también borrará sus registros asociados y no se puede deshacer.`);
+      if (!confirmacion) return;
+
+      try {
+        const res = await fetch(`/api/v1/heavy/equipos/${equipoId}`, {
+          method: 'DELETE'
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          alert("⚠️ " + (err.detail || "Error al eliminar equipo"));
+          return;
+        }
+
+        alert(`🗑️ El equipo "${nombre}" fue eliminado correctamente.`);
+        await cargarTablaFlota();
+        await cargarFrentesProyectos();
+        await cargarDashboard();
+      } catch (err) {
+        alert("Error de conexión al eliminar equipo.");
+      }
+    }
+
+    async function eliminarEquipoDesdeModal() {
+      const form = document.getElementById('form-editar-equipo');
+      const equipoId = parseInt(form.equipo_id.value);
+      const nombre = form.nombre.value || 'este equipo';
+      if (!equipoId) return;
+      cerrarModalEditarEquipo();
+      await eliminarEquipo(equipoId, nombre);
+    }
+
+    // ==========================================
+    // 3. BITÁCORA DE OPERACIONES (MAQUINARIA REGISTRADA)
+    // ==========================================
+    async function cargarTablaTurnos() {
+      try {
+        const res = await fetch('/api/v1/heavy/turnos');
+        turnosCache = await res.json();
+        const tbody = document.getElementById('tabla-turnos-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (turnosCache.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="9" class="p-6 text-center text-gray-400">No hay turnos reportados en la bitácora aún.</td></tr>';
+          return;
+        }
+
+        turnosCache.forEach(t => {
+          const fotoInicioBtn = t.foto_inicio
+            ? `<button onclick="verFoto('${t.foto_inicio}', 'Horómetro Inicio - ${t.equipo_codigo}')" class="px-2 py-0.5 bg-graphiteLight hover:bg-machinery hover:text-carbon text-[11px] rounded font-bold border border-gray-700">📸 Ini</button>`
+            : '-';
+
+          const fotoFinBtn = t.foto_fin
+            ? `<button onclick="verFoto('${t.foto_fin}', 'Horómetro Fin - ${t.equipo_codigo}')" class="px-2 py-0.5 bg-graphiteLight hover:bg-alertGreen hover:text-carbon text-[11px] rounded font-bold border border-gray-700">📸 Fin</button>`
+            : '<span class="text-gray-500 text-[10px]">Pendiente</span>';
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-graphiteLight/50 transition';
+          tr.innerHTML = `
+            <td class="py-3.5 px-4 font-mono text-gray-300 font-bold">${t.fecha}</td>
+            <td class="py-3.5 px-4">
+              <strong class="text-machinery">${t.equipo_codigo}</strong>
+              <div class="text-[11px] text-gray-400">${t.equipo_modelo}</div>
+            </td>
+            <td class="py-3.5 px-4">
+              <div class="font-bold text-white">${t.operador_nombre}</div>
+              <div class="text-[10px] text-gray-400 font-mono">DNI: ${t.operador_dni} • ${t.operador_brevete}</div>
+            </td>
+            <td class="py-3.5 px-4 text-xs font-semibold text-gray-300">${t.proyecto_nombre}</td>
+            <td class="py-3.5 px-4 text-center font-mono text-xs">
+              <span class="text-machinery font-bold">${t.horometro_inicio.toFixed(1)}h</span>
+              <span class="text-gray-500">→</span>
+              <span class="${t.horometro_fin ? 'text-white font-bold' : 'text-gray-500'}">${t.horometro_fin ? t.horometro_fin.toFixed(1) + 'h' : '...'}</span>
+            </td>
+            <td class="py-3.5 px-4 text-center font-mono font-black ${t.horas_trabajadas ? 'text-machinery' : 'text-gray-500'}">
+              ${t.horas_trabajadas ? t.horas_trabajadas.toFixed(1) + ' h' : '-'}
+            </td>
+            <td class="py-3.5 px-4 text-center font-mono text-xs">
+              ${t.kilometraje_inicio > 0 || (t.kilometraje_fin && t.kilometraje_fin > 0)
+                ? `<span class="text-cyan-400 font-bold">${(t.kilometraje_inicio || 0).toFixed(0)}km</span> <span class="text-gray-500">→</span> <span class="text-white font-bold">${t.kilometraje_fin ? t.kilometraje_fin.toFixed(0) + 'km' : '...'}</span>`
+                : '<span class="text-gray-600">-</span>'}
+            </td>
+            <td class="py-3.5 px-4 text-center font-mono font-black ${t.km_recorridos ? 'text-cyan-400' : 'text-gray-600'}">
+              ${t.km_recorridos ? t.km_recorridos.toFixed(1) + ' Km' : '-'}
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                ${fotoInicioBtn}
+                ${fotoFinBtn}
+              </div>
+            </td>
+            <td class="py-3.5 px-4 text-center">
+              <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+                🟢 ${t.estado_sync}
+              </span>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Error al cargar turnos:", err);
+      }
+    }
+
+    function verFoto(url, titulo) {
+      const modal = document.getElementById('modal-foto-preview');
+      document.getElementById('foto-preview-img').src = url;
+      document.getElementById('foto-preview-titulo').textContent = `📸 ${titulo}`;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    // ==========================================
+    // 4. PADRÓN DE PERSONAL
+    // ==========================================
+    function abrirModalPersonal() {
+      const m = document.getElementById('modal-personal');
+      m.classList.remove('hidden');
+      m.classList.add('flex');
+    }
+
+    function cerrarModalPersonal() {
+      const m = document.getElementById('modal-personal');
+      m.classList.add('hidden');
+      m.classList.remove('flex');
+    }
+
+    // ==========================================
+    // SISTEMA DE CONSULTA RENIEC & CERTIFICADOS DIGITALES
+    // ==========================================
+    let dniConsultadoCache = "";
+
+    function alCambiarDni(valor) {
+      const limpio = (valor || '').replace(/\D/g, '');
+      const input = document.getElementById('personal-dni-input');
+      if (input && input.value !== limpio) input.value = limpio;
+
+      if (limpio.length === 8 && limpio !== dniConsultadoCache) {
+        consultarReniecManual(limpio);
+      }
+    }
+
+    async function consultarReniecManual(dniParam) {
+      const dni = dniParam || (document.getElementById('personal-dni-input')?.value || '').trim();
+      if (!dni || dni.length !== 8) {
+        alert("Por favor ingrese un DNI válido de 8 dígitos.");
+        return;
+      }
+
+      const spinner = document.getElementById('reniec-spinner');
+      const badge = document.getElementById('reniec-status-badge');
+      const btn = document.getElementById('btn-reniec-consulta');
+
+      if (spinner) spinner.classList.remove('hidden');
+      if (badge) {
+        badge.className = 'text-[10px] font-bold text-machinery block mt-1 animate-pulse';
+        badge.textContent = 'Consultando RENIEC...';
+      }
+      if (btn) btn.disabled = true;
+
+      try {
+        const res = await fetch(`/api/v1/heavy/consultar-dni/${dni}`);
+        const data = await res.json();
+
+        if (res.ok && data.success) {
+          dniConsultadoCache = dni;
+          const nombresEl = document.getElementById('personal-nombres-input');
+          const apellidosEl = document.getElementById('personal-apellidos-input');
+          if (nombresEl) nombresEl.value = data.nombres || '';
+          if (apellidosEl) apellidosEl.value = data.apellidos || '';
+
+          if (badge) {
+            badge.className = 'text-[10px] font-bold text-emerald-400 block mt-1';
+            badge.textContent = `✅ RENIEC: ${data.nombre_completo}`;
+          }
+        } else {
+          if (badge) {
+            badge.className = 'text-[10px] font-bold text-amber-400 block mt-1';
+            badge.textContent = `⚠️ ${data.detail || 'No se halló en RENIEC. Ingrese nombres a mano.'}`;
+          }
+        }
+      } catch (err) {
+        if (badge) {
+          badge.className = 'text-[10px] font-bold text-amber-400 block mt-1';
+          badge.textContent = 'Aviso: Sin conexión a RENIEC. Ingrese nombres manualmente.';
+        }
+      } finally {
+        if (spinner) spinner.classList.add('hidden');
+        if (btn) btn.disabled = false;
+      }
+    }
+
+    function seleccionarCertificado(esSi) {
+      const seccion = document.getElementById('seccion-campos-certificado');
+      const inputTiene = document.getElementById('input-tiene-certificacion');
+      const btnSi = document.getElementById('btn-cert-si');
+      const btnNo = document.getElementById('btn-cert-no');
+
+      if (esSi) {
+        seccion.classList.remove('hidden');
+        inputTiene.value = "1";
+        btnSi.className = 'px-3 py-1 rounded text-xs font-black transition bg-machinery text-carbon shadow';
+        btnNo.className = 'px-3 py-1 rounded text-xs font-black transition text-gray-400 hover:text-white bg-transparent';
+      } else {
+        seccion.classList.add('hidden');
+        inputTiene.value = "0";
+        btnNo.className = 'px-3 py-1 rounded text-xs font-black transition bg-gray-700 text-white';
+        btnSi.className = 'px-3 py-1 rounded text-xs font-black transition text-gray-400 hover:text-white bg-transparent';
+        const inNom = document.getElementById('input-cert-nombre');
+        const inVenc = document.getElementById('input-cert-venc');
+        const inUrl = document.getElementById('input-cert-url');
+        const box = document.getElementById('preview-cert-box');
+        const lab = document.getElementById('label-archivo-cert');
+        if (inNom) inNom.value = '';
+        if (inVenc) inVenc.value = '';
+        if (inUrl) inUrl.value = '';
+        if (box) box.classList.add('hidden');
+        if (lab) lab.textContent = 'Seleccionar PDF, JPG o PNG...';
+      }
+    }
+
+    async function subirArchivoCertificado(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+
+      const label = document.getElementById('label-archivo-cert');
+      label.textContent = `Subiendo ${file.name}...`;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      try {
+        const res = await fetch('/api/v1/heavy/subir-certificado', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("⚠️ " + (err.detail || "Error al subir archivo"));
+          label.textContent = "Seleccionar PDF, JPG o PNG...";
+          return;
+        }
+
+        const data = await res.json();
+        document.getElementById('input-cert-url').value = data.url;
+
+        label.textContent = `✅ ${data.nombre_original}`;
+        const previewBox = document.getElementById('preview-cert-box');
+        const previewNombre = document.getElementById('preview-cert-nombre');
+        const previewHref = document.getElementById('preview-cert-href');
+
+        previewNombre.textContent = `📄 ${data.nombre_original} (${Math.round(data.tamano_bytes / 1024)} KB)`;
+        previewHref.href = data.url;
+        previewBox.classList.remove('hidden');
+
+      } catch (err) {
+        alert("Error de conexión al subir certificado digital.");
+        label.textContent = "Seleccionar PDF, JPG o PNG...";
+      }
+    }
+
+    async function cargarTablaPersonal() {
+      try {
+        const res = await fetch('/api/v1/heavy/personal');
+        personalCache = await res.json();
+        const tbody = document.getElementById('tabla-personal-body');
+        if (tbody) tbody.innerHTML = '';
+
+        // Actualizar selectores de operadores en modales
+        const selectAsigOp = document.getElementById('select-asignar-operador');
+        if (selectAsigOp) {
+          selectAsigOp.innerHTML = '<option value="">Sin Operador Asignado</option>' +
+            personalCache.map(p => `<option value="${p.id}">${p.nombres} ${p.apellidos} (DNI: ${p.dni} - Brevete: ${p.brevete_categoria || 'A-IIIc'})</option>`).join('');
+        }
+        const selectNuevoEqOp = document.getElementById('select-nuevo-equipo-operador');
+        if (selectNuevoEqOp) {
+          selectNuevoEqOp.innerHTML = '<option value="">Sin Operador Asignado</option>' +
+            personalCache.map(p => `<option value="${p.id}">${p.nombres} ${p.apellidos} (DNI: ${p.dni})</option>`).join('');
+        }
+        const selectEditarEqOp = document.getElementById('select-editar-equipo-operador');
+        if (selectEditarEqOp) {
+          selectEditarEqOp.innerHTML = '<option value="">Sin Operador Asignado</option>' +
+            personalCache.map(p => `<option value="${p.id}">${p.nombres} ${p.apellidos} (DNI: ${p.dni})</option>`).join('');
+        }
+
+        if (!tbody) return;
+
+        personalCache.forEach(p => {
+          const rolBadges = {
+            operador: '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-amber-950/70 text-amber-400 border border-amber-800">Operador</span>',
+            jefe_mantenimiento: '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-blue-950/70 text-blue-400 border border-blue-800">Jefe Mantenimiento</span>',
+            gerencia: '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-purple-950/70 text-purple-400 border border-purple-800">Gerencia</span>',
+            sistemas_admin: '<span class="px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-950/70 text-emerald-400 border border-emerald-800">Sistemas</span>'
+          };
+
+          // Semáforo de vencimiento de brevete
+          let vencimientoHtml = '<span class="text-gray-500 font-mono">N/A</span>';
+          if (p.brevete_vencimiento) {
+            const hoy = new Date();
+            const venc = new Date(p.brevete_vencimiento);
+            const diasDiff = Math.ceil((venc - hoy) / (1000 * 60 * 60 * 24));
+
+            if (diasDiff < 0) {
+              vencimientoHtml = `<span class="px-2 py-0.5 rounded text-[11px] font-black bg-rose-950/80 text-rose-400 border border-rose-800">🔴 VENCIDO (${p.brevete_vencimiento})</span>`;
+            } else if (diasDiff <= 20) {
+              vencimientoHtml = `<span class="px-2 py-0.5 rounded text-[11px] font-black bg-amber-950/80 text-amber-400 border border-amber-800 animate-pulse">🟡 Vence en ${diasDiff}d (${p.brevete_vencimiento})</span>`;
+            } else {
+              vencimientoHtml = `<span class="text-emerald-400 font-mono font-bold">🟢 ${p.brevete_vencimiento}</span>`;
+            }
+          }
+
+          // Badge de Certificado Digital
+          let certHtml = '<span class="text-xs text-gray-500 italic">No</span>';
+          if (p.tiene_certificacion) {
+            const nomCert = p.certificado_nombre || 'Certificado Vigente';
+            if (p.certificado_archivo_url) {
+              certHtml = `
+                <a href="${p.certificado_archivo_url}" target="_blank" class="inline-flex items-center gap-1 px-2.5 py-1 rounded bg-emerald-950/90 text-emerald-300 border border-emerald-700 hover:bg-emerald-800 text-[11px] font-black transition shadow-sm" title="${nomCert}">
+                  <span>📜</span> <span>Ver Digital ↗</span>
+                </a>
+              `;
+            } else {
+              certHtml = `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-carbon text-gray-300 border border-gray-700" title="${nomCert}">📜 ${nomCert.substring(0, 18)}...</span>`;
+            }
+          }
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-graphiteLight/50 transition';
+          tr.innerHTML = `
+            <td class="py-3.5 px-4 font-mono font-bold text-machinery">${p.dni}</td>
+            <td class="py-3.5 px-4 font-bold text-white">${p.nombres} ${p.apellidos}</td>
+            <td class="py-3.5 px-4">${rolBadges[p.rol] || p.rol}</td>
+            <td class="py-3.5 px-4 font-mono text-gray-300 font-semibold">${p.brevete_numero || '-'}</td>
+            <td class="py-3.5 px-4 font-bold text-machinery">${p.brevete_categoria || '-'}</td>
+            <td class="py-3.5 px-4">${vencimientoHtml}</td>
+            <td class="py-3.5 px-4">${certHtml}</td>
+            <td class="py-3.5 px-4 font-mono text-gray-400">${p.telefono || '-'}</td>
+            <td class="py-3.5 px-4 font-mono font-black text-machinery tracking-widest">${p.pin_acceso || '****'}</td>
+            <td class="py-3.5 px-4 text-center">
+              <button onclick="eliminarPersonal(${p.id})" class="px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs rounded border border-rose-800 transition">Eliminar</button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Error al cargar personal:", err);
+      }
+    }
+
+    async function registrarPersonalSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const payload = {
+        dni: form.dni.value.trim(),
+        nombres: form.nombres.value.trim(),
+        apellidos: form.apellidos.value.trim(),
+        rol: form.rol.value,
+        telefono: form.telefono.value.trim() || null,
+        pin_acceso: form.pin_acceso.value.trim(),
+        brevete_numero: form.brevete_numero.value.trim() || null,
+        brevete_categoria: form.brevete_categoria.value || null,
+        brevete_vencimiento: form.brevete_vencimiento.value || null,
+        tiene_certificacion: form.tiene_certificacion.value === "1",
+        certificado_nombre: form.certificado_nombre ? form.certificado_nombre.value.trim() || null : null,
+        certificado_vencimiento: form.certificado_vencimiento && form.certificado_vencimiento.value ? form.certificado_vencimiento.value : null,
+        certificado_archivo_url: form.certificado_archivo_url ? form.certificado_archivo_url.value.trim() || null : null,
+        estado: "activo"
+      };
+
+      try {
+        const res = await fetch('/api/v1/heavy/personal', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+          const err = await res.json();
+          alert("⚠️ " + (err.detail || "No se pudo registrar"));
+          return;
+        }
+
+        cerrarModalPersonal();
+        form.reset();
+        seleccionarCertificado(false);
+        const badge = document.getElementById('reniec-status-badge');
+        if (badge) badge.textContent = '';
+        alert("✅ Colaborador registrado con éxito en ACR Flota 360°.");
+        await cargarTablaPersonal();
+      } catch (error) {
+        alert("Error de conexión al guardar colaborador.");
+      }
+    }
+
+    async function eliminarPersonal(id) {
+      if (!confirm("¿Está seguro de dar de baja a este colaborador?")) return;
+      await fetch(`/api/v1/heavy/personal/${id}`, { method: 'DELETE' });
+      await cargarTablaPersonal();
+    }
+
+    // ==========================================
+    // 5. DASHBOARD & KPIS
+    // ==========================================
+    async function cargarDashboard() {
+      try {
+        const res = await fetch('/api/v1/heavy/dashboard');
+        const data = await res.json();
+
+        document.getElementById('kpi-horas').textContent = `${data.horas_totales_trabajadas} h`;
+        document.getElementById('kpi-taller').textContent = `${data.equipos_en_taller} / ${data.total_equipos}`;
+        document.getElementById('kpi-alertas').textContent = `${data.alertas_mantenimiento_25h} Críticas`;
+        document.getElementById('kpi-combustible').textContent = `${data.galones_combustible_mes} Gal`;
+
+        // Render Gráfico Proyectos
+        const ctxProyectos = document.getElementById('chartProyectos').getContext('2d');
+        if (window.chartProyectosInstance) window.chartProyectosInstance.destroy();
+        window.chartProyectosInstance = new Chart(ctxProyectos, {
+          type: 'bar',
+          data: {
+            labels: data.horas_por_proyecto.map(p => p.nombre.substring(0, 24) + '...'),
+            datasets: [{
+              label: 'Horas Trabajadas',
+              data: data.horas_por_proyecto.map(p => p.horas),
+              backgroundColor: '#01A95B',
+              borderRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 10 } } },
+              y: { grid: { color: '#282D35' }, ticks: { color: '#9CA3AF' } }
+            }
+          }
+        });
+
+        // Render Gráfico Doughnut Semáforo
+        const ctxSemaforo = document.getElementById('chartSemaforo').getContext('2d');
+        if (window.chartSemaforoInstance) window.chartSemaforoInstance.destroy();
+        window.chartSemaforoInstance = new Chart(ctxSemaforo, {
+          type: 'doughnut',
+          data: {
+            labels: ['Operativo', 'Alerta <25h', 'Vencido'],
+            datasets: [{
+              data: [data.semaforo_flota.verde, data.semaforo_flota.amarillo, data.semaforo_flota.rojo],
+              backgroundColor: ['#10B981', '#F59E0B', '#EF4444'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: { legend: { display: false } }
+          }
+        });
+
+        // Actualizar capas satelitales GPS
+        await actualizarMapaGPS();
+
+      } catch (e) {
+        console.error("Error cargando dashboard:", e);
+      }
+    }
+
+    // ==========================================
+    // ==========================================
+    // SISTEMA DE MONITOREO GPS EN VIVO (LEAFLET + SATÉLITE GRATUITO)
+    // ==========================================
+    let mapaFlotaInstance = null;
+    let marcadoresMapaLayer = null;
+    let capaSatelite = null;
+    let capaEtiquetas = null;
+    let capaCalles = null;
+    let capaActivaNombre = 'satelite';
+    let mapaEsExpandido = false;
+
+    function inicializarMapaGPS() {
+      const contenedor = document.getElementById('mapa-flota-gps');
+      if (!contenedor || mapaFlotaInstance) return;
+
+      // Coordenadas centrales por defecto: Jaén / Cajamarca / Perú (-5.7078, -78.8078)
+      mapaFlotaInstance = L.map('mapa-flota-gps', {
+        zoomControl: true,
+        attributionControl: false
+      }).setView([-5.7078, -78.8078], 11);
+
+      // 1. Capa Satelital de Alta Resolución Gratuita (Esri World Imagery - 100% Gratis y sin API Key)
+      capaSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19,
+        attribution: 'Esri Satellite HD'
+      });
+
+      // 2. Capa de Nombres de Ciudades y Carreteras (Overlay Híbrido)
+      capaEtiquetas = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19
+      });
+
+      // 3. Capa de Calles y Terreno Cartográfico
+      capaCalles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19
+      });
+
+      // Activar Capa Satelital por defecto
+      capaSatelite.addTo(mapaFlotaInstance);
+
+      // Grupo de marcadores
+      marcadoresMapaLayer = L.layerGroup().addTo(mapaFlotaInstance);
+    }
+
+    function cambiarCapaMapa(tipo) {
+      if (!mapaFlotaInstance) inicializarMapaGPS();
+      if (!mapaFlotaInstance) return;
+
+      // Quitar capas base previas
+      if (mapaFlotaInstance.hasLayer(capaSatelite)) mapaFlotaInstance.removeLayer(capaSatelite);
+      if (mapaFlotaInstance.hasLayer(capaEtiquetas)) mapaFlotaInstance.removeLayer(capaEtiquetas);
+      if (mapaFlotaInstance.hasLayer(capaCalles)) mapaFlotaInstance.removeLayer(capaCalles);
+
+      const bSat = document.getElementById('btn-capa-sat');
+      const bHib = document.getElementById('btn-capa-hib');
+      const bCal = document.getElementById('btn-capa-cal');
+
+      const estiloInactivo = 'px-2.5 py-1 rounded-md text-gray-300 hover:text-white transition';
+      const estiloActivo = 'px-2.5 py-1 rounded-md bg-machinery text-carbon font-black transition';
+
+      if (bSat) bSat.className = estiloInactivo;
+      if (bHib) bHib.className = estiloInactivo;
+      if (bCal) bCal.className = estiloInactivo;
+
+      capaActivaNombre = tipo;
+
+      if (tipo === 'satelite') {
+        capaSatelite.addTo(mapaFlotaInstance);
+        if (bSat) bSat.className = estiloActivo;
+      } else if (tipo === 'hibrido') {
+        capaSatelite.addTo(mapaFlotaInstance);
+        capaEtiquetas.addTo(mapaFlotaInstance);
+        if (bHib) bHib.className = estiloActivo;
+      } else if (tipo === 'calles') {
+        capaCalles.addTo(mapaFlotaInstance);
+        if (bCal) bCal.className = estiloActivo;
+      }
+    }
+
+    function togglePantallaCompletaMapa() {
+      const mapaEl = document.getElementById('mapa-flota-gps');
+      const btn = document.getElementById('btn-mapa-expandir');
+      if (!mapaEl) return;
+
+      mapaEsExpandido = !mapaEsExpandido;
+      if (mapaEsExpandido) {
+        mapaEl.className = 'fixed inset-4 z-50 h-[92vh] rounded-2xl overflow-hidden border-2 border-machinery shadow-2xl transition-all';
+        if (btn) btn.innerHTML = '✕ Reducir';
+      } else {
+        mapaEl.className = 'w-full h-96 rounded-xl overflow-hidden border border-gray-800 shadow-inner z-0 transition-all';
+        if (btn) btn.innerHTML = '⛶ Expandir';
+      }
+
+      setTimeout(() => {
+        if (mapaFlotaInstance) mapaFlotaInstance.invalidateSize();
+      }, 200);
+    }
+
+    async function actualizarMapaGPS() {
+      try {
+        if (!mapaFlotaInstance) inicializarMapaGPS();
+        if (!mapaFlotaInstance) return;
+
+        const res = await fetch('/api/v1/heavy/telemetria/mapa');
+        const equipos = await res.json();
+
+        marcadoresMapaLayer.clearLayers();
+        const puntosValidos = [];
+        let transmitiendoCount = 0;
+
+        equipos.forEach(eq => {
+          if (eq.latitud && eq.longitud) {
+            transmitiendoCount++;
+            puntosValidos.push([eq.latitud, eq.longitud]);
+
+            const colorBorder = eq.semaforo === 'rojo' ? '#EF4444' : eq.semaforo === 'amarillo' ? '#F59E0B' : '#10B981';
+            const iconHtml = `
+              <div style="background-color: #121417; border: 2.5px solid ${colorBorder}; border-radius: 50%; width: 34px; height: 34px; display: flex; align-items: center; justify-content: center; font-size: 16px; box-shadow: 0 0 12px ${colorBorder}88; cursor: pointer;">
+                ${eq.tipo === 'pesada' ? '🚜' : '🚚'}
+              </div>
+            `;
+            const customIcon = L.divIcon({
+              html: iconHtml,
+              className: 'custom-maquinaria-marker',
+              iconSize: [34, 34],
+              iconAnchor: [17, 17]
+            });
+
+            const marker = L.marker([eq.latitud, eq.longitud], { icon: customIcon });
+            const popupHtml = `
+              <div style="font-family: 'Outfit', sans-serif; color: #121417; min-width: 190px;">
+                <div style="font-weight: 900; font-size: 13px; color: #01A95B; border-bottom: 1px solid #ddd; padding-bottom: 4px; margin-bottom: 6px;">
+                  ${eq.codigo_interno} | ${eq.nombre}
+                </div>
+                <div style="font-size: 11px; margin-bottom: 3px;">
+                  <strong>📍 Frente:</strong> ${eq.proyecto_nombre}
+                </div>
+                <div style="font-size: 11px; margin-bottom: 3px;">
+                  <strong>👷 Operador:</strong> ${eq.operador_nombre ? `<span style="color:#008C4A; font-weight:bold;">${eq.operador_nombre}</span>` : '<i>Disponible</i>'}
+                </div>
+                <div style="font-size: 11px; margin-bottom: 3px;">
+                  <strong>⏱️ Horómetro:</strong> ${eq.horometro_actual} h
+                </div>
+                <div style="font-size: 10px; color: #666; margin-top: 5px;">
+                  📡 Último GPS: ${eq.ultima_actualizacion || 'En vivo'}
+                </div>
+              </div>
+            `;
+            marker.bindPopup(popupHtml);
+            marcadoresMapaLayer.addLayer(marker);
+          }
+        });
+
+        const contadorEl = document.getElementById('mapa-flota-contador');
+        if (contadorEl) {
+          contadorEl.textContent = `${transmitiendoCount} equipo(s) con GPS activo`;
+        }
+
+        if (puntosValidos.length > 0) {
+          const bounds = L.latLngBounds(puntosValidos);
+          mapaFlotaInstance.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+        }
+      } catch (err) {
+        console.warn("Error actualizando mapa GPS:", err);
+      }
+    }
+
+    function centrarMapaFlota() {
+      actualizarMapaGPS();
+    }
+
+    async function cargarTablaRepuestos() {
+      try {
+        const res = await fetch('/api/v1/heavy/repuestos');
+        const lista = await res.json();
+        const tbody = document.getElementById('tabla-repuestos-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        lista.forEach(r => {
+          const esCritico = r.stock_actual <= r.stock_minimo;
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-graphiteLight/50 transition';
+          tr.innerHTML = `
+            <td class="py-3.5 px-4 font-mono font-bold text-machinery">${r.codigo_parte}</td>
+            <td class="py-3.5 px-4 font-bold text-white">${r.nombre}</td>
+            <td class="py-3.5 px-4 text-gray-400 capitalize">${r.categoria}</td>
+            <td class="py-3.5 px-4 text-center font-bold font-mono ${esCritico ? 'text-alertRed' : 'text-alertGreen'}">
+              ${r.stock_actual} / ${r.stock_minimo} ${esCritico ? '⚠️' : ''}
+            </td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-gray-200">S/ ${r.precio_unitario.toFixed(2)}</td>
+            <td class="py-3.5 px-4 text-xs text-gray-400">${r.ubicacion_almacen || 'Bahía 1'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Error al cargar repuestos:", err);
+      }
+    }
+
+    async function cargarTablaProveedores() {
+      try {
+        const res = await fetch('/api/v1/heavy/proveedores');
+        const lista = await res.json();
+        const tbody = document.getElementById('tabla-proveedores-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        lista.forEach(pv => {
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-graphiteLight/50 transition';
+          tr.innerHTML = `
+            <td class="py-3.5 px-4 font-mono font-bold text-machinery">${pv.ruc}</td>
+            <td class="py-3.5 px-4 font-bold text-white">${pv.razon_social}</td>
+            <td class="py-3.5 px-4 text-gray-300">${pv.rubro}</td>
+            <td class="py-3.5 px-4 font-mono text-gray-300 font-semibold">${pv.telefono || '-'}</td>
+            <td class="py-3.5 px-4 text-xs text-gray-400">${pv.correo || '-'}</td>
+            <td class="py-3.5 px-4 text-xs text-gray-400">${pv.direccion || '-'}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Error al cargar proveedores:", err);
+      }
+    }
+
+    async function enviarWhatsAppGerencia() {
+      const tel = prompt("Número de WhatsApp de Gerencia (ej: +51 998 887 766):", "+51998887766");
+      if (!tel) return;
+      try {
+        const res = await fetch(`/api/v1/heavy/reportes/whatsapp-gerencia?telefono=${encodeURIComponent(tel)}`);
+        const data = await res.json();
+        window.open(data.whatsapp_link, '_blank');
+      } catch (err) {
+        alert("Error al preparar el mensaje de WhatsApp.");
+      }
+    }
+  </script>
+</body>
+</html>

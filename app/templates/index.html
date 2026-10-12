@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ACR Flota360 | Gestión Integral de Flotas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-icon">🚛</div>
+      <div class="brand-info">
+        <h1>ACR FLOTA</h1>
+        <span>SISTEMA 360°</span>
+      </div>
+    </div>
+
+    <nav class="nav-menu">
+      <a href="#" class="nav-item active" data-section="dashboard">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+        Dashboard 360
+      </a>
+
+      <a href="#" class="nav-item" data-section="vehiculos">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1M5 17a2 2 0 104 0m-4 0a2 2 0 114 0m6 0a2 2 0 104 0m-4 0a2 2 0 114 0"/></svg>
+        Flota Vehicular
+      </a>
+
+      <a href="#" class="nav-item" data-section="conductores">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        Conductores
+      </a>
+
+      <a href="#" class="nav-item" data-section="mantenimientos">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Mantenimientos
+      </a>
+
+      <a href="#" class="nav-item" data-section="combustible">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Combustible
+      </a>
+
+      <a href="#" class="nav-item" data-section="viajes">
+        <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+        Viajes & Rutas
+      </a>
+
+      <div style="margin-top: auto; padding-top: 16px;">
+        <a href="/docs" target="_blank" class="nav-item">
+          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/></svg>
+          API Docs (Swagger)
+        </a>
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div style="display: flex; align-items: center; gap: 8px;">
+        <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+        <span>Python 3.14 & FastAPI</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main Content -->
+  <main class="main-wrapper">
+    <header class="topbar">
+      <div class="topbar-title">
+        <h2 id="topbar-title-text">Dashboard General 360°</h2>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn btn-secondary btn-sm" onclick="cargarDashboard()">🔄 Actualizar</button>
+        <button class="btn btn-primary btn-sm" onclick="abrirModal('modal-vehiculo')">+ Registrar Vehículo</button>
+      </div>
+    </header>
+
+    <div class="content-container">
+
+      <!-- SECCIÓN: DASHBOARD 360 -->
+      <section id="section-dashboard" class="section-view active">
+        <!-- Tarjetas de métricas -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Total Unidades</span>
+              <div class="stat-icon color-blue">🚛</div>
+            </div>
+            <div class="stat-value" id="stat-total-vehiculos">0</div>
+            <div class="stat-subtext">Flota completa registrada</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Operativos</span>
+              <div class="stat-icon color-emerald">✅</div>
+            </div>
+            <div class="stat-value" id="stat-operativos">0</div>
+            <div class="stat-subtext">Disponibles para asignación</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">En Ruta</span>
+              <div class="stat-icon color-blue">📍</div>
+            </div>
+            <div class="stat-value" id="stat-en-ruta">0</div>
+            <div class="stat-subtext">Viajes activos en carretera</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">En Taller</span>
+              <div class="stat-icon color-amber">🔧</div>
+            </div>
+            <div class="stat-value" id="stat-taller">0</div>
+            <div class="stat-subtext">Mantenimiento preventivo/corr.</div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-header">
+              <span class="stat-label">Combustible Mes</span>
+              <div class="stat-icon color-rose">⛽</div>
+            </div>
+            <div class="stat-value" id="stat-gasto-combustible">S/ 0.00</div>
+            <div class="stat-subtext">Gasto acumulado mensual</div>
+          </div>
+        </div>
+
+        <!-- Alertas de Flota -->
+        <div class="alerts-card">
+          <div class="alerts-header">
+            <h3 style="font-size: 1rem; font-weight: 700; display: flex; align-items: center; gap: 8px;">
+              <span>⚠️</span> Alertas Críticas de Flota (SOAT, Revisiones, Licencias y Mantenimientos)
+            </h3>
+            <span style="font-size: 0.75rem; color: var(--text-dim);">Monitoreo automático a 30 días</span>
+          </div>
+          <div class="alert-list" id="alertas-container">
+            <div style="color: var(--text-muted); font-size: 0.85rem;">Cargando alertas del sistema...</div>
+          </div>
+        </div>
+
+        <!-- Resumen de Unidades -->
+        <div class="panel">
+          <div class="panel-header">
+            <h3 style="font-size: 1.05rem; font-weight: 700;">Estado Rápido de la Flota</h3>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Placa</th>
+                  <th>Marca / Modelo</th>
+                  <th>Odómetro</th>
+                  <th>Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-preview-vehiculos">
+                <!-- Insertado con JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: VEHÍCULOS -->
+      <section id="section-vehiculos" class="section-view">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700;">Catálogo de Vehículos</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Administra todas las unidades de la flota</p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModal('modal-vehiculo')">+ Nuevo Vehículo</button>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Placa</th>
+                  <th>Marca / Modelo</th>
+                  <th>Tipo / Año</th>
+                  <th>Odómetro Actual</th>
+                  <th>Estado</th>
+                  <th>SOAT</th>
+                  <th>Rev. Técnica</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-vehiculos-body">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: CONDUCTORES -->
+      <section id="section-conductores" class="section-view">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700;">Conductores y Operadores</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Personal asignado a las unidades de transporte</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Conductor</th>
+                  <th>DNI</th>
+                  <th>Licencia (Cat.)</th>
+                  <th>Vencimiento</th>
+                  <th>Teléfono</th>
+                  <th>Estado</th>
+                  <th>Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-conductores-body">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: MANTENIMIENTOS -->
+      <section id="section-mantenimientos" class="section-view">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700;">Historial y Programación de Mantenimientos</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Servicios preventivos y reparaciones correctivas</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Vehículo</th>
+                  <th>Tipo</th>
+                  <th>Descripción</th>
+                  <th>Taller</th>
+                  <th>Costo Estimado</th>
+                  <th>Fecha Prog.</th>
+                  <th>Estado</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-mantenimientos-body">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: COMBUSTIBLE -->
+      <section id="section-combustible" class="section-view">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700;">Registro de Combustible y Rendimiento</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Seguimiento de gastos y eficiencia km/galón</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Vehículo</th>
+                  <th>Volumen</th>
+                  <th>Precio Unit.</th>
+                  <th>Total</th>
+                  <th>Odómetro</th>
+                  <th>Rendimiento</th>
+                  <th>Estación</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-combustible-body">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- SECCIÓN: VIAJES -->
+      <section id="section-viajes" class="section-view">
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h3 style="font-size: 1.15rem; font-weight: 700;">Bitácora de Despacho y Viajes</h3>
+              <p style="font-size: 0.8rem; color: var(--text-muted);">Control de rutas, salidas y odómetros de llegada</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Vehículo</th>
+                  <th>Conductor</th>
+                  <th>Ruta (Origen ➔ Destino)</th>
+                  <th>Salida</th>
+                  <th>Distancia</th>
+                  <th>Estado</th>
+                  <th>Acción</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-viajes-body">
+                <!-- Dinámico -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modal Nuevo Vehículo -->
+  <div class="modal-overlay" id="modal-vehiculo">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Registrar Nuevo Vehículo</h3>
+        <button class="modal-close" onclick="cerrarModal('modal-vehiculo')">&times;</button>
+      </div>
+      <form onsubmit="crearVehiculoSubmit(event)">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Placa *</label>
+            <input type="text" name="placa" class="form-control" placeholder="ABC-123" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo *</label>
+            <select name="tipo" class="form-control" required>
+              <option value="camioneta">Camioneta</option>
+              <option value="camion">Camión</option>
+              <option value="furgon">Furgón</option>
+              <option value="sedan">Sedán</option>
+              <option value="bus">Bus</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Marca *</label>
+            <input type="text" name="marca" class="form-control" placeholder="Toyota" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Modelo *</label>
+            <input type="text" name="modelo" class="form-control" placeholder="Hilux 4x4" required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Año *</label>
+            <input type="number" name="anio" class="form-control" value="2023" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Combustible</label>
+            <select name="combustible_tipo" class="form-control">
+              <option value="diesel">Diésel</option>
+              <option value="gasolina">Gasolina</option>
+              <option value="gnv">GNV</option>
+              <option value="electrico">Eléctrico</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Odómetro Inicial (km)</label>
+          <input type="number" step="0.1" name="odometro" class="form-control" value="0" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Vencimiento SOAT</label>
+            <input type="date" name="soat" class="form-control">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Vencimiento Rev. Técnica</label>
+            <input type="date" name="revision" class="form-control">
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn btn-secondary" onclick="cerrarModal('modal-vehiculo')">Cancelar</button>
+          <button type="submit" class="btn btn-primary">Guardar Vehículo</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="/static/js/dashboard.js"></script>
+</body>
+</html>

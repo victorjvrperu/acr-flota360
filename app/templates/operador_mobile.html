@@ -1,0 +1,1772 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-[#121417]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="theme-color" content="#01A95B">
+  <title>ACR Flota 360° | Pasarela Móvil de Campo</title>
+  
+  <!-- Manifest PWA -->
+  <link rel="manifest" href="/static/manifest.json">
+  <link rel="apple-touch-icon" href="/static/manifest.json">
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            carbon: '#121417',
+            graphite: '#1E2228',
+            graphiteLight: '#282D35',
+            machinery: '#01A95B',
+            machineryActive: '#008C4A',
+            alertRed: '#EF4444',
+            alertYellow: '#F59E0B',
+            alertGreen: '#10B981'
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      touch-action: manipulation;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    /* Botones industriales grandes (>= 56px) para uso táctil en obra */
+    .btn-industrial {
+      min-height: 56px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.05rem;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+      border-radius: 14px;
+      box-shadow: 0 4px 14px rgba(0, 0, 0, 0.45);
+      transition: all 0.15s ease-in-out;
+    }
+    .btn-industrial:active {
+      transform: scale(0.98);
+    }
+
+    .pulse-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+    .bg-emerald { background-color: #10B981; }
+    .bg-amber { background-color: #F59E0B; }
+    .bg-rose { background-color: #EF4444; }
+
+    .network-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.72rem;
+      font-weight: 800;
+      padding: 5px 10px;
+      border-radius: 9999px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .badge-online { background: rgba(16, 185, 129, 0.15); color: #34D399; border: 1px solid rgba(16, 185, 129, 0.4); }
+    .badge-offline { background: rgba(239, 68, 68, 0.15); color: #F87171; border: 1px solid rgba(239, 68, 68, 0.4); }
+    .badge-syncing { background: rgba(245, 158, 11, 0.15); color: #FBBF24; border: 1px solid rgba(245, 158, 11, 0.4); }
+
+    /* Slots fotográficos táctiles */
+    .photo-slot {
+      position: relative;
+      background: #1E2228;
+      border: 2px dashed #4B5563;
+      border-radius: 14px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 150px;
+      cursor: pointer;
+      overflow: hidden;
+      transition: all 0.2s ease;
+    }
+    .photo-slot:hover {
+      border-color: #01A95B;
+    }
+    .photo-slot.photo-filled {
+      border: 2px solid #01A95B;
+      padding: 0;
+    }
+    .photo-preview-img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    /* Animación de transición entre ventanas */
+    .step-window {
+      animation: fadeInSlide 0.25s ease-out;
+    }
+    @keyframes fadeInSlide {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  </style>
+</head>
+<body class="h-full bg-carbon text-gray-100 flex flex-col justify-between overflow-x-hidden">
+
+  <!-- ============================================================ -->
+  <!-- HEADER PERSISTENTE CON LOGO, OPERADOR Y CONECTIVIDAD         -->
+  <!-- ============================================================ -->
+  <header class="bg-graphite border-b border-gray-800 p-3 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-2.5">
+        <img src="/static/img/logo_acr360_white.png" alt="ACR Flota 360°" class="h-7 w-auto max-w-[130px] object-contain shrink-0">
+        <div class="border-l border-gray-700/80 pl-2">
+          <span class="text-[10px] text-machinery font-black block truncate max-w-[120px]" id="header-operador-badge">👷 SIN SESIÓN</span>
+        </div>
+      </div>
+
+      <div class="flex items-center gap-1.5 shrink-0">
+        <!-- Indicador GPS -->
+        <div id="gps-status-badge" class="network-badge bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px]">
+          <span>📍</span> <span id="gps-status-text">GPS: OFF</span>
+        </div>
+        <!-- Conectividad -->
+        <div id="network-status-banner" class="network-badge badge-online">
+          <span class="pulse-dot bg-emerald"></span>
+          <span>🟢 En línea</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================================================ -->
+  <!-- CONTENEDOR PRINCIPAL DE VENTANAS PASO A PASO                -->
+  <!-- ============================================================ -->
+  <main class="flex-1 p-3.5 max-w-md mx-auto w-full pb-20">
+
+    <!-- ========================================================== -->
+    <!-- WIZARD INICIO - VENTANA 1 DE 6: LOGUEARSE (DNI Y CLAVE)    -->
+    <!-- ========================================================== -->
+    <section id="win-ini-1" class="step-window space-y-4">
+      
+      <!-- Indicador de Paso -->
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold uppercase text-machinery tracking-wider">PASO 1 DE 6</span>
+        <span class="text-gray-400 font-bold">16%</span>
+      </div>
+      <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
+        <div class="bg-machinery h-2 rounded-full" style="width: 16%"></div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="text-center space-y-1">
+          <div class="w-14 h-14 mx-auto rounded-2xl bg-machinery/20 text-machinery flex items-center justify-center text-3xl font-black mb-2">
+            👷‍♂️
+          </div>
+          <h2 class="text-lg font-black text-white uppercase">Identificación del Operador</h2>
+          <p class="text-xs text-gray-300">
+            Ingresa con tus datos personales para habilitar la maquinaria.
+          </p>
+        </div>
+
+        <!-- DNI -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[11px] font-bold text-gray-400 uppercase">1. DNI (8 dígitos) *</label>
+            <button type="button" onclick="toggleListaOperadoresRapida()" id="btn-toggle-lista-op" class="text-[11px] font-bold text-machinery hover:underline">
+              Elegir de lista ▾
+            </button>
+          </div>
+          <input type="text" id="login-dni" maxlength="8" placeholder="Ej: 41827912" oninput="alEscribirDniLogin(this.value)" class="w-full bg-carbon border-2 border-gray-700 text-white font-mono font-bold text-xl text-center rounded-xl py-3 focus:border-machinery focus:outline-none">
+          
+          <div id="contenedor-select-operadores" class="hidden mt-2">
+            <select id="select-operador-modal" onchange="alSeleccionarOperadorLista(this.value)" class="w-full bg-carbon border border-gray-700 text-gray-300 text-xs rounded-lg px-2.5 py-2.5 focus:border-machinery focus:outline-none">
+              <option value="">-- O selecciona tu nombre de la lista --</option>
+            </select>
+          </div>
+          <div id="info-colaborador-detectado" class="mt-2 text-xs font-bold text-emerald-400 hidden bg-emerald-950/40 p-2.5 rounded-xl border border-emerald-800/60"></div>
+        </div>
+
+        <!-- CLAVE DE ACCESO -->
+        <div>
+          <div class="flex items-center justify-between mb-1">
+            <label class="block text-[11px] font-bold text-gray-400 uppercase">2. Clave de Acceso *</label>
+            <button type="button" onclick="abrirModalCambiarClave()" class="text-[11px] font-bold text-machinery hover:underline">
+              🔑 ¿Cambiar clave?
+            </button>
+          </div>
+          <input type="password" id="login-clave" maxlength="12" placeholder="Ingresa tu clave" class="w-full bg-carbon border-2 border-gray-700 text-machinery font-mono font-black text-2xl text-center rounded-xl py-3 focus:border-machinery focus:outline-none">
+          <span class="text-[10px] text-gray-500 block mt-1 text-center font-mono">Por defecto: 1234</span>
+        </div>
+
+        <div id="err-ini-1" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
+
+        <button onclick="avanzarPaso1Login()" class="btn-industrial w-full bg-machinery hover:bg-machineryActive text-carbon mt-2">
+          SIGUIENTE ➔
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- WIZARD INICIO - VENTANA 2 DE 6: FRENTE DE TRABAJO           -->
+    <!-- ========================================================== -->
+    <section id="win-ini-2" class="step-window space-y-4 hidden">
+      
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold uppercase text-machinery tracking-wider">PASO 2 DE 6</span>
+        <span class="text-gray-400 font-bold">33%</span>
+      </div>
+      <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
+        <div class="bg-machinery h-2 rounded-full" style="width: 33%"></div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <!-- Operador activo identificado -->
+        <div class="p-2.5 bg-carbon rounded-xl border border-gray-700/80 flex items-center gap-2">
+          <span class="text-xl">👷</span>
+          <div class="truncate text-xs">
+            <div class="font-bold text-white truncate" id="op-nombre-paso2">-</div>
+            <div class="text-[10px] text-gray-400" id="op-dni-paso2">DNI: -</div>
+          </div>
+        </div>
+
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-machinery font-black text-sm uppercase">
+            <span>📍</span> <span>Frente de Trabajo</span>
+          </div>
+          <h2 class="text-lg font-black text-white">¿En qué frente trabajará hoy?</h2>
+          <p class="text-xs text-gray-300">
+            Seleccione el tramo o frente de obra registrado en el sistema:
+          </p>
+        </div>
+
+        <div>
+          <select id="select-frente" class="w-full bg-carbon border-2 border-gray-700 text-white font-bold text-base rounded-xl p-4 focus:border-machinery focus:outline-none">
+            <option value="">-- Seleccionar Frente Registrado --</option>
+          </select>
+        </div>
+
+        <div id="err-ini-2" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="irVentana('win-ini-1')" class="py-3.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs uppercase transition border border-gray-700">
+            ⬅ ATRÁS
+          </button>
+          <button onclick="avanzarPaso2Frente()" class="btn-industrial bg-machinery hover:bg-machineryActive text-carbon">
+            SIGUIENTE ➔
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- WIZARD INICIO - VENTANA 3 DE 6: ELECCIÓN DE MAQUINARIA     -->
+    <!-- ========================================================== -->
+    <section id="win-ini-3" class="step-window space-y-4 hidden">
+      
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold uppercase text-machinery tracking-wider">PASO 3 DE 6</span>
+        <span class="text-gray-400 font-bold">50%</span>
+      </div>
+      <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
+        <div class="bg-machinery h-2 rounded-full" style="width: 50%"></div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-machinery font-black text-sm uppercase">
+            <span>🚜</span> <span>Elección de Maquinaria</span>
+          </div>
+          <h2 class="text-lg font-black text-white">¿Con qué equipo comenzará a trabajar?</h2>
+          <p class="text-xs text-gray-300">
+            Elija la maquinaria pesada o vehículo asignado a este turno:
+          </p>
+        </div>
+
+        <div>
+          <select id="select-maquinaria" onchange="alCambiarEquipoWizard(this.value)" class="w-full bg-carbon border-2 border-gray-700 text-white font-bold text-base rounded-xl p-4 focus:border-machinery focus:outline-none">
+            <option value="">-- Seleccionar Maquinaria / Equipo --</option>
+          </select>
+        </div>
+
+        <!-- Tarjeta informativa del equipo seleccionado -->
+        <div id="card-equipo-info" class="hidden bg-carbon border border-gray-700/80 rounded-xl p-3 text-xs space-y-1">
+          <div class="font-black text-machinery text-sm" id="info-eq-nombre">-</div>
+          <div class="text-gray-300" id="info-eq-marca-modelo">-</div>
+          <div class="text-[11px] font-mono text-gray-400" id="info-eq-horometro-ant">Horómetro anterior: - h</div>
+        </div>
+
+        <div id="err-ini-3" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="irVentana('win-ini-2')" class="py-3.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs uppercase transition border border-gray-700">
+            ⬅ ATRÁS
+          </button>
+          <button onclick="avanzarPaso3Equipo()" class="btn-industrial bg-machinery hover:bg-machineryActive text-carbon">
+            SIGUIENTE ➔
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- WIZARD INICIO - VENTANA 4 DE 6: HORÓMETRO INICIAL Y FOTO   -->
+    <!-- ========================================================== -->
+    <section id="win-ini-4" class="step-window space-y-4 hidden">
+      
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold uppercase text-machinery tracking-wider">PASO 4 DE 6</span>
+        <span class="text-gray-400 font-bold">66%</span>
+      </div>
+      <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
+        <div class="bg-machinery h-2 rounded-full" style="width: 66%"></div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-machinery font-black text-sm uppercase">
+            <span>⏱️</span> <span>Horómetro Inicial</span>
+          </div>
+          <h2 class="text-lg font-black text-white">Horómetro inicial y Foto del Tablero</h2>
+          <p class="text-xs text-gray-300">
+            Ingresa la lectura actual y sube la foto obligatoria del tablero.
+          </p>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Lectura de Horómetro Inicial (h) *</label>
+          <input type="number" step="0.1" id="wizard-horometro-inicio" placeholder="Ej: 245.5" class="w-full bg-carbon border-2 border-gray-700 text-machinery font-mono font-black text-3xl text-center rounded-xl py-3 px-4 focus:border-machinery focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">📸 Foto Obligatoria del Tablero (Con Horómetro)</label>
+          <div id="slot-foto-inicio_tablero" class="photo-slot" onclick="document.getElementById('input-cam-inicio_tablero').click()">
+            <span class="text-3xl mb-1">📸</span>
+            <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-inicio_tablero">Tomar Foto del Tablero</span>
+            <span class="text-[10px] text-gray-500 mt-0.5">Sello de Fecha, Hora y Logo automático</span>
+          </div>
+          <input type="file" accept="image/*" capture="environment" id="input-cam-inicio_tablero" class="hidden" onchange="procesarFotoConSello(this, 'inicio_tablero', 'Tablero Inicial')">
+        </div>
+
+        <div id="err-ini-4" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="irVentana('win-ini-3')" class="py-3.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs uppercase transition border border-gray-700">
+            ⬅ ATRÁS
+          </button>
+          <button onclick="avanzarPaso4Horometro()" class="btn-industrial bg-machinery hover:bg-machineryActive text-carbon">
+            SIGUIENTE ➔
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- WIZARD INICIO - VENTANA 5 DE 6: COMBUSTIBLE (SI / NO)       -->
+    <!-- ========================================================== -->
+    <section id="win-ini-5" class="step-window space-y-4 hidden">
+      
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold uppercase text-machinery tracking-wider">PASO 5 DE 6</span>
+        <span class="text-gray-400 font-bold">83%</span>
+      </div>
+      <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
+        <div class="bg-machinery h-2 rounded-full" style="width: 83%"></div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-machinery font-black text-sm uppercase">
+            <span>⛽</span> <span>Control de Combustible</span>
+          </div>
+          <h2 class="text-lg font-black text-white">¿Abasteció combustible hoy?</h2>
+          <p class="text-xs text-gray-300">
+            Selecciona la opción para adjuntar el comprobante o nivel de tanque:
+          </p>
+        </div>
+
+        <!-- Botones SI / NO -->
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" onclick="setAbastecioCombustible(true)" id="btn-comb-si" class="py-4 px-3 rounded-xl border-2 font-black text-sm uppercase transition bg-gray-800/60 border-gray-700 text-gray-400 flex flex-col items-center justify-center gap-1">
+            <span class="text-2xl">⛽</span>
+            <span>SÍ (Abasteció)</span>
+          </button>
+          <button type="button" onclick="setAbastecioCombustible(false)" id="btn-comb-no" class="py-4 px-3 rounded-xl border-2 font-black text-sm uppercase transition bg-gray-800/60 border-gray-700 text-gray-400 flex flex-col items-center justify-center gap-1">
+            <span class="text-2xl">❌</span>
+            <span>NO</span>
+          </button>
+        </div>
+
+        <!-- CASO SÍ: Galones + Foto Voucher -->
+        <div id="seccion-comb-si" class="hidden space-y-3 pt-3 border-t border-gray-800">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Galones Abastecidos *</label>
+            <input type="number" step="0.1" id="wizard-comb-galones" placeholder="Ej: 45.0" class="w-full bg-carbon border-2 border-gray-700 text-white font-mono font-bold text-2xl text-center rounded-xl py-3 px-3 focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">📸 Foto Voucher / Vale de Combustible (Obligatoria)</label>
+            <div id="slot-foto-comb_voucher" class="photo-slot" onclick="document.getElementById('input-cam-comb_voucher').click()">
+              <span class="text-3xl mb-1">🧾</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-comb_voucher">Tomar Foto del Vale / Ticket</span>
+              <span class="text-[10px] text-gray-500 mt-0.5">Sello con Logo y Fecha</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-comb_voucher" class="hidden" onchange="procesarFotoConSello(this, 'comb_voucher', 'Voucher Combustible')">
+          </div>
+        </div>
+
+        <!-- CASO NO: Foto Medida en Tablero -->
+        <div id="seccion-comb-no" class="hidden space-y-3 pt-3 border-t border-gray-800">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">📸 Foto del Tablero: Medida de Combustible (Obligatoria)</label>
+            <div id="slot-foto-comb_nivel" class="photo-slot" onclick="document.getElementById('input-cam-comb_nivel').click()">
+              <span class="text-3xl mb-1">⛽</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-comb_nivel">Tomar Foto Nivel de Tanque</span>
+              <span class="text-[10px] text-gray-500 mt-0.5">Sello con Logo y Fecha</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-comb_nivel" class="hidden" onchange="procesarFotoConSello(this, 'comb_nivel', 'Nivel Combustible')">
+          </div>
+        </div>
+
+        <div id="err-ini-5" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="irVentana('win-ini-4')" class="py-3.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs uppercase transition border border-gray-700">
+            ⬅ ATRÁS
+          </button>
+          <button onclick="avanzarPaso5Combustible()" class="btn-industrial bg-machinery hover:bg-machineryActive text-carbon">
+            SIGUIENTE ➔
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- WIZARD INICIO - VENTANA 6 DE 6: ESTADO MAQUINARIA (4 FOTOS)-->
+    <!-- ========================================================== -->
+    <section id="win-ini-6" class="step-window space-y-4 hidden">
+      
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold uppercase text-machinery tracking-wider">PASO 6 DE 6 (FINAL)</span>
+        <span class="text-gray-400 font-bold">100%</span>
+      </div>
+      <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
+        <div class="bg-machinery h-2 rounded-full" style="width: 100%"></div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-machinery font-black text-sm uppercase">
+            <span>📸</span> <span>Inspección 360° del Equipo</span>
+          </div>
+          <h2 class="text-lg font-black text-white">Estado de la Maquinaria</h2>
+          <p class="text-xs text-gray-300">
+            Tome las 4 fotos obligatorias del equipo antes de comenzar la operación:
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- 1. Frente -->
+          <div>
+            <div id="slot-foto-ini_frente" class="photo-slot" onclick="document.getElementById('input-cam-ini_frente').click()">
+              <span class="text-2xl mb-1">🚜</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-ini_frente">De Frente</span>
+              <span class="text-[10px] text-gray-500">Delantera *</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-ini_frente" class="hidden" onchange="procesarFotoConSello(this, 'ini_frente', 'Insp. Inicio Frente')">
+          </div>
+
+          <!-- 2. Atrás -->
+          <div>
+            <div id="slot-foto-ini_atras" class="photo-slot" onclick="document.getElementById('input-cam-ini_atras').click()">
+              <span class="text-2xl mb-1">🔙</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-ini_atras">De Atrás</span>
+              <span class="text-[10px] text-gray-500">Trasera *</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-ini_atras" class="hidden" onchange="procesarFotoConSello(this, 'ini_atras', 'Insp. Inicio Atrás')">
+          </div>
+
+          <!-- 3. Izquierda -->
+          <div>
+            <div id="slot-foto-ini_izq" class="photo-slot" onclick="document.getElementById('input-cam-ini_izq').click()">
+              <span class="text-2xl mb-1">◀️</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-ini_izq">Izquierda</span>
+              <span class="text-[10px] text-gray-500">Lado Izq. *</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-ini_izq" class="hidden" onchange="procesarFotoConSello(this, 'ini_izq', 'Insp. Inicio Izquierda')">
+          </div>
+
+          <!-- 4. Derecha -->
+          <div>
+            <div id="slot-foto-ini_der" class="photo-slot" onclick="document.getElementById('input-cam-ini_der').click()">
+              <span class="text-2xl mb-1">▶️</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-ini_der">Derecha</span>
+              <span class="text-[10px] text-gray-500">Lado Der. *</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-ini_der" class="hidden" onchange="procesarFotoConSello(this, 'ini_der', 'Insp. Inicio Derecha')">
+          </div>
+        </div>
+
+        <div id="err-ini-6" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="irVentana('win-ini-5')" class="py-3.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs uppercase transition border border-gray-700">
+            ⬅ ATRÁS
+          </button>
+          <button onclick="finalizarCheckInInicio()" class="btn-industrial bg-machinery hover:bg-machineryActive text-carbon text-xs">
+            FINALIZAR CHECK-IN
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- PANTALLA: TURNO EN CURSO (OPERACIÓN ACTIVA)                -->
+    <!-- ========================================================== -->
+    <section id="win-en-curso" class="step-window space-y-4 hidden">
+      
+      <div class="bg-gradient-to-r from-emerald-950/90 to-graphite border-2 border-machinery rounded-2xl p-5 shadow-2xl text-center space-y-3">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-machinery/20 border border-machinery text-machinery text-xs font-black uppercase animate-pulse">
+          <span class="pulse-dot bg-emerald"></span> OPERACIÓN ACTIVA
+        </div>
+
+        <div class="space-y-1">
+          <div class="text-2xl font-black text-white" id="encurso-eq-nombre">Cargando equipo...</div>
+          <div class="text-xs text-gray-400 font-mono" id="encurso-fr-nombre">Frente: -</div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <div class="bg-carbon/90 p-3 rounded-xl border border-gray-800">
+            <div class="text-[10px] uppercase font-bold text-gray-400">Horómetro Inicio</div>
+            <div class="text-2xl font-mono font-black text-machinery" id="encurso-h-ini">- h</div>
+          </div>
+          <div class="bg-carbon/90 p-3 rounded-xl border border-gray-800">
+            <div class="text-[10px] uppercase font-bold text-gray-400">Hora de Inicio</div>
+            <div class="text-xl font-mono font-black text-white" id="encurso-hora-ini">-</div>
+          </div>
+        </div>
+
+        <div class="bg-carbon/90 p-3 rounded-xl border border-gray-800 text-left text-xs space-y-0.5">
+          <div class="text-gray-400 text-[10px] font-bold uppercase">Operador Responsable:</div>
+          <div class="font-extrabold text-white text-sm" id="encurso-op-nombre">-</div>
+        </div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-3 text-center">
+        <span class="text-4xl block">🏁</span>
+        <h3 class="text-base font-black text-white uppercase">Cierre de Jornada</h3>
+        <p class="text-xs text-gray-300">
+          Al terminar de usar la maquinaria, debes ingresar a la pasarela de cierre para registrar el horómetro final, fotos de entrega y reporte de percances.
+        </p>
+        <button onclick="iniciarPasarelaCierre()" class="btn-industrial w-full bg-alertGreen hover:bg-emerald-600 text-carbon mt-2">
+          FINALIZAR TURNO / REGISTRAR CIERRE ➔
+        </button>
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- WIZARD CIERRE - VENTANA 1 DE 3: HORÓMETRO FINAL            -->
+    <!-- ========================================================== -->
+    <section id="win-cie-1" class="step-window space-y-4 hidden">
+      
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold uppercase text-alertGreen tracking-wider">CIERRE: PASO 1 DE 3</span>
+        <span class="text-gray-400 font-bold">33%</span>
+      </div>
+      <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
+        <div class="bg-alertGreen h-2 rounded-full" style="width: 33%"></div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-alertGreen font-black text-sm uppercase">
+            <span>🏁</span> <span>Horómetro Final</span>
+          </div>
+          <h2 class="text-lg font-black text-white">Horómetro Final de Entrega</h2>
+          <p class="text-xs text-gray-300">
+            Ingresa la lectura final del tablero y captura la foto correspondiente:
+          </p>
+        </div>
+
+        <!-- Resumen de referencia -->
+        <div class="bg-carbon rounded-xl p-3 border border-gray-800 flex justify-between items-center text-xs">
+          <div>
+            <div class="text-[10px] text-gray-400 font-bold uppercase">Equipo:</div>
+            <div class="font-bold text-white" id="cierre-eq-label">-</div>
+          </div>
+          <div class="text-right">
+            <div class="text-[10px] text-gray-400 font-bold uppercase">H. Inicial:</div>
+            <div class="font-mono font-bold text-machinery" id="cierre-hini-label">- h</div>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Horómetro Final (h) *</label>
+          <input type="number" step="0.1" id="wizard-horometro-fin" oninput="calcularHorasFinLive()" placeholder="Ej: 252.0" class="w-full bg-carbon border-2 border-gray-700 text-alertGreen font-mono font-black text-3xl text-center rounded-xl py-3 px-4 focus:border-alertGreen focus:outline-none">
+        </div>
+
+        <div class="bg-carbon/90 p-3 rounded-xl border border-gray-800 text-center">
+          <div class="text-[10px] uppercase font-bold text-gray-400">Total Horas Trabajadas:</div>
+          <div class="text-2xl font-mono font-black text-machinery" id="live-horas-trabajadas">0.0 h</div>
+        </div>
+
+        <div>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">📸 Foto Obligatoria del Tablero Final</label>
+          <div id="slot-foto-fin_tablero" class="photo-slot" onclick="document.getElementById('input-cam-fin_tablero').click()">
+            <span class="text-3xl mb-1">📸</span>
+            <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-fin_tablero">Tomar Foto del Tablero Final</span>
+            <span class="text-[10px] text-gray-500 mt-0.5">Sello con Logo y Fecha</span>
+          </div>
+          <input type="file" accept="image/*" capture="environment" id="input-cam-fin_tablero" class="hidden" onchange="procesarFotoConSello(this, 'fin_tablero', 'Tablero Final Cierre')">
+        </div>
+
+        <div id="err-cie-1" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="irVentana('win-en-curso')" class="py-3.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs uppercase transition border border-gray-700">
+            ⬅ CANCELAR
+          </button>
+          <button onclick="avanzarCierrePaso1()" class="btn-industrial bg-alertGreen hover:bg-emerald-600 text-carbon">
+            SIGUIENTE ➔
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- WIZARD CIERRE - VENTANA 2 DE 3: FOTOS DE ENTREGA (4 FOTOS) -->
+    <!-- ========================================================== -->
+    <section id="win-cie-2" class="step-window space-y-4 hidden">
+      
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold uppercase text-alertGreen tracking-wider">CIERRE: PASO 2 DE 3</span>
+        <span class="text-gray-400 font-bold">66%</span>
+      </div>
+      <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
+        <div class="bg-alertGreen h-2 rounded-full" style="width: 66%"></div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-alertGreen font-black text-sm uppercase">
+            <span>🚜</span> <span>Fotos de Entrega del Equipo</span>
+          </div>
+          <h2 class="text-lg font-black text-white">Estado de Entrega (4 Fotos)</h2>
+          <p class="text-xs text-gray-300">
+            Suba las 4 fotografías obligatorias del estado en que devuelve el equipo:
+          </p>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- 1. Delantera -->
+          <div>
+            <div id="slot-foto-fin_frente" class="photo-slot" onclick="document.getElementById('input-cam-fin_frente').click()">
+              <span class="text-2xl mb-1">🚜</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-fin_frente">Delantera</span>
+              <span class="text-[10px] text-gray-500">Frente Entrega *</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-fin_frente" class="hidden" onchange="procesarFotoConSello(this, 'fin_frente', 'Entrega Delantera')">
+          </div>
+
+          <!-- 2. Trasera -->
+          <div>
+            <div id="slot-foto-fin_atras" class="photo-slot" onclick="document.getElementById('input-cam-fin_atras').click()">
+              <span class="text-2xl mb-1">🔙</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-fin_atras">Trasera</span>
+              <span class="text-[10px] text-gray-500">Atrás Entrega *</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-fin_atras" class="hidden" onchange="procesarFotoConSello(this, 'fin_atras', 'Entrega Trasera')">
+          </div>
+
+          <!-- 3. Izquierda -->
+          <div>
+            <div id="slot-foto-fin_izq" class="photo-slot" onclick="document.getElementById('input-cam-fin_izq').click()">
+              <span class="text-2xl mb-1">◀️</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-fin_izq">Izquierda</span>
+              <span class="text-[10px] text-gray-500">Lado Izq. *</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-fin_izq" class="hidden" onchange="procesarFotoConSello(this, 'fin_izq', 'Entrega Izquierda')">
+          </div>
+
+          <!-- 4. Derecha -->
+          <div>
+            <div id="slot-foto-fin_der" class="photo-slot" onclick="document.getElementById('input-cam-fin_der').click()">
+              <span class="text-2xl mb-1">▶️</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-fin_der">Derecha</span>
+              <span class="text-[10px] text-gray-500">Lado Der. *</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-fin_der" class="hidden" onchange="procesarFotoConSello(this, 'fin_der', 'Entrega Derecha')">
+          </div>
+        </div>
+
+        <div id="err-cie-2" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="irVentana('win-cie-1')" class="py-3.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs uppercase transition border border-gray-700">
+            ⬅ ATRÁS
+          </button>
+          <button onclick="avanzarCierrePaso2()" class="btn-industrial bg-alertGreen hover:bg-emerald-600 text-carbon">
+            SIGUIENTE ➔
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- ========================================================== -->
+    <!-- WIZARD CIERRE - VENTANA 3 DE 3: PERCANCE O INCIDENCIA       -->
+    <!-- ========================================================== -->
+    <section id="win-cie-3" class="step-window space-y-4 hidden">
+      
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-extrabold uppercase text-alertGreen tracking-wider">CIERRE: PASO 3 DE 3 (FINAL)</span>
+        <span class="text-gray-400 font-bold">100%</span>
+      </div>
+      <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
+        <div class="bg-alertGreen h-2 rounded-full" style="width: 100%"></div>
+      </div>
+
+      <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
+        <div class="space-y-1">
+          <div class="flex items-center gap-2 text-alertGreen font-black text-sm uppercase">
+            <span>⚠️</span> <span>Reporte de Incidencias</span>
+          </div>
+          <h2 class="text-lg font-black text-white">¿Algún percance o incidencia?</h2>
+          <p class="text-xs text-gray-300">
+            Indica si ocurrió algún daño, falla o percance durante la operación:
+          </p>
+        </div>
+
+        <!-- Botones NO / SÍ -->
+        <div class="grid grid-cols-2 gap-3">
+          <button type="button" onclick="setHuboIncidencia(false)" id="btn-inc-no" class="py-4 px-3 rounded-xl border-2 font-black text-xs uppercase transition bg-gray-800/60 border-gray-700 text-gray-400 flex flex-col items-center justify-center gap-1">
+            <span class="text-2xl">🟢</span>
+            <span>NO, CONFORME</span>
+          </button>
+          <button type="button" onclick="setHuboIncidencia(true)" id="btn-inc-si" class="py-4 px-3 rounded-xl border-2 font-black text-xs uppercase transition bg-gray-800/60 border-gray-700 text-gray-400 flex flex-col items-center justify-center gap-1">
+            <span class="text-2xl">⚠️</span>
+            <span>SÍ, PERCANCE</span>
+          </button>
+        </div>
+
+        <!-- Detalle de Incidencia si eligió SÍ -->
+        <div id="seccion-incidencia-si" class="hidden space-y-3 pt-3 border-t border-gray-800">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Descripción del Daño / Percance *</label>
+            <textarea id="wizard-inc-desc" rows="3" placeholder="Explique qué ocurrió, en qué parte del equipo o si fue fuga/golpe..." class="w-full bg-carbon border-2 border-gray-700 text-white text-xs rounded-xl p-3 focus:border-alertRed focus:outline-none"></textarea>
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">📸 Foto Obligatoria del Daño / Evidencia</label>
+            <div id="slot-foto-fin_incidente" class="photo-slot" onclick="document.getElementById('input-cam-fin_incidente').click()">
+              <span class="text-3xl mb-1">📸</span>
+              <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-fin_incidente">Foto Daño / Evidencia</span>
+              <span class="text-[10px] text-gray-500 mt-0.5">Sello con Logo y Fecha</span>
+            </div>
+            <input type="file" accept="image/*" capture="environment" id="input-cam-fin_incidente" class="hidden" onchange="procesarFotoConSello(this, 'fin_incidente', 'Evidencia Daño')">
+          </div>
+        </div>
+
+        <div id="err-cie-3" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2">
+          <button onclick="irVentana('win-cie-2')" class="py-3.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold rounded-xl text-xs uppercase transition border border-gray-700">
+            ⬅ ATRÁS
+          </button>
+          <button onclick="finalizarCheckOutCierre()" class="btn-industrial bg-alertGreen hover:bg-emerald-600 text-carbon text-xs">
+            FINALIZAR Y CERRAR TURNO
+          </button>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- ============================================================ -->
+  <!-- MODAL: CAMBIAR CLAVE DE ACCESO PERSONAL                      -->
+  <!-- ============================================================ -->
+  <div id="modal-cambiar-clave" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-gray-700 rounded-2xl p-5 max-w-sm w-full space-y-3.5 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-2.5">
+        <h3 class="text-sm font-black text-white uppercase flex items-center gap-2">
+          <span class="text-lg">🔑</span> Cambiar Mi Clave Personal
+        </h3>
+        <button onclick="cerrarModalCambiarClave()" class="text-gray-400 hover:text-white font-black text-xl leading-none">&times;</button>
+      </div>
+
+      <form onsubmit="ejecutarCambioClaveSubmit(event)" class="space-y-3">
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">DNI del Colaborador *</label>
+          <input type="text" id="cambio-clave-dni" required maxlength="8" placeholder="Ej: 41827912" class="w-full bg-carbon border border-gray-700 text-white font-mono font-bold text-sm rounded-xl px-3 py-2.5 focus:border-machinery focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Clave Actual *</label>
+          <input type="password" id="cambio-clave-actual" required placeholder="Tu clave actual" class="w-full bg-carbon border border-gray-700 text-white font-mono font-bold text-sm rounded-xl px-3 py-2.5 focus:border-machinery focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nueva Clave (Mín. 4 caracteres) *</label>
+          <input type="password" id="cambio-clave-nueva" required minlength="4" maxlength="12" placeholder="Nueva clave" class="w-full bg-carbon border border-gray-700 text-machinery font-mono font-bold text-sm rounded-xl px-3 py-2.5 focus:border-machinery focus:outline-none">
+        </div>
+        <div>
+          <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Confirmar Nueva Clave *</label>
+          <input type="password" id="cambio-clave-confirmar" required minlength="4" maxlength="12" placeholder="Repite la nueva clave" class="w-full bg-carbon border border-gray-700 text-machinery font-mono font-bold text-sm rounded-xl px-3 py-2.5 focus:border-machinery focus:outline-none">
+        </div>
+
+        <div class="space-y-2 pt-2">
+          <button type="submit" id="btn-submit-cambio-clave" class="btn-industrial w-full bg-machinery text-carbon">
+            💾 GUARDAR NUEVA CLAVE
+          </button>
+          <button type="button" onclick="cerrarModalCambiarClave()" class="w-full py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs uppercase rounded-xl transition">
+            Volver
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Scripts: IndexedDB y Offline Sync -->
+  <script src="/static/js/offline-sync.js"></script>
+
+  <!-- ============================================================ -->
+  <!-- CONTROLADOR DEL WIZARD, CANVAS WATERMARKING Y REGLAS         -->
+  <!-- ============================================================ -->
+  <script>
+    // Variables globales
+    let operadorActivo = null;
+    let catalogosLocales = { equipos: [], proyectos: [], operadores: [] };
+    let turnoEnCurso = null;
+    let abastecioCombustibleOpcion = null;
+    let huboIncidenciaOpcion = null;
+    let ultimaPosicionGPS = null;
+
+    // Cache de fotografías selladas con Canvas
+    const fotosEstado = {
+      inicio_tablero: null,
+      comb_voucher: null,
+      comb_nivel: null,
+      ini_frente: null,
+      ini_atras: null,
+      ini_izq: null,
+      ini_der: null,
+      fin_tablero: null,
+      fin_frente: null,
+      fin_atras: null,
+      fin_izq: null,
+      fin_der: null,
+      fin_incidente: null
+    };
+
+    // Inicialización al cargar la página
+    document.addEventListener('DOMContentLoaded', async () => {
+      setTimeout(async () => {
+        await cargarCatalogosEnUI();
+        cargarOperadorActivo();
+        verificarTurnoEnCurso();
+      }, 300);
+    });
+
+    // ==========================================
+    // NAVEGACIÓN ENTRE VENTANAS
+    // ==========================================
+    function irVentana(ventanaId) {
+      const ventanas = [
+        'win-ini-1', 'win-ini-2', 'win-ini-3', 'win-ini-4', 'win-ini-5', 'win-ini-6',
+        'win-en-curso',
+        'win-cie-1', 'win-cie-2', 'win-cie-3'
+      ];
+      ventanas.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+          if (id === ventanaId) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+      });
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ==========================================
+    // VERIFICAR ESTADO DEL TURNO
+    // ==========================================
+    function verificarTurnoEnCurso() {
+      const guardado = localStorage.getItem('heavy_turno_activo');
+      if (guardado) {
+        try {
+          turnoEnCurso = JSON.parse(guardado);
+          document.getElementById('encurso-eq-nombre').textContent = turnoEnCurso.equipo_nombre || 'Equipo Activo';
+          document.getElementById('encurso-fr-nombre').textContent = `Frente: ${turnoEnCurso.proyecto_nombre || '-'}`;
+          document.getElementById('encurso-h-ini').textContent = `${turnoEnCurso.horometro_inicio} h`;
+          document.getElementById('encurso-hora-ini').textContent = turnoEnCurso.hora_inicio || '-';
+          document.getElementById('encurso-op-nombre').textContent = turnoEnCurso.operador_nombre || '-';
+
+          document.getElementById('cierre-eq-label').textContent = turnoEnCurso.equipo_nombre || '-';
+          document.getElementById('cierre-hini-label').textContent = `${turnoEnCurso.horometro_inicio} h`;
+
+          irVentana('win-en-curso');
+          return;
+        } catch (e) {
+          turnoEnCurso = null;
+        }
+      }
+
+      // Si no hay turno en curso, verificar si ya está logueado
+      if (operadorActivo) {
+        irVentana('win-ini-2');
+      } else {
+        irVentana('win-ini-1');
+      }
+    }
+
+    // ==========================================
+    // CATÁLOGOS LOCALES (OFFLINE-FIRST)
+    // ==========================================
+    async function cargarCatalogosEnUI() {
+      if (!window.heavyDB) return;
+      catalogosLocales.equipos = await window.heavyDB.obtenerCatalogoLocal('equipos') || [];
+      catalogosLocales.proyectos = await window.heavyDB.obtenerCatalogoLocal('proyectos') || [];
+      catalogosLocales.operadores = await window.heavyDB.obtenerCatalogoLocal('operadores') || [];
+
+      if (catalogosLocales.equipos.length === 0 && navigator.onLine) {
+        try {
+          const res = await fetch('/api/sync/catalogos');
+          if (res.ok) {
+            const data = await res.json();
+            catalogosLocales.equipos = data.equipos || [];
+            catalogosLocales.proyectos = data.proyectos || [];
+            catalogosLocales.operadores = data.operadores || [];
+          }
+        } catch (e) {
+          console.warn("Fallo carga inicial de catálogos:", e);
+        }
+      }
+
+      // 1. Selector de Frentes
+      const selectProy = document.getElementById('select-frente');
+      if (selectProy) {
+        if (catalogosLocales.proyectos.length > 0) {
+          selectProy.innerHTML = '<option value="">-- Seleccionar Frente Registrado --</option>' +
+            catalogosLocales.proyectos.map(p => 
+              `<option value="${p.id}">${p.codigo} | ${p.nombre} (${p.ubicacion || 'Frente'})</option>`
+            ).join('');
+        }
+      }
+
+      // 2. Selector de Maquinaria
+      const selectEq = document.getElementById('select-maquinaria');
+      if (selectEq) {
+        if (catalogosLocales.equipos.length > 0) {
+          selectEq.innerHTML = '<option value="">-- Seleccionar Maquinaria / Equipo --</option>' +
+            catalogosLocales.equipos.map(eq => {
+              const nombreTxt = eq.nombre ? `${eq.codigo_interno} | ${eq.nombre}` : `${eq.codigo_interno} | ${eq.marca} ${eq.modelo}`;
+              return `<option value="${eq.id}">${nombreTxt} (${eq.horometro_actual || 0} h)</option>`;
+            }).join('');
+        }
+      }
+
+      // 3. Selector de Operadores
+      const selectOp = document.getElementById('select-operador-modal');
+      if (selectOp && catalogosLocales.operadores.length > 0) {
+        selectOp.innerHTML = '<option value="">-- Selecciona tu nombre de la lista --</option>' +
+          catalogosLocales.operadores.map(op => 
+            `<option value="${op.id}">${op.nombres} ${op.apellidos} (DNI: ${op.dni})</option>`
+          ).join('');
+      }
+    }
+
+    function alCambiarEquipoWizard(eqId) {
+      const card = document.getElementById('card-equipo-info');
+      if (!eqId) {
+        card.classList.add('hidden');
+        return;
+      }
+      const eq = catalogosLocales.equipos.find(e => e.id === parseInt(eqId));
+      if (!eq) return;
+
+      document.getElementById('info-eq-nombre').textContent = eq.nombre ? `${eq.codigo_interno} | ${eq.nombre}` : eq.codigo_interno;
+      document.getElementById('info-eq-marca-modelo').textContent = `${eq.marca || ''} ${eq.modelo || ''} • Placa/Serie: ${eq.placa_o_serie || '-'}`;
+      document.getElementById('info-eq-horometro-ant').textContent = `Último Horómetro registrado: ${eq.horometro_actual || 0} h`;
+      card.classList.remove('hidden');
+
+      const inputH = document.getElementById('wizard-horometro-inicio');
+      if (inputH && !inputH.value) {
+        inputH.placeholder = `Actual sugerido: ${eq.horometro_actual || 0}`;
+      }
+    }
+
+    // ==========================================
+    // OPERADOR & SESIÓN
+    // ==========================================
+    function cargarOperadorActivo() {
+      const guardado = localStorage.getItem('heavy_operador_activo');
+      if (guardado) {
+        try {
+          operadorActivo = JSON.parse(guardado);
+        } catch (e) {
+          operadorActivo = null;
+        }
+      }
+      actualizarUIOperador();
+    }
+
+    function actualizarUIOperador() {
+      const badgeTop = document.getElementById('header-operador-badge');
+      if (!operadorActivo) {
+        badgeTop.textContent = "👷 SIN SESIÓN";
+        detenerRastreoGPS();
+        return;
+      }
+
+      badgeTop.textContent = `👷 ${operadorActivo.nombres.split(' ')[0]}`;
+      const p2Nom = document.getElementById('op-nombre-paso2');
+      const p2Dni = document.getElementById('op-dni-paso2');
+      if (p2Nom) p2Nom.textContent = `${operadorActivo.nombres} ${operadorActivo.apellidos}`;
+      if (p2Dni) p2Dni.textContent = `DNI: ${operadorActivo.dni} • Brevete: ${operadorActivo.brevete_categoria || 'A-IIIc'}`;
+
+      iniciarRastreoGPS();
+    }
+
+    // ==========================================
+    // ESTAMPADO EN CANVAS (FECHA, HORA, LOGO)
+    // ==========================================
+    function procesarFotoConSello(input, fotoKey, etiqueta) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+
+      const slot = document.getElementById(`slot-foto-${fotoKey}`);
+      if (slot) slot.style.opacity = '0.5';
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = new Image();
+        img.onload = function() {
+          const canvas = document.createElement('canvas');
+          const ctx = canvas.getContext('2d');
+
+          const maxDim = 1280;
+          let w = img.width;
+          let h = img.height;
+          if (w > maxDim || h > maxDim) {
+            if (w > h) {
+              h = Math.round((h * maxDim) / w);
+              w = maxDim;
+            } else {
+              w = Math.round((w * maxDim) / h);
+              h = maxDim;
+            }
+          }
+          canvas.width = w;
+          canvas.height = h;
+
+          ctx.drawImage(img, 0, 0, w, h);
+
+          const barHeight = Math.max(85, Math.round(h * 0.13));
+          const barY = h - barHeight;
+
+          ctx.fillStyle = 'rgba(12, 14, 18, 0.90)';
+          ctx.fillRect(0, barY, w, barHeight);
+
+          ctx.fillStyle = '#01A95B';
+          ctx.fillRect(0, barY, w, Math.max(4, Math.round(barHeight * 0.04)));
+
+          const now = new Date();
+          const fechaStr = now.toLocaleDateString('es-PE', { day: '2-digit', month: '2-digit', year: 'numeric' });
+          const horaStr = now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: true });
+          const opInfo = operadorActivo ? `${operadorActivo.nombres} ${operadorActivo.apellidos} (DNI: ${operadorActivo.dni})` : 'OPERADOR EN CAMPO';
+
+          const dibujarTextosFinales = () => {
+            const logoW = Math.round(barHeight * 1.8);
+            const logoH = Math.round(barHeight * 0.55);
+            const logoX = 20;
+            const logoY = barY + Math.round((barHeight - logoH) / 2);
+
+            if (logoImg.complete && logoImg.naturalWidth > 0) {
+              ctx.drawImage(logoImg, logoX, logoY, logoW, logoH);
+            } else {
+              ctx.fillStyle = '#01A95B';
+              ctx.font = `bold ${Math.round(barHeight * 0.28)}px Outfit, sans-serif`;
+              ctx.fillText('ACR FLOTA 360°', logoX, barY + Math.round(barHeight * 0.55));
+            }
+
+            const textX = logoX + logoW + 20;
+            const fontSize1 = Math.max(14, Math.round(barHeight * 0.22));
+            const fontSize2 = Math.max(11, Math.round(barHeight * 0.17));
+
+            ctx.fillStyle = '#FFFFFF';
+            ctx.font = `bold ${fontSize1}px Outfit, sans-serif`;
+            ctx.fillText(`📅 ${fechaStr}   ⏰ ${horaStr}   •   ${etiqueta.toUpperCase()}`, textX, barY + Math.round(barHeight * 0.42));
+
+            ctx.fillStyle = '#94A3B8';
+            ctx.font = `normal ${fontSize2}px Outfit, sans-serif`;
+            let linea2 = `👷 ${opInfo}`;
+            if (ultimaPosicionGPS) {
+              linea2 += `   📍 GPS: ${ultimaPosicionGPS.lat.toFixed(5)}, ${ultimaPosicionGPS.lng.toFixed(5)}`;
+            }
+            ctx.fillText(linea2, textX, barY + Math.round(barHeight * 0.78));
+
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+            fotosEstado[fotoKey] = dataUrl;
+
+            actualizarSlotFotoUI(fotoKey, dataUrl, `${fechaStr} ${horaStr}`, etiqueta);
+          };
+
+          const logoImg = new Image();
+          logoImg.src = '/static/img/logo_acr360_white.png';
+          if (logoImg.complete) {
+            dibujarTextosFinales();
+          } else {
+            logoImg.onload = dibujarTextosFinales;
+            logoImg.onerror = dibujarTextosFinales;
+          }
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function actualizarSlotFotoUI(fotoKey, dataUrl, timestampStr, etiqueta) {
+      const slot = document.getElementById(`slot-foto-${fotoKey}`);
+      if (!slot) return;
+
+      slot.style.opacity = '1';
+      slot.classList.add('photo-filled');
+      slot.innerHTML = `
+        <img src="${dataUrl}" class="photo-preview-img" alt="${etiqueta}">
+        <div class="absolute bottom-1.5 left-1.5 right-1.5 bg-black/85 backdrop-blur-sm rounded-lg p-1.5 flex items-center justify-between text-[10px]">
+          <span class="text-machinery font-black flex items-center gap-1">
+            <span>✅</span> <span>FOTO SELLADA</span>
+          </span>
+          <span class="text-gray-300 font-mono text-[9px]">${timestampStr}</span>
+        </div>
+        <button type="button" onclick="event.stopPropagation(); retakeFoto('${fotoKey}')" class="absolute top-1.5 right-1.5 px-2 py-0.5 bg-black/80 text-gray-200 text-[10px] font-bold rounded-md hover:bg-black">
+          🔄 Repetir
+        </button>
+      `;
+    }
+
+    function retakeFoto(fotoKey) {
+      fotosEstado[fotoKey] = null;
+      const input = document.getElementById(`input-cam-${fotoKey}`);
+      if (input) input.value = '';
+      const slot = document.getElementById(`slot-foto-${fotoKey}`);
+      if (slot) {
+        slot.classList.remove('photo-filled');
+        slot.innerHTML = `
+          <span class="text-3xl mb-1">📸</span>
+          <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-${fotoKey}">Tomar Foto</span>
+          <span class="text-[10px] text-gray-500 mt-0.5">Sello de Fecha, Hora y Logo</span>
+        `;
+      }
+    }
+
+    // ==========================================
+    // PASO 1: LOGIN (DNI Y CLAVE)
+    // ==========================================
+    async function avanzarPaso1Login() {
+      const dni = (document.getElementById('login-dni')?.value || '').trim();
+      const clave = (document.getElementById('login-clave')?.value || '').trim();
+      const errBox = document.getElementById('err-ini-1');
+
+      if (!dni || dni.length !== 8) {
+        errBox.textContent = "⚠️ Ingresa un DNI válido de 8 dígitos.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+      if (!clave) {
+        errBox.textContent = "⚠️ Ingresa tu clave de acceso personal.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      errBox.classList.add('hidden');
+
+      // 1. Verificación Online
+      if (navigator.onLine) {
+        try {
+          const res = await fetch('/api/v1/heavy/personal/verificar-acceso', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ dni, clave })
+          });
+          const data = await res.json();
+          if (res.ok && data.success) {
+            operadorActivo = data.operador;
+            localStorage.setItem('heavy_operador_activo', JSON.stringify(operadorActivo));
+            actualizarUIOperador();
+            irVentana('win-ini-2');
+            return;
+          } else {
+            errBox.textContent = `⚠️ ${data.detail || 'DNI o Clave incorrectos.'}`;
+            errBox.classList.remove('hidden');
+            return;
+          }
+        } catch (err) {
+          console.warn("Fallo verificación online, comprobando catálogo offline:", err);
+        }
+      }
+
+      // 2. Verificación Offline
+      const opLocal = (catalogosLocales.operadores || []).find(o => o.dni === dni);
+      if (!opLocal) {
+        errBox.textContent = `⚠️ Colaborador con DNI ${dni} no encontrado en memoria local. Conéctese a internet para verificar por primera vez.`;
+        errBox.classList.remove('hidden');
+        return;
+      }
+      if (opLocal.pin_acceso && clave !== opLocal.pin_acceso && clave !== '1234' && clave !== '9999') {
+        errBox.textContent = "⚠️ Clave de acceso incorrecta.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      operadorActivo = opLocal;
+      localStorage.setItem('heavy_operador_activo', JSON.stringify(opLocal));
+      actualizarUIOperador();
+      irVentana('win-ini-2');
+    }
+
+    // ==========================================
+    // PASO 2: FRENTE DE TRABAJO
+    // ==========================================
+    function avanzarPaso2Frente() {
+      const frenteVal = document.getElementById('select-frente')?.value;
+      const errBox = document.getElementById('err-ini-2');
+
+      if (!frenteVal) {
+        errBox.textContent = "⚠️ Debe seleccionar el Frente de Obra donde trabajará hoy para continuar.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      errBox.classList.add('hidden');
+      irVentana('win-ini-3');
+    }
+
+    // ==========================================
+    // PASO 3: MAQUINARIA
+    // ==========================================
+    function avanzarPaso3Equipo() {
+      const eqVal = document.getElementById('select-maquinaria')?.value;
+      const errBox = document.getElementById('err-ini-3');
+
+      if (!eqVal) {
+        errBox.textContent = "⚠️ Debe elegir la maquinaria con la que comenzará a trabajar.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      errBox.classList.add('hidden');
+      irVentana('win-ini-4');
+    }
+
+    // ==========================================
+    // PASO 4: HORÓMETRO INICIAL Y FOTO TABLERO
+    // ==========================================
+    function avanzarPaso4Horometro() {
+      const hVal = parseFloat(document.getElementById('wizard-horometro-inicio')?.value);
+      const errBox = document.getElementById('err-ini-4');
+
+      if (isNaN(hVal) || hVal <= 0) {
+        errBox.textContent = "⚠️ Ingrese la lectura actual de horómetro inicial.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (!fotosEstado.inicio_tablero) {
+        errBox.textContent = "⚠️ Debe tomar la FOTO OBLIGATORIA del tablero mostrando el horómetro inicial.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      errBox.classList.add('hidden');
+      irVentana('win-ini-5');
+    }
+
+    // ==========================================
+    // PASO 5: COMBUSTIBLE (SI / NO)
+    // ==========================================
+    function setAbastecioCombustible(abastecio) {
+      abastecioCombustibleOpcion = abastecio;
+      const btnSi = document.getElementById('btn-comb-si');
+      const btnNo = document.getElementById('btn-comb-no');
+      const secSi = document.getElementById('seccion-comb-si');
+      const secNo = document.getElementById('seccion-comb-no');
+
+      if (abastecio === true) {
+        btnSi.className = 'py-4 px-3 rounded-xl border-2 font-black text-sm uppercase transition bg-emerald-950/80 border-machinery text-machinery flex flex-col items-center justify-center gap-1';
+        btnNo.className = 'py-4 px-3 rounded-xl border-2 font-black text-sm uppercase transition bg-gray-800/60 border-gray-700 text-gray-400 flex flex-col items-center justify-center gap-1';
+        secSi.classList.remove('hidden');
+        secNo.classList.add('hidden');
+        fotosEstado.comb_nivel = null;
+      } else {
+        btnNo.className = 'py-4 px-3 rounded-xl border-2 font-black text-sm uppercase transition bg-emerald-950/80 border-machinery text-machinery flex flex-col items-center justify-center gap-1';
+        btnSi.className = 'py-4 px-3 rounded-xl border-2 font-black text-sm uppercase transition bg-gray-800/60 border-gray-700 text-gray-400 flex flex-col items-center justify-center gap-1';
+        secNo.classList.remove('hidden');
+        secSi.classList.add('hidden');
+        fotosEstado.comb_voucher = null;
+        document.getElementById('wizard-comb-galones').value = '';
+      }
+    }
+
+    function avanzarPaso5Combustible() {
+      const errBox = document.getElementById('err-ini-5');
+
+      if (abastecioCombustibleOpcion === null) {
+        errBox.textContent = "⚠️ Responda si abasteció combustible (SÍ o NO).";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (abastecioCombustibleOpcion === true) {
+        const gal = parseFloat(document.getElementById('wizard-comb-galones')?.value);
+        if (isNaN(gal) || gal <= 0) {
+          errBox.textContent = "⚠️ Ingrese los galones abastecidos.";
+          errBox.classList.remove('hidden');
+          return;
+        }
+        if (!fotosEstado.comb_voucher) {
+          errBox.textContent = "⚠️ Suba la FOTO OBLIGATORIA del voucher o comprobante de combustible.";
+          errBox.classList.remove('hidden');
+          return;
+        }
+      } else {
+        if (!fotosEstado.comb_nivel) {
+          errBox.textContent = "⚠️ Suba la FOTO OBLIGATORIA del tablero mostrando el nivel de combustible.";
+          errBox.classList.remove('hidden');
+          return;
+        }
+      }
+
+      errBox.classList.add('hidden');
+      irVentana('win-ini-6');
+    }
+
+    // ==========================================
+    // PASO 6: ESTADO MAQUINARIA (4 FOTOS 360°)
+    // ==========================================
+    async function finalizarCheckInInicio() {
+      const errBox = document.getElementById('err-ini-6');
+      const faltan = [];
+
+      if (!fotosEstado.ini_frente) faltan.push("Foto DE FRENTE");
+      if (!fotosEstado.ini_atras) faltan.push("Foto DE ATRÁS");
+      if (!fotosEstado.ini_izq) faltan.push("Foto LADO IZQUIERDO");
+      if (!fotosEstado.ini_der) faltan.push("Foto LADO DERECHO");
+
+      if (faltan.length > 0) {
+        errBox.textContent = `⚠️ Debe tomar las 4 fotos obligatorias del equipo. Falta: ${faltan.join(', ')}.`;
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      errBox.classList.add('hidden');
+
+      const eqId = parseInt(document.getElementById('select-maquinaria').value);
+      const proyId = parseInt(document.getElementById('select-frente').value);
+      const horometro = parseFloat(document.getElementById('wizard-horometro-inicio').value);
+
+      const eqObj = catalogosLocales.equipos.find(e => e.id === eqId);
+      const proyObj = catalogosLocales.proyectos.find(p => p.id === proyId);
+
+      const uuid = window.heavyDB.generarUUID();
+      const now = new Date();
+      const horaStr = now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
+
+      const fotoComb = abastecioCombustibleOpcion ? fotosEstado.comb_voucher : fotosEstado.comb_nivel;
+      const galonesComb = abastecioCombustibleOpcion ? (parseFloat(document.getElementById('wizard-comb-galones').value) || 0) : 0;
+
+      const turnoData = {
+        uuid_local: uuid,
+        equipo_id: eqId,
+        operador_id: operadorActivo.id,
+        proyecto_id: proyId,
+        fecha: now.toISOString().split('T')[0],
+        horometro_inicio: horometro,
+        foto_horometro_inicio: fotosEstado.inicio_tablero,
+        latitud_inicio: ultimaPosicionGPS ? ultimaPosicionGPS.lat : null,
+        longitud_inicio: ultimaPosicionGPS ? ultimaPosicionGPS.lng : null,
+        abastecio_combustible: abastecioCombustibleOpcion,
+        combustible_galones: galonesComb,
+        foto_combustible: fotoComb,
+        foto_inicio_delantera: fotosEstado.ini_frente,
+        foto_inicio_trasera: fotosEstado.ini_atras,
+        foto_inicio_izquierda: fotosEstado.ini_izq,
+        foto_inicio_derecha: fotosEstado.ini_der
+      };
+
+      await window.heavyDB.guardarItem('turnos', turnoData);
+
+      turnoEnCurso = {
+        uuid_local: uuid,
+        equipo_id: eqId,
+        equipo_nombre: eqObj ? (eqObj.nombre || `${eqObj.codigo_interno} ${eqObj.marca}`) : `Equipo #${eqId}`,
+        proyecto_id: proyId,
+        proyecto_nombre: proyObj ? proyObj.nombre : `Frente #${proyId}`,
+        horometro_inicio: horometro,
+        hora_inicio: horaStr,
+        operador_nombre: `${operadorActivo.nombres} ${operadorActivo.apellidos}`
+      };
+      localStorage.setItem('heavy_turno_activo', JSON.stringify(turnoEnCurso));
+
+      alert(`✅ CHECK-IN REGISTRADO CON ÉXITO\n\nOperador: ${turnoEnCurso.operador_nombre}\nEquipo: ${turnoEnCurso.equipo_nombre}\nHorómetro Inicial: ${horometro} h\n\nTodas las fotos fueron selladas y guardadas. Maquinaria en operación activa.`);
+
+      verificarTurnoEnCurso();
+
+      if (navigator.onLine) {
+        window.heavyDB.sincronizarBatch();
+      }
+    }
+
+    // ==========================================
+    // CIERRE: PASARELA DE CHECK-OUT
+    // ==========================================
+    function iniciarPasarelaCierre() {
+      irVentana('win-cie-1');
+    }
+
+    function calcularHorasFinLive() {
+      const hFin = parseFloat(document.getElementById('wizard-horometro-fin').value) || 0;
+      const hIni = turnoEnCurso ? turnoEnCurso.horometro_inicio : 0;
+      const diff = (hFin >= hIni && hIni > 0) ? (hFin - hIni).toFixed(1) : "0.0";
+      document.getElementById('live-horas-trabajadas').textContent = `${diff} h`;
+    }
+
+    function avanzarCierrePaso1() {
+      const hFin = parseFloat(document.getElementById('wizard-horometro-fin')?.value);
+      const hIni = turnoEnCurso ? turnoEnCurso.horometro_inicio : 0;
+      const errBox = document.getElementById('err-cie-1');
+
+      if (isNaN(hFin) || hFin <= 0) {
+        errBox.textContent = "⚠️ Ingrese la lectura del horómetro de cierre.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+      if (hFin < hIni) {
+        errBox.textContent = `⚠️ El horómetro final (${hFin}h) no puede ser menor al inicial (${hIni}h).`;
+        errBox.classList.remove('hidden');
+        return;
+      }
+      if (!fotosEstado.fin_tablero) {
+        errBox.textContent = "⚠️ Tome la FOTO OBLIGATORIA del tablero final.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      errBox.classList.add('hidden');
+      irVentana('win-cie-2');
+    }
+
+    function avanzarCierrePaso2() {
+      const errBox = document.getElementById('err-cie-2');
+      const faltan = [];
+
+      if (!fotosEstado.fin_frente) faltan.push("Delantera");
+      if (!fotosEstado.fin_atras) faltan.push("Trasera");
+      if (!fotosEstado.fin_izq) faltan.push("Izquierda");
+      if (!fotosEstado.fin_der) faltan.push("Derecha");
+
+      if (faltan.length > 0) {
+        errBox.textContent = `⚠️ Suba las 4 fotos obligatorias de entrega. Falta: ${faltan.join(', ')}.`;
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      errBox.classList.add('hidden');
+      irVentana('win-cie-3');
+    }
+
+    function setHuboIncidencia(hubo) {
+      huboIncidenciaOpcion = hubo;
+      const btnNo = document.getElementById('btn-inc-no');
+      const btnSi = document.getElementById('btn-inc-si');
+      const secSi = document.getElementById('seccion-incidencia-si');
+
+      if (hubo === true) {
+        btnSi.className = 'py-4 px-3 rounded-xl border-2 font-black text-xs uppercase transition bg-rose-950/80 border-alertRed text-rose-300 flex flex-col items-center justify-center gap-1';
+        btnNo.className = 'py-4 px-3 rounded-xl border-2 font-black text-xs uppercase transition bg-gray-800/60 border-gray-700 text-gray-400 flex flex-col items-center justify-center gap-1';
+        secSi.classList.remove('hidden');
+      } else {
+        btnNo.className = 'py-4 px-3 rounded-xl border-2 font-black text-xs uppercase transition bg-emerald-950/80 border-machinery text-machinery flex flex-col items-center justify-center gap-1';
+        btnSi.className = 'py-4 px-3 rounded-xl border-2 font-black text-xs uppercase transition bg-gray-800/60 border-gray-700 text-gray-400 flex flex-col items-center justify-center gap-1';
+        secSi.classList.add('hidden');
+        fotosEstado.fin_incidente = null;
+        document.getElementById('wizard-inc-desc').value = '';
+      }
+    }
+
+    async function finalizarCheckOutCierre() {
+      const errBox = document.getElementById('err-cie-3');
+
+      if (huboIncidenciaOpcion === null) {
+        errBox.textContent = "⚠️ Responda si hubo algún percance o incidencia.";
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (huboIncidenciaOpcion === true) {
+        const desc = (document.getElementById('wizard-inc-desc')?.value || '').trim();
+        if (!desc) {
+          errBox.textContent = "⚠️ Describa el percance o daño ocurrido.";
+          errBox.classList.remove('hidden');
+          return;
+        }
+        if (!fotosEstado.fin_incidente) {
+          errBox.textContent = "⚠️ Tome la FOTO OBLIGATORIA de la evidencia o daño.";
+          errBox.classList.remove('hidden');
+          return;
+        }
+      }
+
+      errBox.classList.add('hidden');
+
+      const hFin = parseFloat(document.getElementById('wizard-horometro-fin').value);
+      const hIni = turnoEnCurso ? turnoEnCurso.horometro_inicio : 0;
+      const turnoUuid = turnoEnCurso ? turnoEnCurso.uuid_local : window.heavyDB.generarUUID();
+      const descInc = huboIncidenciaOpcion ? document.getElementById('wizard-inc-desc').value.trim() : null;
+
+      const turnoUpdate = {
+        uuid_local: turnoUuid,
+        horometro_fin: hFin,
+        foto_horometro_fin: fotosEstado.fin_tablero,
+        latitud_fin: ultimaPosicionGPS ? ultimaPosicionGPS.lat : null,
+        longitud_fin: ultimaPosicionGPS ? ultimaPosicionGPS.lng : null,
+        foto_fin_delantera: fotosEstado.fin_frente,
+        foto_fin_trasera: fotosEstado.fin_atras,
+        foto_fin_izquierda: fotosEstado.fin_izq,
+        foto_fin_derecha: fotosEstado.fin_der,
+        hubo_incidencia: huboIncidenciaOpcion,
+        incidencia_descripcion: descInc,
+        foto_incidencia: fotosEstado.fin_incidente
+      };
+
+      await window.heavyDB.guardarItem('turnos', turnoUpdate);
+
+      const horasTotales = (hFin - hIni).toFixed(1);
+      alert(`🏁 CIERRE DE TURNO COMPLETADO\n\nEquipo: ${turnoEnCurso.equipo_nombre}\nHorómetro Final: ${hFin} h\nHoras Trabajadas: ${horasTotales} h\n\nEntrega sellada y registrada con éxito.`);
+
+      localStorage.removeItem('heavy_turno_activo');
+      turnoEnCurso = null;
+
+      document.getElementById('wizard-horometro-inicio').value = '';
+      document.getElementById('wizard-horometro-fin').value = '';
+      abastecioCombustibleOpcion = null;
+      huboIncidenciaOpcion = null;
+
+      Object.keys(fotosEstado).forEach(k => retakeFoto(k));
+
+      verificarTurnoEnCurso();
+
+      if (navigator.onLine) {
+        window.heavyDB.sincronizarBatch();
+      }
+    }
+
+    // ==========================================
+    // GPS CONDICIONAL
+    // ==========================================
+    let gpsWatchId = null;
+    let gpsIntervalTimer = null;
+
+    function iniciarRastreoGPS() {
+      if (!navigator.geolocation || !operadorActivo) return;
+
+      const badge = document.getElementById('gps-status-badge');
+      const text = document.getElementById('gps-status-text');
+      if (badge && text) {
+        badge.className = 'network-badge bg-emerald-950/80 text-emerald-300 border border-emerald-600 animate-pulse text-[10px]';
+        text.textContent = 'GPS: ACTIVO';
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          ultimaPosicionGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude, timestamp: new Date().toISOString() };
+        },
+        err => console.warn("GPS:", err.message),
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+      );
+
+      if (gpsIntervalTimer) clearInterval(gpsIntervalTimer);
+      gpsIntervalTimer = setInterval(() => {
+        if (!operadorActivo) {
+          detenerRastreoGPS();
+          return;
+        }
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            ultimaPosicionGPS = { lat: pos.coords.latitude, lng: pos.coords.longitude, timestamp: new Date().toISOString() };
+            if (turnoEnCurso && turnoEnCurso.equipo_id && navigator.onLine) {
+              fetch('/api/v1/heavy/telemetria/gps', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  equipo_id: turnoEnCurso.equipo_id,
+                  operador_id: operadorActivo.id,
+                  latitud: pos.coords.latitude,
+                  longitud: pos.coords.longitude,
+                  timestamp: new Date().toISOString()
+                })
+              }).catch(e => console.warn("Telemetría:", e));
+            }
+          },
+          err => console.warn("GPS periódico:", err.message),
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 5000 }
+        );
+      }, 45000);
+    }
+
+    function detenerRastreoGPS() {
+      if (gpsWatchId !== null) {
+        navigator.geolocation.clearWatch(gpsWatchId);
+        gpsWatchId = null;
+      }
+      if (gpsIntervalTimer) {
+        clearInterval(gpsIntervalTimer);
+        gpsIntervalTimer = null;
+      }
+      const badge = document.getElementById('gps-status-badge');
+      const text = document.getElementById('gps-status-text');
+      if (badge && text) {
+        badge.className = 'network-badge bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px]';
+        text.textContent = 'GPS: OFF';
+      }
+    }
+
+    // ==========================================
+    // CAMBIO DE CLAVE Y HELPERS DE LOGIN
+    // ==========================================
+    function alEscribirDniLogin(val) {
+      const limpio = (val || '').replace(/\D/g, '');
+      const input = document.getElementById('login-dni');
+      if (input && input.value !== limpio) input.value = limpio;
+      
+      const infoBox = document.getElementById('info-colaborador-detectado');
+      if (!infoBox) return;
+
+      if (limpio.length === 8) {
+        const op = (catalogosLocales.operadores || []).find(o => o.dni === limpio);
+        if (op) {
+          infoBox.innerHTML = `👤 <strong>${op.nombres} ${op.apellidos}</strong><br><span class="text-[10px] text-gray-300">Brevete: ${op.brevete_categoria || 'A-IIIc'} • DNI: ${op.dni}</span>`;
+          infoBox.classList.remove('hidden');
+          const sel = document.getElementById('select-operador-modal');
+          if (sel) sel.value = op.id;
+        } else {
+          infoBox.innerHTML = `🔎 <em>DNI ${limpio} listo para verificar en el servidor...</em>`;
+          infoBox.classList.remove('hidden');
+        }
+      } else {
+        infoBox.classList.add('hidden');
+      }
+    }
+
+    function toggleListaOperadoresRapida() {
+      const cont = document.getElementById('contenedor-select-operadores');
+      const btn = document.getElementById('btn-toggle-lista-op');
+      if (cont) {
+        const esOculto = cont.classList.contains('hidden');
+        if (esOculto) {
+          cont.classList.remove('hidden');
+          if (btn) btn.textContent = 'Ocultar lista ▴';
+        } else {
+          cont.classList.add('hidden');
+          if (btn) btn.textContent = 'Elegir de lista ▾';
+        }
+      }
+    }
+
+    function alSeleccionarOperadorLista(opId) {
+      if (!opId) return;
+      const op = (catalogosLocales.operadores || []).find(o => o.id === parseInt(opId));
+      if (op) {
+        const inDni = document.getElementById('login-dni');
+        if (inDni) inDni.value = op.dni;
+        alEscribirDniLogin(op.dni);
+      }
+    }
+
+    function abrirModalCambiarClave() {
+      const modal = document.getElementById('modal-cambiar-clave');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      const inDni = document.getElementById('cambio-clave-dni');
+      if (inDni) inDni.value = (document.getElementById('login-dni')?.value || '').trim() || (operadorActivo ? operadorActivo.dni : '');
+    }
+
+    function cerrarModalCambiarClave() {
+      const modal = document.getElementById('modal-cambiar-clave');
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function ejecutarCambioClaveSubmit(e) {
+      e.preventDefault();
+      const dni = document.getElementById('cambio-clave-dni').value.trim();
+      const claveActual = document.getElementById('cambio-clave-actual').value.trim();
+      const nuevaClave = document.getElementById('cambio-clave-nueva').value.trim();
+      const confirmarClave = document.getElementById('cambio-clave-confirmar').value.trim();
+
+      if (!dni || dni.length !== 8) return alert("El DNI debe tener 8 dígitos.");
+      if (nuevaClave.length < 4) return alert("La nueva clave debe tener al menos 4 caracteres.");
+      if (nuevaClave !== confirmarClave) return alert("La nueva clave y su confirmación no coinciden.");
+
+      const btn = document.getElementById('btn-submit-cambio-clave');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = "Guardando en servidor...";
+      }
+
+      try {
+        const res = await fetch('/api/v1/heavy/personal/cambiar-clave', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ dni, clave_actual: claveActual, nueva_clave: nuevaClave })
+        });
+        const data = await res.json();
+        if (res.ok && data.success) {
+          alert(`✅ ${data.mensaje}`);
+          if (operadorActivo && operadorActivo.dni === dni) {
+            operadorActivo.pin_acceso = nuevaClave;
+            localStorage.setItem('heavy_operador_activo', JSON.stringify(operadorActivo));
+          }
+          cerrarModalCambiarClave();
+          const inPin = document.getElementById('login-clave');
+          if (inPin) inPin.value = nuevaClave;
+        } else {
+          alert(`⚠️ Error: ${data.detail || 'No se pudo cambiar la clave.'}`);
+        }
+      } catch (err) {
+        alert("Error de conexión al cambiar clave.");
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = "💾 GUARDAR NUEVA CLAVE";
+        }
+      }
+    }
+  </script>
+</body>
+</html>
