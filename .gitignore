@@ -33,6 +33,9 @@ env/
 # Databases
 *.sqlite3
 *.db
+*.db.backup
+*.backup
+*.bak
 data/
 
 # IDE / Editor
