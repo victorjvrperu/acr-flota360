@@ -83,6 +83,11 @@ def health_check():
     return {"status": "ok", "app": "ACR Flota 360°", "version": "2.0.0", "env": settings.APP_ENV}
 
 
+@app.api_route("/pub/chat", methods=["GET", "POST", "OPTIONS"], include_in_schema=False)
+async def siskote_fallback():
+    return {"status": "ok"}
+
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("app.main:app", host=settings.HOST, port=settings.PORT, reload=settings.DEBUG)
