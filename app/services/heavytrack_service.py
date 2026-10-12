@@ -333,6 +333,12 @@ class HeavyTrackService:
         # Horas totales trabajadas
         horas_totales = db.query(func.coalesce(func.sum(TurnoOperacion.horas_trabajadas), 0.0)).scalar() or 0.0
 
+        # Horas trabajadas hoy
+        hoy = date.today()
+        horas_hoy = db.query(func.coalesce(func.sum(TurnoOperacion.horas_trabajadas), 0.0)).filter(
+            TurnoOperacion.fecha == hoy
+        ).scalar() or 0.0
+
         # Equipos y estados
         equipos = db.query(MaquinariaEquipo).all()
         total_equipos = len(equipos)
@@ -341,11 +347,14 @@ class HeavyTrackService:
         # Alertas < 25h de servicio
         alertas_servicio = 0
         semaforos = {"verde": 0, "amarillo": 0, "rojo": 0}
+        equipos_alertas_txt = []
         for e in equipos:
-            color, _ = HeavyTrackService.calcular_semaforo_equipo(e)
+            color, horas_rest = HeavyTrackService.calcular_semaforo_equipo(e)
             semaforos[color] += 1
             if color in ["amarillo", "rojo"]:
                 alertas_servicio += 1
+                detalle_rest = f"({horas_rest}h)" if horas_rest > 0 else "(Vencido)"
+                equipos_alertas_txt.append(f"{e.codigo_interno} {detalle_rest}")
 
         # Consumo de combustible del mes actual
         inicio_mes = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
@@ -373,9 +382,11 @@ class HeavyTrackService:
 
         return {
             "horas_totales_trabajadas": round(float(horas_totales), 1),
+            "horas_hoy": round(float(horas_hoy), 1),
             "total_equipos": total_equipos,
             "equipos_en_taller": equipos_taller,
             "alertas_mantenimiento_25h": alertas_servicio,
+            "alertas_detalle": ", ".join(equipos_alertas_txt[:2]) if alertas_servicio > 0 else "",
             "galones_combustible_mes": round(float(consumo_mes), 1),
             "costo_combustible_mes": round(float(gasto_combustible_mes), 2),
             "semaforo_flota": semaforos,

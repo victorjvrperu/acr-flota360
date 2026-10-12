@@ -152,8 +152,8 @@
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Horas Trabajadas</span>
               <div class="p-2 rounded-lg bg-machinery/10 text-machinery">⏱️</div>
             </div>
-            <div class="text-3xl font-black text-white" id="kpi-horas">4,242.5 h</div>
-            <p class="text-xs text-alertGreen font-medium mt-1">↑ +8.5h registradas hoy</p>
+            <div class="text-3xl font-black text-white" id="kpi-horas">0 h</div>
+            <p class="text-xs text-alertGreen font-medium mt-1" id="kpi-horas-sub">0 h registradas hoy</p>
           </div>
 
           <!-- Equipos en Taller -->
@@ -162,18 +162,18 @@
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Equipos en Taller</span>
               <div class="p-2 rounded-lg bg-alertYellow/10 text-alertYellow">🔧</div>
             </div>
-            <div class="text-3xl font-black text-white" id="kpi-taller">1 / 5</div>
-            <p class="text-xs text-alertYellow font-medium mt-1">1 unidad en reparación preventiva</p>
+            <div class="text-3xl font-black text-white" id="kpi-taller">0 / 0</div>
+            <p class="text-xs text-alertYellow font-medium mt-1" id="kpi-taller-sub">0 unidades en taller</p>
           </div>
 
           <!-- Alertas < 25h de Mantenimiento -->
           <div class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-alertRed/50 transition">
             <div class="flex justify-between items-start mb-2">
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Alertas Preventivas (&lt;25h)</span>
-              <div class="p-2 rounded-lg bg-alertRed/10 text-alertRed">⚠️</div>
+              <div class="p-2 rounded-lg bg-gray-800 text-gray-500" id="kpi-alertas-ico">⚠️</div>
             </div>
-            <div class="text-3xl font-black text-alertRed" id="kpi-alertas">2 Críticas</div>
-            <p class="text-xs text-alertRed font-medium mt-1">EX-01 (7.5h) y VOL-04 (Vencido)</p>
+            <div class="text-3xl font-black text-gray-400" id="kpi-alertas">0 Críticas</div>
+            <p class="text-xs text-alertRed font-medium mt-1 hidden" id="kpi-alertas-sub"></p>
           </div>
 
           <!-- Combustible del Mes -->
@@ -182,8 +182,8 @@
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Consumo Mes (Galones)</span>
               <div class="p-2 rounded-lg bg-machinery/10 text-machinery">⛽</div>
             </div>
-            <div class="text-3xl font-black text-white" id="kpi-combustible">153.5 Gal</div>
-            <p class="text-xs text-gray-400 font-medium mt-1">S/ 2,839.75 invertidos</p>
+            <div class="text-3xl font-black text-white" id="kpi-combustible">0 Gal</div>
+            <p class="text-xs text-gray-400 font-medium mt-1" id="kpi-combustible-sub">S/ 0.00 invertidos</p>
           </div>
         </div>
 
@@ -213,9 +213,9 @@
               <canvas id="chartSemaforo"></canvas>
             </div>
             <div class="grid grid-cols-3 gap-2 text-center text-xs font-bold pt-2 border-t border-gray-800">
-              <div><span class="block text-alertGreen">3</span> Operativos</div>
-              <div><span class="block text-alertYellow">1</span> &lt;25h Próx</div>
-              <div><span class="block text-alertRed">1</span> Vencido</div>
+              <div><span class="block text-alertGreen" id="semaforo-cnt-verde">0</span> Operativos</div>
+              <div><span class="block text-alertYellow" id="semaforo-cnt-amarillo">0</span> &lt;25h Próx</div>
+              <div><span class="block text-alertRed" id="semaforo-cnt-rojo">0</span> Vencido</div>
             </div>
           </div>
         </div>
@@ -2132,10 +2132,58 @@
         const res = await fetch('/api/v1/heavy/dashboard');
         const data = await res.json();
 
-        document.getElementById('kpi-horas').textContent = `${data.horas_totales_trabajadas} h`;
-        document.getElementById('kpi-taller').textContent = `${data.equipos_en_taller} / ${data.total_equipos}`;
-        document.getElementById('kpi-alertas').textContent = `${data.alertas_mantenimiento_25h} Críticas`;
-        document.getElementById('kpi-combustible').textContent = `${data.galones_combustible_mes} Gal`;
+        // 1. Horas Trabajadas
+        document.getElementById('kpi-horas').textContent = `${(data.horas_totales_trabajadas || 0).toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} h`;
+        const subHoras = document.getElementById('kpi-horas-sub');
+        if (subHoras) {
+          subHoras.textContent = (data.horas_hoy && data.horas_hoy > 0) ? `↑ +${data.horas_hoy}h registradas hoy` : '0 h registradas hoy';
+        }
+
+        // 2. Equipos en Taller
+        document.getElementById('kpi-taller').textContent = `${data.equipos_en_taller || 0} / ${data.total_equipos || 0}`;
+        const subTaller = document.getElementById('kpi-taller-sub');
+        if (subTaller) {
+          subTaller.textContent = `${data.equipos_en_taller || 0} ${data.equipos_en_taller === 1 ? 'unidad' : 'unidades'} en taller`;
+        }
+
+        // 3. Alertas Preventivas
+        const elAlertas = document.getElementById('kpi-alertas');
+        const subAlertas = document.getElementById('kpi-alertas-sub');
+        const icoAlertas = document.getElementById('kpi-alertas-ico');
+        const numAlertas = data.alertas_mantenimiento_25h || 0;
+
+        if (numAlertas > 0) {
+          elAlertas.textContent = `${numAlertas} Críticas`;
+          elAlertas.className = "text-3xl font-black text-alertRed";
+          if (icoAlertas) icoAlertas.className = "p-2 rounded-lg bg-alertRed/10 text-alertRed";
+          if (subAlertas) {
+            subAlertas.textContent = data.alertas_detalle || `${numAlertas} equipos por vencer`;
+            subAlertas.classList.remove('hidden');
+          }
+        } else {
+          elAlertas.textContent = `0 Críticas`;
+          elAlertas.className = "text-3xl font-black text-gray-400";
+          if (icoAlertas) icoAlertas.className = "p-2 rounded-lg bg-gray-800 text-gray-500";
+          if (subAlertas) {
+            subAlertas.textContent = '';
+            subAlertas.classList.add('hidden');
+          }
+        }
+
+        // 4. Consumo Mes Combustible
+        document.getElementById('kpi-combustible').textContent = `${(data.galones_combustible_mes || 0).toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Gal`;
+        const subComb = document.getElementById('kpi-combustible-sub');
+        if (subComb) {
+          subComb.textContent = `S/ ${(data.costo_combustible_mes || 0).toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} invertidos`;
+        }
+
+        // 5. Semáforo desglose
+        const elVerde = document.getElementById('semaforo-cnt-verde');
+        const elAmarillo = document.getElementById('semaforo-cnt-amarillo');
+        const elRojo = document.getElementById('semaforo-cnt-rojo');
+        if (elVerde) elVerde.textContent = (data.semaforo_flota && data.semaforo_flota.verde) || 0;
+        if (elAmarillo) elAmarillo.textContent = (data.semaforo_flota && data.semaforo_flota.amarillo) || 0;
+        if (elRojo) elRojo.textContent = (data.semaforo_flota && data.semaforo_flota.rojo) || 0;
 
         // Render Gráfico Proyectos
         const ctxProyectos = document.getElementById('chartProyectos').getContext('2d');
