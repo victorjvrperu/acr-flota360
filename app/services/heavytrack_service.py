@@ -134,7 +134,7 @@ class HeavyTrackService:
                     equipo.ultima_longitud = lng_ini
                     equipo.ultima_ubicacion_fecha = datetime.utcnow()
 
-                if turno_in.horometro_inicio > equipo.horometro_actual:
+                if turno_in.horometro_inicio and turno_in.horometro_inicio > (equipo.horometro_actual or 0.0):
                     equipo.horometro_actual = turno_in.horometro_inicio
                     color, _ = HeavyTrackService.calcular_semaforo_equipo(equipo)
                     if color == "rojo" or color == "amarillo":
@@ -202,33 +202,33 @@ class HeavyTrackService:
                     turno.equipo.ultima_longitud = lng_fin
                     turno.equipo.ultima_ubicacion_fecha = datetime.utcnow()
 
-            if turno.horometro_fin and turno.horometro_inicio:
-                turno.horas_trabajadas = round(max(0.0, turno.horometro_fin - turno.horometro_inicio), 1)
+            if out.horometro_fin is not None and turno.horometro_inicio is not None and out.horometro_fin >= turno.horometro_inicio:
+                turno.horas_trabajadas = round(max(0.0, out.horometro_fin - turno.horometro_inicio), 1)
 
             km_fin = getattr(out, "kilometraje_fin", 0.0) or 0.0
             if km_fin > 0:
                 turno.kilometraje_fin = km_fin
-                if turno.kilometraje_inicio and km_fin >= turno.kilometraje_inicio:
+                if turno.kilometraje_inicio is not None and km_fin >= turno.kilometraje_inicio:
                     turno.km_recorridos = round(km_fin - turno.kilometraje_inicio, 1)
 
             # Actualización automática de horómetro y odómetro del equipo y semáforo
             equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == turno.equipo_id).first()
             if equipo:
-                if out.horometro_fin > equipo.horometro_actual:
+                if out.horometro_fin is not None and out.horometro_fin > (equipo.horometro_actual or 0.0):
                     equipo.horometro_actual = out.horometro_fin
                     color, _ = HeavyTrackService.calcular_semaforo_equipo(equipo)
-                    if color == "rojo" or color == "amarillo":
+                    if color in ("rojo", "amarillo"):
                         equipo.estado_operativo = EstadoOperativo.CRITICO.value
                 if km_fin > (equipo.odometro_actual or 0.0):
                     equipo.odometro_actual = km_fin
-                    equipo.estado_operativo = EstadoOperativo.CRITICO.value
 
+            msg_resumen = f"Horas trabajadas: {turno.horas_trabajadas or 0}h" if (turno.horas_trabajadas and turno.horas_trabajadas > 0) else f"Km recorridos: {turno.km_recorridos or 0}km"
             procesados += 1
             detalles.append(BatchSyncItemStatus(
                 uuid_local=out.uuid_local,
                 tipo="turno_checkout",
                 status="actualizado",
-                mensaje=f"Check-out completado. Horas trabajadas: {turno.horas_trabajadas or 0}h"
+                mensaje=f"Check-out completado. {msg_resumen}"
             ))
 
         # 3. Procesar Cargas de Combustible

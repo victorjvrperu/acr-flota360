@@ -49,11 +49,15 @@ def descargar_catalogos_offline(db: Session = Depends(get_db)):
         operador_nom = f"{eq.operador_asignado.nombres} {eq.operador_asignado.apellidos}" if eq.operador_asignado else "Sin Asignar"
         equipos_payload.append({
             "id": eq.id,
+            "nombre": eq.nombre,
             "codigo_interno": eq.codigo_interno,
+            "placa": eq.placa,
             "tipo": eq.tipo,
+            "tipo_control": eq.tipo_control or "HOROMETRO",
             "marca": eq.marca,
             "modelo": eq.modelo,
-            "horometro_actual": eq.horometro_actual,
+            "horometro_actual": eq.horometro_actual or 0.0,
+            "odometro_actual": eq.odometro_actual or 0.0,
             "horometro_proximo_servicio": eq.horometro_proximo_servicio,
             "horas_restantes": horas_restantes,
             "semaforo": color,

@@ -179,8 +179,8 @@ class TurnoOperacion(Base):
     proyecto_id = Column(Integer, ForeignKey("proyectos.id", ondelete="RESTRICT"), nullable=False)
     
     fecha = Column(Date, nullable=False)
-    horometro_inicio = Column(Float, nullable=False)
-    foto_horometro_inicio = Column(Text, nullable=False)  # URL o Base64 DataURI
+    horometro_inicio = Column(Float, default=0.0, nullable=True)
+    foto_horometro_inicio = Column(Text, nullable=True)  # URL o Base64 DataURI (Foto tablero/odómetro/horómetro)
     
     horometro_fin = Column(Float, nullable=True)
     foto_horometro_fin = Column(Text, nullable=True)

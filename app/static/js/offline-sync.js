@@ -108,9 +108,8 @@ class HeavyTrackDB {
 
     const payload = {
       device_id: 'pwa-' + (navigator.userAgent.substring(0, 30)),
-      timestamp_envio: new Date().toISOString(),
-      turnos: turnos.filter(t => t.horometro_inicio !== undefined && t.horometro_inicio !== null),
-      turnos_checkout: turnos.filter(t => t.horometro_fin !== undefined && t.horometro_fin !== null),
+      turnos: turnos.filter(t => (t.horometro_inicio !== undefined && t.horometro_inicio !== null) || (t.kilometraje_inicio !== undefined && t.kilometraje_inicio !== null)),
+      turnos_checkout: turnos.filter(t => (t.horometro_fin !== undefined && t.horometro_fin !== null) || (t.kilometraje_fin !== undefined && t.kilometraje_fin !== null)),
       combustibles: combustibles,
       incidentes: incidentes
     };

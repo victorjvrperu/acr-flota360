@@ -1793,12 +1793,12 @@
             </td>
             <td class="py-3.5 px-4 text-xs font-semibold text-gray-300">${t.proyecto_nombre}</td>
             <td class="py-3.5 px-4 text-center font-mono text-xs">
-              <span class="text-machinery font-bold">${t.horometro_inicio.toFixed(1)}h</span>
-              <span class="text-gray-500">→</span>
-              <span class="${t.horometro_fin ? 'text-white font-bold' : 'text-gray-500'}">${t.horometro_fin ? t.horometro_fin.toFixed(1) + 'h' : '...'}</span>
+              ${(t.horometro_inicio !== null && t.horometro_inicio !== undefined && (t.horometro_inicio > 0 || !t.kilometraje_inicio))
+                ? `<span class="text-machinery font-bold">${Number(t.horometro_inicio).toFixed(1)}h</span> <span class="text-gray-500">→</span> <span class="${t.horometro_fin ? 'text-white font-bold' : 'text-gray-500'}">${t.horometro_fin ? Number(t.horometro_fin).toFixed(1) + 'h' : '...'}</span>`
+                : '<span class="text-gray-600">-</span>'}
             </td>
             <td class="py-3.5 px-4 text-center font-mono font-black ${t.horas_trabajadas ? 'text-machinery' : 'text-gray-500'}">
-              ${t.horas_trabajadas ? t.horas_trabajadas.toFixed(1) + ' h' : '-'}
+              ${t.horas_trabajadas ? Number(t.horas_trabajadas).toFixed(1) + ' h' : '-'}
             </td>
             <td class="py-3.5 px-4 text-center font-mono text-xs">
               ${t.kilometraje_inicio > 0 || (t.kilometraje_fin && t.kilometraje_fin > 0)

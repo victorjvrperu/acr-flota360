@@ -380,10 +380,14 @@
         </div>
 
         <!-- Tarjeta informativa del equipo seleccionado -->
-        <div id="card-equipo-info" class="hidden bg-carbon border border-gray-700/80 rounded-xl p-3 text-xs space-y-1">
+        <div id="card-equipo-info" class="hidden bg-carbon border border-gray-700/80 rounded-xl p-3 text-xs space-y-1.5">
+          <div class="flex items-center justify-between">
+            <span id="info-eq-badge-control" class="inline-flex items-center gap-1 px-2.5 py-1 rounded-md text-[10px] font-black uppercase"></span>
+            <span class="text-[10px] font-mono text-gray-400" id="info-eq-tipo-text"></span>
+          </div>
           <div class="font-black text-machinery text-sm" id="info-eq-nombre">-</div>
           <div class="text-gray-300" id="info-eq-marca-modelo">-</div>
-          <div class="text-[11px] font-mono text-gray-400" id="info-eq-horometro-ant">Horómetro anterior: - h</div>
+          <div class="text-[11px] font-mono text-gray-400 bg-graphite/60 p-2 rounded-lg border border-gray-800" id="info-eq-horometro-ant">Lectura anterior: -</div>
         </div>
 
         <div id="err-ini-3" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
@@ -401,12 +405,12 @@
     </section>
 
     <!-- ========================================================== -->
-    <!-- WIZARD INICIO - VENTANA 4 DE 6: HORÓMETRO INICIAL Y FOTO   -->
+    <!-- WIZARD INICIO - VENTANA 4 DE 6: HORÓMETRO / KILOMETRAJE    -->
     <!-- ========================================================== -->
     <section id="win-ini-4" class="step-window space-y-4 hidden">
       
       <div class="flex items-center justify-between text-xs">
-        <span class="font-extrabold uppercase text-machinery tracking-wider">PASO 4 DE 6</span>
+        <span class="font-extrabold uppercase text-machinery tracking-wider" id="lbl-paso4-step">PASO 4 DE 6</span>
         <span class="text-gray-400 font-bold">66%</span>
       </div>
       <div class="w-full bg-graphite rounded-full h-2 overflow-hidden">
@@ -416,21 +420,21 @@
       <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
         <div class="space-y-1">
           <div class="flex items-center gap-2 text-machinery font-black text-sm uppercase">
-            <span>⏱️</span> <span>Horómetro Inicial</span>
+            <span id="ico-medicion-paso4">⏱️</span> <span id="badge-medicion-paso4">Horómetro Inicial</span>
           </div>
-          <h2 class="text-lg font-black text-white">Horómetro inicial y Foto del Tablero</h2>
-          <p class="text-xs text-gray-300">
+          <h2 class="text-lg font-black text-white" id="titulo-medicion-paso4">Horómetro inicial y Foto del Tablero</h2>
+          <p class="text-xs text-gray-300" id="desc-medicion-paso4">
             Ingresa la lectura actual y sube la foto obligatoria del tablero.
           </p>
         </div>
 
         <div>
-          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Lectura de Horómetro Inicial (h) *</label>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1" id="lbl-medicion-input">Lectura de Horómetro Inicial (h) *</label>
           <input type="number" step="0.1" id="wizard-horometro-inicio" placeholder="Ej: 245.5" class="w-full bg-carbon border-2 border-gray-700 text-machinery font-mono font-black text-3xl text-center rounded-xl py-3 px-4 focus:border-machinery focus:outline-none">
         </div>
 
         <div>
-          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">📸 Foto Obligatoria del Tablero (Con Horómetro)</label>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1" id="lbl-foto-tablero-title">📸 Foto Obligatoria del Tablero (Con Horómetro)</label>
           <div id="slot-foto-inicio_tablero" class="photo-slot" onclick="document.getElementById('input-cam-inicio_tablero').click()">
             <span class="text-3xl mb-1">📸</span>
             <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-inicio_tablero">Tomar Foto del Tablero</span>
@@ -654,7 +658,7 @@
             <span class="font-bold text-white text-right" id="checkin-resumen-fr">-</span>
           </div>
           <div class="flex justify-between items-center">
-            <span class="text-gray-400 font-bold uppercase text-[10px]">Horómetro Inicial:</span>
+            <span class="text-gray-400 font-bold uppercase text-[10px]" id="checkin-lbl-hini">Horómetro Inicial:</span>
             <span class="font-mono font-black text-white text-right" id="checkin-resumen-hini">- h</span>
           </div>
         </div>
@@ -697,7 +701,7 @@
 
         <div class="grid grid-cols-2 gap-3 pt-2">
           <div class="bg-carbon/90 p-3 rounded-xl border border-gray-800">
-            <div class="text-[10px] uppercase font-bold text-gray-400">Horómetro Inicio</div>
+            <div class="text-[10px] uppercase font-bold text-gray-400" id="encurso-lbl-hini">Horómetro Inicio</div>
             <div class="text-2xl font-mono font-black text-machinery" id="encurso-h-ini">- h</div>
           </div>
           <div class="bg-carbon/90 p-3 rounded-xl border border-gray-800">
@@ -741,10 +745,10 @@
       <div class="bg-graphite border border-gray-800 rounded-2xl p-5 shadow-xl space-y-4">
         <div class="space-y-1">
           <div class="flex items-center gap-2 text-alertGreen font-black text-sm uppercase">
-            <span>🏁</span> <span>Horómetro Final</span>
+            <span id="cierre-ico-badge">🏁</span> <span id="cierre-tipo-badge">Horómetro Final</span>
           </div>
-          <h2 class="text-lg font-black text-white">Horómetro Final de Entrega</h2>
-          <p class="text-xs text-gray-300">
+          <h2 class="text-lg font-black text-white" id="cierre-tipo-titulo">Horómetro Final de Entrega</h2>
+          <p class="text-xs text-gray-300" id="cierre-tipo-desc">
             Ingresa la lectura final del tablero y captura la foto correspondiente:
           </p>
         </div>
@@ -756,23 +760,23 @@
             <div class="font-bold text-white" id="cierre-eq-label">-</div>
           </div>
           <div class="text-right">
-            <div class="text-[10px] text-gray-400 font-bold uppercase">H. Inicial:</div>
-            <div class="font-mono font-bold text-machinery" id="cierre-hini-label">- h</div>
+            <div class="text-[10px] text-gray-400 font-bold uppercase" id="cierre-ref-label">Lectura Inicial:</div>
+            <div class="font-mono font-bold text-machinery" id="cierre-hini-label">-</div>
           </div>
         </div>
 
         <div>
-          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Horómetro Final (h) *</label>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1" id="cierre-input-label">Horómetro Final (h) *</label>
           <input type="number" step="0.1" id="wizard-horometro-fin" oninput="calcularHorasFinLive()" placeholder="Ej: 252.0" class="w-full bg-carbon border-2 border-gray-700 text-alertGreen font-mono font-black text-3xl text-center rounded-xl py-3 px-4 focus:border-alertGreen focus:outline-none">
         </div>
 
         <div class="bg-carbon/90 p-3 rounded-xl border border-gray-800 text-center">
-          <div class="text-[10px] uppercase font-bold text-gray-400">Total Horas Trabajadas:</div>
+          <div class="text-[10px] uppercase font-bold text-gray-400" id="cierre-tot-label">Total Horas Trabajadas:</div>
           <div class="text-2xl font-mono font-black text-machinery" id="live-horas-trabajadas">0.0 h</div>
         </div>
 
         <div>
-          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">📸 Foto Obligatoria del Tablero Final</label>
+          <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1" id="cierre-foto-title">📸 Foto Obligatoria del Tablero Final</label>
           <div id="slot-foto-fin_tablero" class="photo-slot" onclick="document.getElementById('input-cam-fin_tablero').click()">
             <span class="text-3xl mb-1">📸</span>
             <span class="text-xs font-black text-gray-300 uppercase text-center" id="lbl-foto-fin_tablero">Tomar Foto del Tablero Final</span>
@@ -975,11 +979,11 @@
             <span class="font-bold text-white text-right" id="checkout-resumen-eq">-</span>
           </div>
           <div class="flex justify-between items-center border-b border-gray-800/80 pb-1.5">
-            <span class="text-gray-400 font-bold uppercase text-[10px]">Horómetro Final:</span>
+            <span class="text-gray-400 font-bold uppercase text-[10px]" id="checkout-lbl-hfin">Horómetro Final:</span>
             <span class="font-mono font-bold text-emerald-400 text-right" id="checkout-resumen-hfin">- h</span>
           </div>
           <div class="flex justify-between items-center border-b border-gray-800/80 pb-1.5">
-            <span class="text-gray-400 font-bold uppercase text-[10px]">Horas Trabajadas:</span>
+            <span class="text-gray-400 font-bold uppercase text-[10px]" id="checkout-lbl-tot">Horas Trabajadas:</span>
             <span class="font-mono font-black text-white text-right" id="checkout-resumen-tot">- h</span>
           </div>
           <div class="flex justify-between items-center">
@@ -1136,14 +1140,22 @@
       if (guardado) {
         try {
           turnoEnCurso = JSON.parse(guardado);
+          const esKm = (turnoEnCurso.tipo_control === 'KILOMETRAJE');
+          const unidad = esKm ? 'km' : 'h';
+          const valorIni = turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio);
+
           document.getElementById('encurso-eq-nombre').textContent = turnoEnCurso.equipo_nombre || 'Equipo Activo';
           document.getElementById('encurso-fr-nombre').textContent = `Frente: ${turnoEnCurso.proyecto_nombre || '-'}`;
-          document.getElementById('encurso-h-ini').textContent = `${turnoEnCurso.horometro_inicio} h`;
+          const lblEncursoH = document.getElementById('encurso-lbl-hini');
+          if (lblEncursoH) lblEncursoH.textContent = esKm ? 'Kilometraje Inicio' : 'Horómetro Inicio';
+          document.getElementById('encurso-h-ini').textContent = `${valorIni} ${unidad}`;
           document.getElementById('encurso-hora-ini').textContent = turnoEnCurso.hora_inicio || '-';
           document.getElementById('encurso-op-nombre').textContent = turnoEnCurso.operador_nombre || '-';
 
           document.getElementById('cierre-eq-label').textContent = turnoEnCurso.equipo_nombre || '-';
-          document.getElementById('cierre-hini-label').textContent = `${turnoEnCurso.horometro_inicio} h`;
+          const lblCierreRef = document.getElementById('cierre-ref-label');
+          if (lblCierreRef) lblCierreRef.textContent = esKm ? 'Km Inicial:' : 'Lectura Inicial:';
+          document.getElementById('cierre-hini-label').textContent = `${valorIni} ${unidad}`;
 
           irVentana('win-en-curso');
           return;
@@ -1197,7 +1209,10 @@
           selectEq.innerHTML = '<option value="">-- Seleccionar Maquinaria / Equipo --</option>' +
             catalogosLocales.equipos.map(eq => {
               const nombreTxt = eq.nombre ? `${eq.codigo_interno} | ${eq.nombre}` : `${eq.codigo_interno} | ${eq.marca} ${eq.modelo}`;
-              return `<option value="${eq.id}">${nombreTxt} (${eq.horometro_actual || 0} h)</option>`;
+              const tipoCtrl = (eq.tipo_control || 'HOROMETRO').toUpperCase();
+              const esKm = (tipoCtrl === 'KILOMETRAJE');
+              const medTxt = esKm ? `🚗 ${eq.odometro_actual || 0} km` : `⏱️ ${eq.horometro_actual || 0} h`;
+              return `<option value="${eq.id}">${nombreTxt} [${medTxt}]</option>`;
             }).join('');
         }
       }
@@ -1221,14 +1236,68 @@
       const eq = catalogosLocales.equipos.find(e => e.id === parseInt(eqId));
       if (!eq) return;
 
+      const tipoCtrl = (eq.tipo_control || 'HOROMETRO').toUpperCase();
+      const esKm = (tipoCtrl === 'KILOMETRAJE');
+      const esAmbos = (tipoCtrl === 'AMBOS');
+
+      // 1. Mostrar tarjeta informativa con tipo de control identificado
       document.getElementById('info-eq-nombre').textContent = eq.nombre ? `${eq.codigo_interno} | ${eq.nombre}` : eq.codigo_interno;
-      document.getElementById('info-eq-marca-modelo').textContent = `${eq.marca || ''} ${eq.modelo || ''} • Placa/Serie: ${eq.placa_o_serie || '-'}`;
-      document.getElementById('info-eq-horometro-ant').textContent = `Último Horómetro registrado: ${eq.horometro_actual || 0} h`;
+      document.getElementById('info-eq-marca-modelo').textContent = `${eq.marca || ''} ${eq.modelo || ''} • Placa: ${eq.placa || eq.placa_o_serie || '-'}`;
+      document.getElementById('info-eq-tipo-text').textContent = (eq.tipo || 'PESADA').toUpperCase();
+
+      const badgeCtrl = document.getElementById('info-eq-badge-control');
+      const infoAnt = document.getElementById('info-eq-horometro-ant');
+
+      if (esKm) {
+        badgeCtrl.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-amber-950/80 text-amber-300 border border-amber-700/60';
+        badgeCtrl.innerHTML = '🚗 Control por Kilometraje (Odómetro)';
+        infoAnt.textContent = `Último Odómetro registrado: ${eq.odometro_actual || 0} km`;
+      } else if (esAmbos) {
+        badgeCtrl.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-purple-950/80 text-purple-300 border border-purple-700/60';
+        badgeCtrl.innerHTML = '⏱️🚗 Control Dual (Horas y Km)';
+        infoAnt.textContent = `Horómetro: ${eq.horometro_actual || 0} h • Odómetro: ${eq.odometro_actual || 0} km`;
+      } else {
+        badgeCtrl.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-300 border border-emerald-700/60';
+        badgeCtrl.innerHTML = '⏱️ Control por Horas (Horómetro)';
+        infoAnt.textContent = `Último Horómetro registrado: ${eq.horometro_actual || 0} h`;
+      }
+
       card.classList.remove('hidden');
 
-      const inputH = document.getElementById('wizard-horometro-inicio');
-      if (inputH && !inputH.value) {
-        inputH.placeholder = `Actual sugerido: ${eq.horometro_actual || 0}`;
+      // 2. Configurar dinámicamente la ventana del Paso 4 (Horómetro vs Kilometraje)
+      const ico4 = document.getElementById('ico-medicion-paso4');
+      const badge4 = document.getElementById('badge-medicion-paso4');
+      const tit4 = document.getElementById('titulo-medicion-paso4');
+      const desc4 = document.getElementById('desc-medicion-paso4');
+      const lblInput4 = document.getElementById('lbl-medicion-input');
+      const inputVal4 = document.getElementById('wizard-horometro-inicio');
+      const fotoTitle4 = document.getElementById('lbl-foto-tablero-title');
+      const fotoBtn4 = document.getElementById('lbl-foto-inicio_tablero');
+
+      if (esKm) {
+        if (ico4) ico4.textContent = '🚗';
+        if (badge4) badge4.textContent = 'Kilometraje Inicial';
+        if (tit4) tit4.textContent = 'Kilometraje inicial y Foto del Tablero';
+        if (desc4) desc4.textContent = 'Ingresa la lectura actual del odómetro (km) y sube la foto obligatoria del velocímetro/tablero.';
+        if (lblInput4) lblInput4.textContent = 'Lectura de Odómetro / Kilometraje Inicial (km) *';
+        if (inputVal4) {
+          inputVal4.step = '1';
+          inputVal4.placeholder = `Actual sugerido: ${eq.odometro_actual || 0}`;
+        }
+        if (fotoTitle4) fotoTitle4.textContent = '📸 Foto Obligatoria del Tablero (Odómetro / Velocímetro)';
+        if (fotoBtn4) fotoBtn4.textContent = 'Tomar Foto del Odómetro / Tablero';
+      } else {
+        if (ico4) ico4.textContent = '⏱️';
+        if (badge4) badge4.textContent = 'Horómetro Inicial';
+        if (tit4) tit4.textContent = 'Horómetro inicial y Foto del Tablero';
+        if (desc4) desc4.textContent = 'Ingresa la lectura actual de horómetro (h) y sube la foto obligatoria del horómetro/tablero.';
+        if (lblInput4) lblInput4.textContent = 'Lectura de Horómetro Inicial (h) *';
+        if (inputVal4) {
+          inputVal4.step = '0.1';
+          inputVal4.placeholder = `Actual sugerido: ${eq.horometro_actual || 0}`;
+        }
+        if (fotoTitle4) fotoTitle4.textContent = '📸 Foto Obligatoria del Tablero (Con Horómetro)';
+        if (fotoBtn4) fotoBtn4.textContent = 'Tomar Foto del Tablero';
       }
     }
 
@@ -1500,17 +1569,23 @@
     // PASO 4: HORÓMETRO INICIAL Y FOTO TABLERO
     // ==========================================
     function avanzarPaso4Horometro() {
-      const hVal = parseFloat(document.getElementById('wizard-horometro-inicio')?.value);
+      const eqId = parseInt(document.getElementById('select-maquinaria')?.value);
+      const eq = catalogosLocales.equipos.find(e => e.id === eqId);
+      const esKm = (eq && (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
+      const tipoNombre = esKm ? 'kilometraje' : 'horómetro';
+      const unidad = esKm ? 'km' : 'h';
+
+      const valorMedicion = parseFloat(document.getElementById('wizard-horometro-inicio')?.value);
       const errBox = document.getElementById('err-ini-4');
 
-      if (isNaN(hVal) || hVal <= 0) {
-        errBox.textContent = "⚠️ Ingrese la lectura actual de horómetro inicial.";
+      if (isNaN(valorMedicion) || valorMedicion <= 0) {
+        errBox.textContent = `⚠️ Ingrese la lectura actual de ${tipoNombre} inicial (${unidad}).`;
         errBox.classList.remove('hidden');
         return;
       }
 
       if (!fotosEstado.inicio_tablero) {
-        errBox.textContent = "⚠️ Debe tomar la FOTO OBLIGATORIA del tablero mostrando el horómetro inicial.";
+        errBox.textContent = `⚠️ Debe tomar la FOTO OBLIGATORIA del tablero mostrando el ${tipoNombre} inicial.`;
         errBox.classList.remove('hidden');
         return;
       }
@@ -1600,10 +1675,14 @@
 
       const eqId = parseInt(document.getElementById('select-maquinaria').value);
       const proyId = parseInt(document.getElementById('select-frente').value);
-      const horometro = parseFloat(document.getElementById('wizard-horometro-inicio').value);
+      const lectura = parseFloat(document.getElementById('wizard-horometro-inicio').value) || 0;
 
       const eqObj = catalogosLocales.equipos.find(e => e.id === eqId);
       const proyObj = catalogosLocales.proyectos.find(p => p.id === proyId);
+
+      const tipoCtrl = (eqObj && eqObj.tipo_control ? eqObj.tipo_control : 'HOROMETRO').toUpperCase();
+      const esKm = (tipoCtrl === 'KILOMETRAJE');
+      const unidad = esKm ? 'km' : 'h';
 
       const uuid = window.heavyDB.generarUUID();
       const now = new Date();
@@ -1618,7 +1697,9 @@
         operador_id: operadorActivo.id,
         proyecto_id: proyId,
         fecha: now.toISOString().split('T')[0],
-        horometro_inicio: horometro,
+        tipo_control: tipoCtrl,
+        horometro_inicio: esKm ? 0.0 : lectura,
+        kilometraje_inicio: esKm ? lectura : 0.0,
         foto_horometro_inicio: fotosEstado.inicio_tablero,
         latitud_inicio: ultimaPosicionGPS ? ultimaPosicionGPS.lat : null,
         longitud_inicio: ultimaPosicionGPS ? ultimaPosicionGPS.lng : null,
@@ -1639,7 +1720,11 @@
         equipo_nombre: eqObj ? (eqObj.nombre || `${eqObj.codigo_interno} ${eqObj.marca}`) : `Equipo #${eqId}`,
         proyecto_id: proyId,
         proyecto_nombre: proyObj ? proyObj.nombre : `Frente #${proyId}`,
-        horometro_inicio: horometro,
+        tipo_control: tipoCtrl,
+        unidad_medida: unidad,
+        lectura_inicio: lectura,
+        horometro_inicio: esKm ? 0.0 : lectura,
+        kilometraje_inicio: esKm ? lectura : 0.0,
         hora_inicio: horaStr,
         operador_nombre: `${operadorActivo.nombres} ${operadorActivo.apellidos}`
       };
@@ -1649,16 +1734,22 @@
       document.getElementById('checkin-resumen-op').textContent = turnoEnCurso.operador_nombre;
       document.getElementById('checkin-resumen-eq').textContent = turnoEnCurso.equipo_nombre;
       document.getElementById('checkin-resumen-fr').textContent = turnoEnCurso.proyecto_nombre;
-      document.getElementById('checkin-resumen-hini').textContent = `${horometro} h`;
+      const lblCheckinHini = document.getElementById('checkin-lbl-hini');
+      if (lblCheckinHini) lblCheckinHini.textContent = esKm ? 'Kilometraje Inicial:' : 'Horómetro Inicial:';
+      document.getElementById('checkin-resumen-hini').textContent = `${lectura} ${unidad}`;
 
       // Actualizar tarjeta del turno en curso
       document.getElementById('encurso-eq-nombre').textContent = turnoEnCurso.equipo_nombre;
       document.getElementById('encurso-fr-nombre').textContent = `Frente: ${turnoEnCurso.proyecto_nombre}`;
-      document.getElementById('encurso-h-ini').textContent = `${horometro} h`;
+      const lblEncursoHini = document.getElementById('encurso-lbl-hini');
+      if (lblEncursoHini) lblEncursoHini.textContent = esKm ? 'Kilometraje Inicio' : 'Horómetro Inicio';
+      document.getElementById('encurso-h-ini').textContent = `${lectura} ${unidad}`;
       document.getElementById('encurso-hora-ini').textContent = horaStr;
       document.getElementById('encurso-op-nombre').textContent = turnoEnCurso.operador_nombre;
       document.getElementById('cierre-eq-label').textContent = turnoEnCurso.equipo_nombre;
-      document.getElementById('cierre-hini-label').textContent = `${horometro} h`;
+      const lblCierreRef = document.getElementById('cierre-ref-label');
+      if (lblCierreRef) lblCierreRef.textContent = esKm ? 'Km Inicial:' : 'Lectura Inicial:';
+      document.getElementById('cierre-hini-label').textContent = `${lectura} ${unidad}`;
 
       // Mostrar ventana de Check In Exitoso con mensaje de uso
       irVentana('win-checkin-exito');
@@ -1672,33 +1763,79 @@
     // CIERRE: PASARELA DE CHECK-OUT
     // ==========================================
     function iniciarPasarelaCierre() {
+      const esKm = (turnoEnCurso && (turnoEnCurso.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
+      const unidad = esKm ? 'km' : 'h';
+      const valIni = turnoEnCurso ? (turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio)) : 0;
+
+      const icoBadge = document.getElementById('cierre-ico-badge');
+      const tipoBadge = document.getElementById('cierre-tipo-badge');
+      const tipoTitulo = document.getElementById('cierre-tipo-titulo');
+      const tipoDesc = document.getElementById('cierre-tipo-desc');
+      const eqLabel = document.getElementById('cierre-eq-label');
+      const refLabel = document.getElementById('cierre-ref-label');
+      const hiniLabel = document.getElementById('cierre-hini-label');
+      const inputLabel = document.getElementById('cierre-input-label');
+      const inputFin = document.getElementById('wizard-horometro-fin');
+      const totLabel = document.getElementById('cierre-tot-label');
+      const totLive = document.getElementById('live-horas-trabajadas');
+      const fotoTitle = document.getElementById('cierre-foto-title');
+      const fotoBtn = document.getElementById('lbl-foto-fin_tablero');
+
+      if (icoBadge) icoBadge.textContent = esKm ? '🚗' : '⏱️';
+      if (tipoBadge) tipoBadge.textContent = esKm ? 'Kilometraje Final' : 'Horómetro Final';
+      if (tipoTitulo) tipoTitulo.textContent = esKm ? 'Kilometraje Final de Entrega' : 'Horómetro Final de Entrega';
+      if (tipoDesc) tipoDesc.textContent = esKm ? 'Ingresa la lectura final del odómetro (km) y captura la foto correspondiente del tablero:' : 'Ingresa la lectura final del horómetro (h) y captura la foto correspondiente del tablero:';
+      if (eqLabel) eqLabel.textContent = turnoEnCurso ? turnoEnCurso.equipo_nombre : '-';
+      if (refLabel) refLabel.textContent = esKm ? 'Km Inicial:' : 'Lectura Inicial:';
+      if (hiniLabel) hiniLabel.textContent = `${valIni} ${unidad}`;
+      if (inputLabel) inputLabel.textContent = esKm ? 'Odómetro / Kilometraje Final (km) *' : 'Horómetro Final (h) *';
+      if (inputFin) {
+        inputFin.step = esKm ? '1' : '0.1';
+        inputFin.placeholder = esKm ? `Ej: ${Math.round(valIni + 25)}` : `Ej: ${(valIni + 5.0).toFixed(1)}`;
+        inputFin.value = '';
+      }
+      if (totLabel) totLabel.textContent = esKm ? 'Total Kilómetros Recorridos:' : 'Total Horas Trabajadas:';
+      if (totLive) totLive.textContent = `0 ${unidad}`;
+      if (fotoTitle) fotoTitle.textContent = esKm ? '📸 Foto Obligatoria del Tablero Final (Odómetro)' : '📸 Foto Obligatoria del Tablero Final (Horómetro)';
+      if (fotoBtn) fotoBtn.textContent = esKm ? 'Tomar Foto del Odómetro Final' : 'Tomar Foto del Tablero Final';
+
       irVentana('win-cie-1');
     }
 
     function calcularHorasFinLive() {
-      const hFin = parseFloat(document.getElementById('wizard-horometro-fin').value) || 0;
-      const hIni = turnoEnCurso ? turnoEnCurso.horometro_inicio : 0;
-      const diff = (hFin >= hIni && hIni > 0) ? (hFin - hIni).toFixed(1) : "0.0";
-      document.getElementById('live-horas-trabajadas').textContent = `${diff} h`;
+      const esKm = (turnoEnCurso && (turnoEnCurso.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
+      const unidad = esKm ? 'km' : 'h';
+      const valIni = turnoEnCurso ? (turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio)) : 0;
+      const valFin = parseFloat(document.getElementById('wizard-horometro-fin').value) || 0;
+      
+      let diff = 0;
+      if (valFin >= valIni && valIni > 0) {
+        diff = valFin - valIni;
+      }
+      const diffStr = esKm ? `${Math.round(diff)}` : `${diff.toFixed(1)}`;
+      document.getElementById('live-horas-trabajadas').textContent = `${diffStr} ${unidad}`;
     }
 
     function avanzarCierrePaso1() {
-      const hFin = parseFloat(document.getElementById('wizard-horometro-fin')?.value);
-      const hIni = turnoEnCurso ? turnoEnCurso.horometro_inicio : 0;
+      const esKm = (turnoEnCurso && (turnoEnCurso.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
+      const unidad = esKm ? 'km' : 'h';
+      const tipoNombre = esKm ? 'kilometraje' : 'horómetro';
+      const valIni = turnoEnCurso ? (turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio)) : 0;
+      const valFin = parseFloat(document.getElementById('wizard-horometro-fin')?.value);
       const errBox = document.getElementById('err-cie-1');
 
-      if (isNaN(hFin) || hFin <= 0) {
-        errBox.textContent = "⚠️ Ingrese la lectura del horómetro de cierre.";
+      if (isNaN(valFin) || valFin <= 0) {
+        errBox.textContent = `⚠️ Ingrese la lectura del ${tipoNombre} de cierre (${unidad}).`;
         errBox.classList.remove('hidden');
         return;
       }
-      if (hFin < hIni) {
-        errBox.textContent = `⚠️ El horómetro final (${hFin}h) no puede ser menor al inicial (${hIni}h).`;
+      if (valFin < valIni) {
+        errBox.textContent = `⚠️ El ${tipoNombre} final (${valFin} ${unidad}) no puede ser menor al inicial (${valIni} ${unidad}).`;
         errBox.classList.remove('hidden');
         return;
       }
       if (!fotosEstado.fin_tablero) {
-        errBox.textContent = "⚠️ Tome la FOTO OBLIGATORIA del tablero final.";
+        errBox.textContent = `⚠️ Tome la FOTO OBLIGATORIA del tablero final mostrando el ${tipoNombre}.`;
         errBox.classList.remove('hidden');
         return;
       }
@@ -1770,14 +1907,22 @@
 
       errBox.classList.add('hidden');
 
-      const hFin = parseFloat(document.getElementById('wizard-horometro-fin').value);
-      const hIni = turnoEnCurso ? turnoEnCurso.horometro_inicio : 0;
+      const esKm = (turnoEnCurso && (turnoEnCurso.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
+      const unidad = esKm ? 'km' : 'h';
+      const valIni = turnoEnCurso ? (turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio)) : 0;
+      const valFin = parseFloat(document.getElementById('wizard-horometro-fin').value);
+      const diffVal = (valFin >= valIni && valIni > 0) ? (valFin - valIni) : 0;
+      const totalDiffStr = esKm ? `${Math.round(diffVal)} km` : `${diffVal.toFixed(1)} h`;
+
       const turnoUuid = turnoEnCurso ? turnoEnCurso.uuid_local : window.heavyDB.generarUUID();
       const descInc = huboIncidenciaOpcion ? document.getElementById('wizard-inc-desc').value.trim() : null;
 
       const turnoUpdate = {
         uuid_local: turnoUuid,
-        horometro_fin: hFin,
+        horometro_fin: esKm ? 0.0 : valFin,
+        horas_trabajadas: esKm ? 0.0 : parseFloat(diffVal.toFixed(1)),
+        kilometraje_fin: esKm ? valFin : 0.0,
+        km_recorridos: esKm ? Math.round(diffVal) : 0.0,
         foto_horometro_fin: fotosEstado.fin_tablero,
         latitud_fin: ultimaPosicionGPS ? ultimaPosicionGPS.lat : null,
         longitud_fin: ultimaPosicionGPS ? ultimaPosicionGPS.lng : null,
@@ -1792,12 +1937,14 @@
 
       await window.heavyDB.guardarItem('turnos', turnoUpdate);
 
-      const horasTotales = (hFin >= hIni && hIni > 0) ? (hFin - hIni).toFixed(1) : "0.0";
-
       // Llenar datos en pantalla de agradecimiento
       document.getElementById('checkout-resumen-eq').textContent = turnoEnCurso ? turnoEnCurso.equipo_nombre : 'Equipo';
-      document.getElementById('checkout-resumen-hfin').textContent = `${hFin} h`;
-      document.getElementById('checkout-resumen-tot').textContent = `${horasTotales} h`;
+      const lblFin = document.getElementById('checkout-lbl-hfin');
+      if (lblFin) lblFin.textContent = esKm ? 'Kilometraje Final:' : 'Horómetro Final:';
+      document.getElementById('checkout-resumen-hfin').textContent = `${valFin} ${unidad}`;
+      const lblTot = document.getElementById('checkout-lbl-tot');
+      if (lblTot) lblTot.textContent = esKm ? 'Km Recorridos:' : 'Horas Trabajadas:';
+      document.getElementById('checkout-resumen-tot').textContent = totalDiffStr;
 
       localStorage.removeItem('heavy_turno_activo');
       turnoEnCurso = null;

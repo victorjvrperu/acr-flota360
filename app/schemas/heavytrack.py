@@ -160,8 +160,8 @@ class TurnoCheckInCreate(BaseModel):
     operador_id: int
     proyecto_id: int
     fecha: date
-    horometro_inicio: float
-    foto_horometro_inicio: str  # Base64 o Storage URL
+    horometro_inicio: Optional[float] = 0.0
+    foto_horometro_inicio: Optional[str] = None  # Base64 o Storage URL (Tablero horómetro/odómetro)
     kilometraje_inicio: Optional[float] = 0.0
     latitud_inicio: Optional[float] = None
     longitud_inicio: Optional[float] = None
@@ -178,9 +178,9 @@ class TurnoCheckInCreate(BaseModel):
 
 class TurnoCheckOutUpdate(BaseModel):
     uuid_local: str
-    horometro_fin: float
-    foto_horometro_fin: str
-    kilometraje_fin: Optional[float] = 0.0
+    horometro_fin: Optional[float] = None
+    foto_horometro_fin: Optional[str] = None
+    kilometraje_fin: Optional[float] = None
     latitud_fin: Optional[float] = None
     longitud_fin: Optional[float] = None
     # Inspección final 360° (4 vistas obligatorias)
@@ -201,12 +201,12 @@ class TurnoOperacionResponse(BaseModel):
     operador_id: int
     proyecto_id: int
     fecha: date
-    horometro_inicio: float
+    horometro_inicio: Optional[float] = 0.0
     horometro_fin: Optional[float] = None
     horas_trabajadas: Optional[float] = None
     kilometraje_inicio: Optional[float] = 0.0
-    kilometraje_fin: Optional[float] = 0.0
-    km_recorridos: Optional[float] = 0.0
+    kilometraje_fin: Optional[float] = None
+    km_recorridos: Optional[float] = None
     estado_sync: str
     creado_en: datetime
 
