@@ -9,18 +9,20 @@ APP_DIR="/var/www/acr-flota360"
 if [ ! -d "$APP_DIR" ]; then
     echo "📦 Clonando repositorio desde GitHub..."
     git clone https://github.com/victorjvrperu/acr-flota360.git "$APP_DIR"
-    cd "$APP_DIR"
-    python3 -m venv .venv
-    source .venv/bin/activate
-    pip install --upgrade pip
-    pip install -r requirements.txt
-else
-    cd "$APP_DIR"
-    echo "🔄 Descargando últimos cambios de GitHub..."
-    git pull origin main
-    source .venv/bin/activate
-    pip install -r requirements.txt
 fi
+
+cd "$APP_DIR"
+echo "🔄 Descargando últimos cambios de GitHub..."
+git pull origin main
+
+if [ ! -d ".venv" ]; then
+    echo "🐍 Creando entorno virtual Python (.venv)..."
+    python3 -m venv .venv
+fi
+
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
 
 # Instalar servicio Systemd si no existe
 if [ ! -f "/etc/systemd/system/acr-flota360.service" ]; then
