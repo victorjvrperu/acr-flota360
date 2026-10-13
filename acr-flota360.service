@@ -1,0 +1,16 @@
+[Unit]
+Description=ACR Flota 360 - Sistema de Control de Maquinaria y Operaciones
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/var/www/acr-flota360
+ExecStart=/var/www/acr-flota360/.venv/bin/uvicorn app.main:app --host 127.0.0.1 --port 8001 --workers 2
+Restart=always
+RestartSec=5
+Environment=APP_ENV=production
+Environment=DEBUG=false
+
+[Install]
+WantedBy=multi-user.target

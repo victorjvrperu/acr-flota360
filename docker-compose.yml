@@ -1,0 +1,19 @@
+services:
+  acr-flota360:
+    build: .
+    container_name: acr-flota360
+    restart: always
+    ports:
+      - "8001:8000"
+    environment:
+      - APP_NAME=ACR Flota 360°
+      - APP_ENV=production
+      - DEBUG=false
+      - PORT=8000
+      - DATABASE_URL=sqlite:///./acr_flota360.db
+    volumes:
+      - acr_data:/app/data
+      - ./acr_flota360.db:/app/acr_flota360.db
+
+volumes:
+  acr_data:
