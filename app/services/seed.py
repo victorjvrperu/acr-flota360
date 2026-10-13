@@ -8,7 +8,28 @@ from app.models.heavytrack import (
 
 
 def seed_flota_inicial(db: Session):
-    # Base de datos en blanco para permitir llenado manual por el usuario
+    """Garantiza la existencia del usuario administrador inicial para el dashboard."""
+    from app.core.security import hash_password
+
+    admin_existente = db.query(Personal).filter(
+        Personal.rol.in_([RolPersonal.SISTEMAS_ADMIN.value, RolPersonal.GERENCIA.value])
+    ).first()
+
+    if not admin_existente:
+        admin_user = Personal(
+            dni="admin",
+            nombres="Administrador",
+            apellidos="ACR Flota 360",
+            telefono="+51 900 000 000",
+            rol=RolPersonal.SISTEMAS_ADMIN.value,
+            contrasena_hash=hash_password("admin360"),
+            pin_acceso="1234",
+            estado="activo"
+        )
+        db.add(admin_user)
+        db.commit()
+
+    # Base de datos en blanco para permitir llenado manual de flota por el usuario
     return
 
     hoy = date.today()

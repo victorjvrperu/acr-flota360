@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="es" class="h-full bg-[#121417]">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Acceso Administrativo | ACR Flota 360°</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            carbon: '#121417',
+            graphite: '#1E2228',
+            graphiteLight: '#282D35',
+            machinery: '#01A95B',
+            machineryActive: '#008C4A',
+            alertRed: '#EF4444',
+            alertYellow: '#F59E0B'
+          },
+          fontFamily: {
+            sans: ['Outfit', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      font-family: 'Outfit', sans-serif;
+      background: radial-gradient(circle at 50% 20%, #1A212B 0%, #121417 80%);
+    }
+  </style>
+</head>
+<body class="min-h-full flex items-center justify-center p-4 text-gray-200">
+
+  <div class="w-full max-w-md">
+    
+    <!-- Header con Logo -->
+    <div class="text-center mb-8">
+      <div class="inline-flex items-center justify-center p-3 rounded-2xl bg-carbon border border-gray-800 shadow-2xl mb-4">
+        <img src="/static/img/logo_acr360_white.png" alt="ACR Flota 360" class="h-10 w-auto object-contain" onerror="this.onerror=null; this.src=''; this.innerHTML='🚜 ACR 360';">
+      </div>
+      <h1 class="text-2xl font-black text-white tracking-tight uppercase">ACR Flota 360°</h1>
+      <p class="text-xs text-gray-400 mt-1">Plataforma de Control de Flotas, Horómetros y Gestión Operativa</p>
+      
+      <div class="inline-flex items-center gap-1.5 mt-3 px-3 py-1 rounded-full text-[11px] font-bold bg-machinery/15 text-machinery border border-machinery/30">
+        <span>🔒</span>
+        <span>Acceso Administrativo y Gerencial</span>
+      </div>
+    </div>
+
+    <!-- Tarjeta de Login -->
+    <div class="bg-graphite/90 backdrop-blur-md border border-gray-800 rounded-3xl p-6 sm:p-8 shadow-2xl space-y-6">
+      
+      <!-- Mensajes de Error / Alertas -->
+      <div id="error-box" class="{% if not error %}hidden{% endif %} p-4 rounded-2xl bg-rose-950/80 border border-rose-800 text-rose-200 text-xs font-semibold flex items-start gap-3">
+        <span class="text-lg shrink-0">⚠️</span>
+        <div id="error-text" class="space-y-1">
+          {% if error == "credenciales_invalidas" %}
+            <p class="font-bold">Credenciales incorrectas.</p>
+            <p class="text-[11px] text-rose-300">Verifique su usuario / DNI y contraseña.</p>
+          {% elif error == "operador_restringido" %}
+            <p class="font-bold">Acceso restringido para Operadores.</p>
+            <p class="text-[11px] text-rose-300">Este panel es exclusivo para Gerencia y Administración. Por favor ingresa a la aplicación móvil.</p>
+          {% elif error == "sesion_expirada" %}
+            <p class="font-bold">Sesión finalizada.</p>
+            <p class="text-[11px] text-rose-300">Por favor ingrese sus credenciales nuevamente.</p>
+          {% elif error %}
+            <p class="font-bold">{{ error }}</p>
+          {% endif %}
+        </div>
+      </div>
+
+      <form action="/login" method="POST" class="space-y-4" onsubmit="return validarFormulario(this)">
+        
+        <div>
+          <label for="usuario" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+            Usuario o DNI
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400 text-sm">👤</span>
+            <input 
+              type="text" 
+              id="usuario" 
+              name="usuario" 
+              required 
+              autofocus
+              placeholder="Ej: admin o número de DNI" 
+              value="{{ usuario or '' }}"
+              class="w-full bg-carbon border border-gray-700 text-white font-medium text-sm rounded-xl py-3 pl-10 pr-4 focus:border-machinery focus:ring-1 focus:ring-machinery focus:outline-none transition-all placeholder:text-gray-600">
+          </div>
+        </div>
+
+        <div>
+          <label for="contrasena" class="block text-xs font-bold uppercase tracking-wider text-gray-400 mb-1.5">
+            Contraseña
+          </label>
+          <div class="relative">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3.5 text-gray-400 text-sm">🔑</span>
+            <input 
+              type="password" 
+              id="contrasena" 
+              name="contrasena" 
+              required 
+              placeholder="••••••••" 
+              class="w-full bg-carbon border border-gray-700 text-white font-medium text-sm rounded-xl py-3 pl-10 pr-10 focus:border-machinery focus:ring-1 focus:ring-machinery focus:outline-none transition-all placeholder:text-gray-600">
+            <button 
+              type="button" 
+              onclick="toggleMostrarClave()" 
+              class="absolute inset-y-0 right-0 flex items-center pr-3.5 text-gray-400 hover:text-white transition">
+              <span id="eye-icon">👁️</span>
+            </button>
+          </div>
+        </div>
+
+        <button 
+          type="submit" 
+          id="btn-login"
+          class="w-full py-3.5 px-4 bg-machinery hover:bg-machineryActive text-carbon font-extrabold text-sm uppercase tracking-wider rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-lg shadow-machinery/20 active:scale-[0.99]">
+          <span>Ingresar al Sistema</span>
+          <span>➔</span>
+        </button>
+
+      </form>
+
+      <!-- Roles Permitidos -->
+      <div class="pt-2 border-t border-gray-800/80">
+        <p class="text-[11px] text-gray-400 text-center font-medium">
+          Perfiles autorizados: <span class="text-gray-300 font-bold">Gerencia</span>, <span class="text-gray-300 font-bold">Jefatura de Flota</span> y <span class="text-gray-300 font-bold">Administración</span>.
+        </p>
+      </div>
+
+    </div>
+
+    <!-- Enlace a Modo Operador Móvil -->
+    <div class="mt-6 text-center">
+      <div class="p-4 rounded-2xl bg-carbon/80 border border-gray-800 text-xs">
+        <span class="text-gray-400">¿Eres operador de maquinaria o conductor en campo?</span>
+        <div class="mt-2">
+          <a href="/operador" class="inline-flex items-center gap-1.5 text-machinery font-bold hover:underline">
+            <span>🚜</span>
+            <span>Ir a la Pasarela Móvil de Operadores</span>
+            <span>➔</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="text-center mt-6 text-[11px] text-gray-500 font-mono">
+      ACR Flota 360° • Sistema de Control de Operaciones
+    </div>
+
+  </div>
+
+  <script>
+    function toggleMostrarClave() {
+      const input = document.getElementById('contrasena');
+      const icon = document.getElementById('eye-icon');
+      if (input.type === 'password') {
+        input.type = 'text';
+        icon.textContent = '🙈';
+      } else {
+        input.type = 'password';
+        icon.textContent = '👁️';
+      }
+    }
+
+    function validarFormulario(form) {
+      const btn = document.getElementById('btn-login');
+      btn.disabled = true;
+      btn.innerHTML = `
+        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-carbon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+        </svg>
+        <span>Verificando credenciales...</span>
+      `;
+      return true;
+    }
+  </script>
+
+</body>
+</html>
