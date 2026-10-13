@@ -1,9 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, StreamingResponse
 from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, date
 import os
 import uuid
 import shutil
@@ -207,6 +207,8 @@ def listar_turnos_operacion(
     proyecto_id: Optional[int] = None,
     equipo_id: Optional[int] = None,
     operador_id: Optional[int] = None,
+    fecha_desde: Optional[date] = None,
+    fecha_hasta: Optional[date] = None,
     db: Session = Depends(get_db)
 ):
     """Listado del historial de turnos con identificación del personal a cargo, horas y fotos."""
@@ -217,17 +219,27 @@ def listar_turnos_operacion(
         query = query.filter(TurnoOperacion.equipo_id == equipo_id)
     if operador_id:
         query = query.filter(TurnoOperacion.operador_id == operador_id)
+    if fecha_desde:
+        query = query.filter(TurnoOperacion.fecha >= fecha_desde)
+    if fecha_hasta:
+        query = query.filter(TurnoOperacion.fecha <= fecha_hasta)
 
-    turnos = query.order_by(TurnoOperacion.id.desc()).all()
+    turnos = query.order_by(TurnoOperacion.fecha.desc(), TurnoOperacion.id.desc()).all()
     resultado = []
     for t in turnos:
+        ratio = round(t.combustible_galones / t.horas_trabajadas, 2) if (t.combustible_galones and t.horas_trabajadas and t.horas_trabajadas > 0) else None
         resultado.append({
             "id": t.id,
             "uuid_local": t.uuid_local,
             "fecha": t.fecha.strftime("%Y-%m-%d"),
+            "equipo_id": t.equipo_id,
             "equipo_codigo": t.equipo.codigo_interno if t.equipo else "N/A",
             "equipo_modelo": f"{t.equipo.marca} {t.equipo.modelo}" if t.equipo else "N/A",
+            "equipo_tipo": t.equipo.tipo if t.equipo else "pesada",
+            "equipo_tipo_control": t.equipo.tipo_control if t.equipo else "HOROMETRO",
+            "proyecto_id": t.proyecto_id,
             "proyecto_nombre": t.proyecto.nombre if t.proyecto else "N/A",
+            "operador_id": t.operador_id,
             "operador_nombre": f"{t.operador.nombres} {t.operador.apellidos}" if t.operador else "N/A",
             "operador_dni": t.operador.dni if t.operador else "N/A",
             "operador_brevete": f"{t.operador.brevete_numero} ({t.operador.brevete_categoria})" if t.operador else "N/A",
@@ -241,6 +253,7 @@ def listar_turnos_operacion(
             "foto_fin": t.foto_horometro_fin,
             "abastecio_combustible": t.abastecio_combustible or False,
             "combustible_galones": t.combustible_galones or 0.0,
+            "ratio_gal_hora": ratio,
             "foto_combustible": t.foto_combustible,
             "foto_inicio_delantera": t.foto_inicio_delantera,
             "foto_inicio_trasera": t.foto_inicio_trasera,
@@ -257,6 +270,36 @@ def listar_turnos_operacion(
             "creado_en": t.creado_en
         })
     return resultado
+
+
+@router.get("/turnos/exportar-excel")
+def exportar_turnos_excel(
+    proyecto_id: Optional[int] = None,
+    equipo_id: Optional[int] = None,
+    operador_id: Optional[int] = None,
+    fecha_desde: Optional[date] = None,
+    fecha_hasta: Optional[date] = None,
+    db: Session = Depends(get_db)
+):
+    """Genera y descarga en vivo el reporte Excel profesional de Parte Diario y Horómetros."""
+    from app.services.report_service import ReportService
+    stream = ReportService.generar_excel_control_horometros(
+        db=db,
+        proyecto_id=proyecto_id,
+        equipo_id=equipo_id,
+        operador_id=operador_id,
+        fecha_desde=fecha_desde,
+        fecha_hasta=fecha_hasta
+    )
+    filename = f"Parte_Diario_Horometros_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
+    return StreamingResponse(
+        stream,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f'attachment; filename="{filename}"',
+            "Access-Control-Expose-Headers": "Content-Disposition"
+        }
+    )
 
 
 @router.get("/repuestos", response_model=List[InventarioRepuestoResponse])

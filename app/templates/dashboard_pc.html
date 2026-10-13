@@ -15,6 +15,8 @@
   <!-- Leaflet.js para Mapa GPS en Vivo -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- SheetJS para Exportación Directa a Excel -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
   <script>
     tailwind.config = {
@@ -67,6 +69,10 @@
         <button type="button" onclick="mostrarSeccion('flota')" data-tab="flota" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
           <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
           <span>Maquinaria y Flota</span>
+        </button>
+        <button type="button" onclick="mostrarSeccion('horometros')" data-tab="horometros" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2m10-10h-2M4 12H2"/></svg>
+          <span>Control de Horómetros</span>
         </button>
         <button type="button" onclick="mostrarSeccion('personal')" data-tab="personal" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
           <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
@@ -351,6 +357,168 @@
             <tbody id="tabla-proyectos-body" class="divide-y divide-gray-800 font-medium">
               <!-- Dinámico -->
             </tbody>
+          </table>
+        </div>
+      <!-- SECCIÓN: CONTROL DE HORÓMETROS & PARTE DIARIO -->
+      <div id="seccion-horometros" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
+        <!-- Encabezado con Botones de Acción -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div class="flex items-center gap-2.5">
+              <span class="w-3 h-3 bg-machinery rounded-sm"></span>
+              <h3 class="text-lg font-black text-white uppercase tracking-wide">
+                Control de Horómetros & Parte Diario
+              </h3>
+              <span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-300 border border-emerald-700">
+                Oficial Flota 360°
+              </span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">
+              Monitoreo diario de horómetros (h), cálculo automático de horas efectivas, consumo de combustible (Gal/h) y exportación oficial
+            </p>
+          </div>
+
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <button onclick="cargarControlHorometros()" class="px-3.5 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 flex items-center gap-1.5 transition">
+              🔄 Actualizar
+            </button>
+            <button onclick="exportarHorometrosExcel()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center gap-2 border border-emerald-500/50">
+              <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>Exportar a Excel (.xlsx)</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 4 TARJETAS KPI RESUMEN DE HORÓMETROS -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="bg-carbon/70 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Horas Efectivas (Filtro)</p>
+              <h4 id="kpi-h-total" class="text-2xl font-mono font-black text-machinery mt-0.5">0.0 h</h4>
+              <p id="kpi-h-total-sub" class="text-[10px] text-gray-500 font-medium mt-0.5">0 turnos computados</p>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-machinery/10 border border-machinery/30 flex items-center justify-center text-xl text-machinery shrink-0">
+              ⏱️
+            </div>
+          </div>
+
+          <div class="bg-carbon/70 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Maquinarias Activas</p>
+              <h4 id="kpi-h-equipos" class="text-2xl font-mono font-black text-white mt-0.5">0</h4>
+              <p id="kpi-h-equipos-sub" class="text-[10px] text-gray-500 font-medium mt-0.5">con reporte en periodo</p>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-blue-950/60 border border-blue-600/30 flex items-center justify-center text-xl text-blue-400 shrink-0">
+              🚜
+            </div>
+          </div>
+
+          <div class="bg-carbon/70 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Combustible Vinculado</p>
+              <h4 id="kpi-h-combustible" class="text-2xl font-mono font-black text-amber-400 mt-0.5">0.0 Gal</h4>
+              <p id="kpi-h-combustible-sub" class="text-[10px] text-gray-500 font-medium mt-0.5">en los turnos listados</p>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-amber-950/60 border border-amber-600/30 flex items-center justify-center text-xl text-amber-400 shrink-0">
+              ⛽
+            </div>
+          </div>
+
+          <div class="bg-carbon/70 border border-gray-800 rounded-xl p-4 flex items-center justify-between">
+            <div>
+              <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Ratio Consumo Medio</p>
+              <h4 id="kpi-h-ratio" class="text-2xl font-mono font-black text-cyan-400 mt-0.5">0.00 Gal/h</h4>
+              <p id="kpi-h-ratio-sub" class="text-[10px] text-gray-500 font-medium mt-0.5">eficiencia de operación</p>
+            </div>
+            <div class="w-11 h-11 rounded-xl bg-cyan-950/60 border border-cyan-600/30 flex items-center justify-center text-xl text-cyan-400 shrink-0">
+              ⚡
+            </div>
+          </div>
+        </div>
+
+        <!-- BARRA DE FILTROS INTERACTIVOS Y RANGO DE FECHAS -->
+        <div class="bg-carbon/80 border border-gray-800 rounded-xl p-4 space-y-3">
+          <div class="flex items-center justify-between flex-wrap gap-2 pb-2 border-b border-gray-800/80 text-xs">
+            <span class="font-bold text-gray-300 uppercase tracking-wider flex items-center gap-1.5">
+              <span>🔍</span> Filtros del Parte Diario
+            </span>
+            <div class="flex items-center gap-1.5">
+              <span class="text-gray-400 text-[11px]">Accesos rápidos:</span>
+              <button type="button" onclick="setFiltroFechaHorometro('hoy')" class="px-2.5 py-1 rounded bg-graphiteLight hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold transition">Hoy</button>
+              <button type="button" onclick="setFiltroFechaHorometro('mes')" class="px-2.5 py-1 rounded bg-graphiteLight hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold transition">Mes Actual</button>
+              <button type="button" onclick="setFiltroFechaHorometro('todo')" class="px-2.5 py-1 rounded bg-graphiteLight hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold transition">Todo</button>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 text-xs">
+            <!-- Frente -->
+            <div>
+              <label class="block text-gray-400 font-bold mb-1">Frente de Obra:</label>
+              <select id="filtro-h-proyecto" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-2 font-medium focus:border-machinery focus:outline-none">
+                <option value="">🏗️ Todos los Frentes</option>
+              </select>
+            </div>
+
+            <!-- Equipo -->
+            <div>
+              <label class="block text-gray-400 font-bold mb-1">Maquinaria / Equipo:</label>
+              <select id="filtro-h-equipo" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-2 font-medium focus:border-machinery focus:outline-none">
+                <option value="">🚜 Todos los Equipos</option>
+              </select>
+            </div>
+
+            <!-- Operador -->
+            <div>
+              <label class="block text-gray-400 font-bold mb-1">Operador a Cargo:</label>
+              <select id="filtro-h-operador" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-2 font-medium focus:border-machinery focus:outline-none">
+                <option value="">👷‍♂️ Todos los Operadores</option>
+              </select>
+            </div>
+
+            <!-- Fecha Desde -->
+            <div>
+              <label class="block text-gray-400 font-bold mb-1">Fecha Desde:</label>
+              <input type="date" id="filtro-h-desde" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-1.5 font-medium focus:border-machinery focus:outline-none font-mono">
+            </div>
+
+            <!-- Fecha Hasta -->
+            <div>
+              <label class="block text-gray-400 font-bold mb-1">Fecha Hasta:</label>
+              <input type="date" id="filtro-h-hasta" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-1.5 font-medium focus:border-machinery focus:outline-none font-mono">
+            </div>
+          </div>
+
+          <!-- Buscador libre de texto -->
+          <div class="relative pt-1">
+            <input type="text" id="filtro-h-busqueda" oninput="filtrarHorometros()" placeholder="🔎 Filtrar en tiempo real por código, modelo, operador, frente de obra o incidencias..." class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-500 focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <!-- TABLA PRINCIPAL DE PARTE DIARIO DE HORÓMETROS -->
+        <div class="overflow-x-auto rounded-lg border border-gray-800">
+          <table class="w-full text-left text-sm text-gray-300">
+            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+              <tr>
+                <th class="py-3.5 px-4 text-center">N°</th>
+                <th class="py-3.5 px-4">Fecha</th>
+                <th class="py-3.5 px-4">Frente / Proyecto</th>
+                <th class="py-3.5 px-4">Maquinaria & Código</th>
+                <th class="py-3.5 px-4">Operador a Cargo</th>
+                <th class="py-3.5 px-4 text-center">Horómetro Inicio</th>
+                <th class="py-3.5 px-4 text-center">Horómetro Fin</th>
+                <th class="py-3.5 px-4 text-center">Δ Horas Efectivas</th>
+                <th class="py-3.5 px-4 text-center">Combustible</th>
+                <th class="py-3.5 px-4 text-center">Ratio (Gal/h)</th>
+                <th class="py-3.5 px-4">Novedad / Cierre</th>
+                <th class="py-3.5 px-4 text-center">Estado</th>
+              </tr>
+            </thead>
+            <tbody id="tabla-horometros-body" class="divide-y divide-gray-800 font-medium">
+              <!-- Renderizado dinámico vía JavaScript -->
+            </tbody>
+            <tfoot id="tabla-horometros-foot" class="bg-carbon/90 border-t-2 border-gray-700 font-bold text-xs text-white">
+              <!-- Resumen consolidado -->
+            </tfoot>
           </table>
         </div>
       </div>
@@ -1041,6 +1209,11 @@
           titulo: 'MAQUINARIA Y FLOTA',
           subtitulo: 'Inventario de maquinaria pesada, registro de horómetros/KM, pólizas y SOAT'
         },
+        'horometros': {
+          id: 'seccion-horometros',
+          titulo: 'CONTROL DE HORÓMETROS & PARTE DIARIO',
+          subtitulo: 'Seguimiento diario de horas trabajadas, horómetros inicial/final, combustible (Gal/h) y reporte Excel'
+        },
         'proyectos': {
           id: 'seccion-proyectos',
           titulo: 'FRENTES DE OBRA Y PROYECTOS',
@@ -1113,6 +1286,10 @@
         }, 80);
       }
 
+      if (tabKey === 'horometros') {
+        cargarControlHorometros();
+      }
+
       // 7. Sincronizar URL hash
       if (window.location.hash !== '#' + tabKey) {
         history.replaceState(null, '', '#' + tabKey);
@@ -1143,6 +1320,7 @@
       await cargarTablaPersonal();
       await cargarTablaFlota();
       await cargarTablaTurnos();
+      await cargarControlHorometros();
       await cargarDashboard();
       cargarTablaRepuestos();
       cargarTablaProveedores();
@@ -1903,6 +2081,358 @@
       document.getElementById('foto-preview-titulo').textContent = `📸 ${titulo}`;
       modal.classList.remove('hidden');
       modal.classList.add('flex');
+    }
+
+    // ==========================================
+    // CONTROL DE HORÓMETROS & PARTE DIARIO
+    // ==========================================
+    let horometrosCache = [];
+    let horometrosFiltradosCache = [];
+
+    async function cargarControlHorometros() {
+      try {
+        const res = await fetch('/api/v1/heavy/turnos');
+        if (!res.ok) return;
+        horometrosCache = await res.json();
+
+        // Poblar selectores de filtros si no tienen datos
+        poblarFiltrosHorometros();
+
+        // Aplicar filtros iniciales
+        filtrarHorometros();
+      } catch (err) {
+        console.error("Error al cargar control de horómetros:", err);
+      }
+    }
+
+    function poblarFiltrosHorometros() {
+      // Frente
+      const selProy = document.getElementById('filtro-h-proyecto');
+      if (selProy && frentesCache && frentesCache.length > 0) {
+        const valActual = selProy.value;
+        selProy.innerHTML = '<option value="">🏗️ Todos los Frentes</option>';
+        frentesCache.forEach(p => {
+          selProy.innerHTML += `<option value="${p.id}">${p.nombre} (${p.codigo})</option>`;
+        });
+        selProy.value = valActual;
+      }
+
+      // Equipos
+      const selEq = document.getElementById('filtro-h-equipo');
+      if (selEq && equiposCache && equiposCache.length > 0) {
+        const valActual = selEq.value;
+        selEq.innerHTML = '<option value="">🚜 Todos los Equipos</option>';
+        equiposCache.forEach(e => {
+          selEq.innerHTML += `<option value="${e.id}">${e.codigo_interno} - ${e.marca} ${e.modelo}</option>`;
+        });
+        selEq.value = valActual;
+      }
+
+      // Operadores
+      const selOp = document.getElementById('filtro-h-operador');
+      if (selOp && personalCache && personalCache.length > 0) {
+        const valActual = selOp.value;
+        selOp.innerHTML = '<option value="">👷‍♂️ Todos los Operadores</option>';
+        personalCache.forEach(op => {
+          selOp.innerHTML += `<option value="${op.id}">${op.nombres} ${op.apellidos} (${op.dni})</option>`;
+        });
+        selOp.value = valActual;
+      }
+    }
+
+    function setFiltroFechaHorometro(tipo) {
+      const inputDesde = document.getElementById('filtro-h-desde');
+      const inputHasta = document.getElementById('filtro-h-hasta');
+      const hoy = new Date();
+      const hoyStr = hoy.toISOString().split('T')[0];
+
+      if (tipo === 'hoy') {
+        if (inputDesde) inputDesde.value = hoyStr;
+        if (inputHasta) inputHasta.value = hoyStr;
+      } else if (tipo === 'mes') {
+        const primerDia = new Date(hoy.getFullYear(), hoy.getMonth(), 1).toISOString().split('T')[0];
+        if (inputDesde) inputDesde.value = primerDia;
+        if (inputHasta) inputHasta.value = hoyStr;
+      } else {
+        if (inputDesde) inputDesde.value = '';
+        if (inputHasta) inputHasta.value = '';
+      }
+      filtrarHorometros();
+    }
+
+    function filtrarHorometros() {
+      const proyId = document.getElementById('filtro-h-proyecto')?.value;
+      const eqId = document.getElementById('filtro-h-equipo')?.value;
+      const opId = document.getElementById('filtro-h-operador')?.value;
+      const fDesde = document.getElementById('filtro-h-desde')?.value;
+      const fHasta = document.getElementById('filtro-h-hasta')?.value;
+      const q = (document.getElementById('filtro-h-busqueda')?.value || '').toLowerCase().trim();
+
+      let filtrados = horometrosCache || [];
+
+      if (proyId) {
+        filtrados = filtrados.filter(t => t.proyecto_id === parseInt(proyId));
+      }
+      if (eqId) {
+        filtrados = filtrados.filter(t => t.equipo_id === parseInt(eqId));
+      }
+      if (opId) {
+        filtrados = filtrados.filter(t => t.operador_id === parseInt(opId));
+      }
+      if (fDesde) {
+        filtrados = filtrados.filter(t => t.fecha >= fDesde);
+      }
+      if (fHasta) {
+        filtrados = filtrados.filter(t => t.fecha <= fHasta);
+      }
+      if (q) {
+        filtrados = filtrados.filter(t => {
+          const str = `${t.fecha} ${t.equipo_codigo} ${t.equipo_modelo} ${t.operador_nombre} ${t.operador_dni} ${t.proyecto_nombre} ${t.incidencia_descripcion || ''}`.toLowerCase();
+          return str.includes(q);
+        });
+      }
+
+      horometrosFiltradosCache = filtrados;
+      renderTablaHorometros(filtrados);
+    }
+
+    function renderTablaHorometros(lista) {
+      const tbody = document.getElementById('tabla-horometros-body');
+      const tfoot = document.getElementById('tabla-horometros-foot');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      let totalHoras = 0;
+      let totalGalones = 0;
+      const maquinasSet = new Set();
+
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="12" class="py-12 text-center text-gray-400">
+              <div class="text-3xl mb-2">⏱️</div>
+              <p class="font-bold text-gray-300">No se encontraron partes de horómetro con los filtros seleccionados.</p>
+              <p class="text-xs text-gray-500 mt-1">Modifique el rango de fechas o los filtros para visualizar registros.</p>
+            </td>
+          </tr>
+        `;
+        if (tfoot) tfoot.innerHTML = '';
+        actualizarKPIsHorometros(0, 0, 0, 0, 0);
+        return;
+      }
+
+      lista.forEach((t, idx) => {
+        const hIni = (t.horometro_inicio !== null && t.horometro_inicio !== undefined) ? Number(t.horometro_inicio) : null;
+        const hFin = (t.horometro_fin !== null && t.horometro_fin !== undefined) ? Number(t.horometro_fin) : null;
+        const hTrab = (t.horas_trabajadas !== null && t.horas_trabajadas !== undefined) ? Number(t.horas_trabajadas) : 0;
+        const gal = (t.combustible_galones !== null && t.combustible_galones !== undefined) ? Number(t.combustible_galones) : 0;
+
+        totalHoras += hTrab;
+        totalGalones += gal;
+        if (t.equipo_codigo) maquinasSet.add(t.equipo_codigo);
+
+        let ratioStr = '-';
+        let ratioBadgeClass = 'text-gray-500';
+        if (gal > 0 && hTrab > 0) {
+          const ratio = (gal / hTrab).toFixed(2);
+          ratioStr = `${ratio} G/h`;
+          ratioBadgeClass = 'text-amber-400 font-bold';
+        }
+
+        const fotoIniBtn = t.foto_inicio
+          ? `<button onclick="verFoto('${t.foto_inicio}', 'Horómetro Inicio - ${t.equipo_codigo}')" class="px-2 py-0.5 bg-graphiteLight hover:bg-machinery hover:text-carbon text-[11px] rounded font-bold border border-gray-700 transition" title="Ver foto horómetro inicial">📸 ${hIni !== null ? hIni.toFixed(1) + 'h' : 'Ini'}</button>`
+          : (hIni !== null ? `<span class="font-mono text-gray-300">${hIni.toFixed(1)}h</span>` : '-');
+
+        const fotoFinBtn = t.foto_fin
+          ? `<button onclick="verFoto('${t.foto_fin}', 'Horómetro Fin - ${t.equipo_codigo}')" class="px-2 py-0.5 bg-graphiteLight hover:bg-emerald-400 hover:text-carbon text-[11px] rounded font-bold border border-gray-700 transition" title="Ver foto horómetro final">📸 ${hFin !== null ? hFin.toFixed(1) + 'h' : 'Fin'}</button>`
+          : (hFin !== null ? `<span class="font-mono text-gray-300">${hFin.toFixed(1)}h</span>` : '<span class="text-amber-400 text-[10px] font-bold">En turno...</span>');
+
+        const incidenciaHtml = t.hubo_incidencia
+          ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800" title="${t.incidencia_descripcion || 'Incidencia'}">⚠️ ${t.incidencia_descripcion ? (t.incidencia_descripcion.substring(0, 25) + '...') : 'Incidencia'}</span>`
+          : `<span class="text-gray-500 text-[11px]">Conforme</span>`;
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-graphiteLight/50 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-center font-mono text-xs text-gray-500">${idx + 1}</td>
+          <td class="py-3 px-4 font-mono text-xs font-bold text-gray-200 whitespace-nowrap">${t.fecha}</td>
+          <td class="py-3 px-4 text-xs font-bold text-gray-300">${t.proyecto_nombre}</td>
+          <td class="py-3 px-4">
+            <div class="font-mono font-black text-machinery text-xs">${t.equipo_codigo}</div>
+            <div class="text-[11px] text-gray-400 truncate max-w-[150px]">${t.equipo_modelo}</div>
+          </td>
+          <td class="py-3 px-4">
+            <div class="font-bold text-white text-xs">${t.operador_nombre}</div>
+            <div class="text-[10px] text-gray-400 font-mono">DNI: ${t.operador_dni}</div>
+          </td>
+          <td class="py-3 px-4 text-center whitespace-nowrap">${fotoIniBtn}</td>
+          <td class="py-3 px-4 text-center whitespace-nowrap">${fotoFinBtn}</td>
+          <td class="py-3 px-4 text-center whitespace-nowrap">
+            <span class="font-mono font-black text-sm ${hTrab > 0 ? 'text-machinery' : 'text-gray-500'}">
+              ${hTrab > 0 ? hTrab.toFixed(1) + ' h' : '-'}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-center whitespace-nowrap">
+            ${gal > 0 ? `<span class="font-mono text-xs font-bold text-amber-300">${gal.toFixed(1)} Gal</span>` : '<span class="text-gray-600">-</span>'}
+          </td>
+          <td class="py-3 px-4 text-center whitespace-nowrap font-mono text-xs ${ratioBadgeClass}">
+            ${ratioStr}
+          </td>
+          <td class="py-3 px-4 max-w-[140px] truncate">${incidenciaHtml}</td>
+          <td class="py-3 px-4 text-center">
+            <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+              🟢 ${t.estado_sync || 'SYNC'}
+            </span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Tfoot con totales
+      const ratioGlobal = totalHoras > 0 ? (totalGalones / totalHoras).toFixed(2) : '0.00';
+      if (tfoot) {
+        tfoot.innerHTML = `
+          <tr>
+            <td colspan="7" class="py-3.5 px-4 text-right uppercase tracking-wider text-gray-400">
+              TOTALES CONSOLIDADOS (${lista.length} registros):
+            </td>
+            <td class="py-3.5 px-4 text-center font-mono font-black text-machinery text-sm">
+              ${totalHoras.toFixed(1)} h
+            </td>
+            <td class="py-3.5 px-4 text-center font-mono font-black text-amber-300 text-sm">
+              ${totalGalones.toFixed(1)} Gal
+            </td>
+            <td class="py-3.5 px-4 text-center font-mono font-black text-cyan-400 text-sm">
+              ${ratioGlobal} G/h
+            </td>
+            <td colspan="2" class="py-3.5 px-4 text-center text-gray-500 text-[11px]">
+              Parte Diario Oficial ACR Flota 360°
+            </td>
+          </tr>
+        `;
+      }
+
+      actualizarKPIsHorometros(totalHoras, maquinasSet.size, totalGalones, Number(ratioGlobal), lista.length);
+    }
+
+    function actualizarKPIsHorometros(totalH, totalEq, totalGal, ratio, totalRegistros) {
+      const elH = document.getElementById('kpi-h-total');
+      const elHSub = document.getElementById('kpi-h-total-sub');
+      const elEq = document.getElementById('kpi-h-equipos');
+      const elGal = document.getElementById('kpi-h-combustible');
+      const elRatio = document.getElementById('kpi-h-ratio');
+
+      if (elH) elH.textContent = `${totalH.toFixed(1)} h`;
+      if (elHSub) elHSub.textContent = `${totalRegistros} turnos computados`;
+      if (elEq) elEq.textContent = `${totalEq}`;
+      if (elGal) elGal.textContent = `${totalGal.toFixed(1)} Gal`;
+      if (elRatio) elRatio.textContent = `${ratio.toFixed(2)} Gal/h`;
+    }
+
+    async function exportarHorometrosExcel() {
+      const proyId = document.getElementById('filtro-h-proyecto')?.value || '';
+      const eqId = document.getElementById('filtro-h-equipo')?.value || '';
+      const opId = document.getElementById('filtro-h-operador')?.value || '';
+      const fDesde = document.getElementById('filtro-h-desde')?.value || '';
+      const fHasta = document.getElementById('filtro-h-hasta')?.value || '';
+
+      const params = new URLSearchParams();
+      if (proyId) params.append('proyecto_id', proyId);
+      if (eqId) params.append('equipo_id', eqId);
+      if (opId) params.append('operador_id', opId);
+      if (fDesde) params.append('fecha_desde', fDesde);
+      if (fHasta) params.append('fecha_hasta', fHasta);
+
+      const url = `/api/v1/heavy/turnos/exportar-excel?${params.toString()}`;
+
+      try {
+        const res = await fetch(url);
+        if (res.ok) {
+          const blob = await res.blob();
+          const downloadUrl = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = downloadUrl;
+          a.download = `Parte_Diario_Horometros_${new Date().toISOString().slice(0, 10)}.xlsx`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          window.URL.revokeObjectURL(downloadUrl);
+          return;
+        }
+      } catch (err) {
+        console.warn("Descarga por endpoint backend falló, usando SheetJS cliente:", err);
+      }
+
+      // Fallback con SheetJS en el cliente
+      exportarExcelConSheetJS(horometrosFiltradosCache || horometrosCache);
+    }
+
+    function exportarExcelConSheetJS(lista) {
+      if (typeof XLSX === 'undefined') {
+        alert("Librería Excel no cargada aún. Espere un momento.");
+        return;
+      }
+      const data = [];
+      data.push(["ACR FLOTA 360° — CONTROL DE HORÓMETROS & PARTE DIARIO"]);
+      data.push([`Fecha de Descarga: ${new Date().toLocaleString()} | Total Registros: ${lista.length}`]);
+      data.push([]);
+      data.push([
+        "N°", "Fecha", "Frente / Obra", "Cód. Equipo", "Maquinaria",
+        "Operador", "DNI", "Horómetro Inicio (h)", "Horómetro Fin (h)",
+        "Δ Horas Efectivas (h)", "Combustible (Gal)", "Ratio (Gal/h)",
+        "Incidencias", "Estado"
+      ]);
+
+      let sumH = 0;
+      let sumGal = 0;
+
+      lista.forEach((t, i) => {
+        const hIni = t.horometro_inicio != null ? Number(t.horometro_inicio) : 0;
+        const hFin = t.horometro_fin != null ? Number(t.horometro_fin) : 0;
+        const hTrab = t.horas_trabajadas != null ? Number(t.horas_trabajadas) : 0;
+        const gal = t.combustible_galones != null ? Number(t.combustible_galones) : 0;
+        const ratio = (gal > 0 && hTrab > 0) ? (gal / hTrab).toFixed(2) : "-";
+
+        sumH += hTrab;
+        sumGal += gal;
+
+        data.push([
+          i + 1,
+          t.fecha,
+          t.proyecto_nombre,
+          t.equipo_codigo,
+          t.equipo_modelo,
+          t.operador_nombre,
+          t.operador_dni,
+          hIni,
+          hFin > 0 ? hFin : "-",
+          hTrab,
+          gal > 0 ? gal : 0,
+          ratio,
+          t.hubo_incidencia ? (t.incidencia_descripcion || 'Incidencia') : 'Conforme',
+          t.estado_sync || 'SINCRONIZADO'
+        ]);
+      });
+
+      const ratioProm = sumH > 0 ? (sumGal / sumH).toFixed(2) : "-";
+      data.push([]);
+      data.push([
+        "TOTALES:", "", "", "", "", "", "", "", "",
+        sumH, sumGal, ratioProm, "", ""
+      ]);
+
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const colWidths = [
+        { wch: 6 }, { wch: 12 }, { wch: 22 }, { wch: 14 }, { wch: 26 },
+        { wch: 24 }, { wch: 12 }, { wch: 18 }, { wch: 18 },
+        { wch: 20 }, { wch: 18 }, { wch: 16 }, { wch: 25 }, { wch: 16 }
+      ];
+      ws['!cols'] = colWidths;
+
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Parte Diario Horometros");
+      const filename = `Parte_Diario_Horometros_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, filename);
     }
 
     // ==========================================
