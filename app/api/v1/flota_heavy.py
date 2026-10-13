@@ -95,8 +95,52 @@ def actualizar_equipo(equipo_id: int, payload: dict, db: Session = Depends(get_d
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
+    DATE_FIELDS = {"poliza_vencimiento", "soat_vencimiento"}
+    FLOAT_FIELDS = {"horometro_actual", "odometro_actual", "horometro_proximo_servicio", "intervalo_servicio"}
+
     for key, value in payload.items():
         if hasattr(equipo, key) and key != "id":
+            if key in DATE_FIELDS:
+                if not value or (isinstance(value, str) and not value.strip()):
+                    value = None
+                elif isinstance(value, str):
+                    parsed_date = None
+                    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d"):
+                        try:
+                            parsed_date = datetime.strptime(value.strip(), fmt).date()
+                            break
+                        except ValueError:
+                            pass
+                    value = parsed_date
+            elif key in FLOAT_FIELDS and value is not None:
+                try:
+                    value = float(value)
+                except (ValueError, TypeError):
+                    pass
+            elif key == "anio" and value is not None:
+                try:
+                    value = int(value)
+                except (ValueError, TypeError):
+                    pass
+            elif key == "codigo_interno" and value:
+                cod_limpio = str(value).strip().upper()
+                dup = db.query(MaquinariaEquipo).filter(
+                    MaquinariaEquipo.codigo_interno == cod_limpio,
+                    MaquinariaEquipo.id != equipo_id
+                ).first()
+                if dup:
+                    raise HTTPException(
+                        status_code=400,
+                        detail=f"El código interno '{cod_limpio}' ya está en uso por otro equipo."
+                    )
+                value = cod_limpio
+            elif key == "placa" and value is not None:
+                val_str = str(value).strip().upper()
+                value = val_str if val_str else None
+            elif key in ("serie_chasis", "poliza_seguro", "soat_numero", "nombre", "marca", "modelo") and value is not None:
+                val_str = str(value).strip()
+                value = val_str if val_str else None
+
             setattr(equipo, key, value)
 
     db.commit()

@@ -1962,8 +1962,15 @@
         });
 
         if (!res.ok) {
-          const err = await res.json();
-          alert("⚠️ " + (err.detail || "Error al actualizar"));
+          let msg = "Error al actualizar";
+          try {
+            const err = await res.json();
+            msg = err.detail || JSON.stringify(err);
+          } catch (_) {
+            const raw = await res.text().catch(() => "");
+            msg = raw || `Error HTTP ${res.status}`;
+          }
+          alert("⚠️ " + msg);
           return;
         }
 
@@ -1973,7 +1980,8 @@
         await cargarFrentesProyectos();
         await cargarDashboard();
       } catch (err) {
-        alert("Error de conexión al actualizar maquinaria.");
+        console.error("Error al actualizar maquinaria:", err);
+        alert("Error de conexión al actualizar maquinaria: " + (err.message || err));
       }
     }
 
