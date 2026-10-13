@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, EmailStr
+from pydantic import BaseModel, Field, EmailStr, field_validator
 from typing import Optional, List, Dict, Any
 from datetime import date, datetime
 from app.models.heavytrack import (
@@ -53,6 +53,26 @@ class PersonalBase(BaseModel):
     certificado_vencimiento: Optional[date] = None
     certificado_archivo_url: Optional[str] = None
     estado: str = "activo"
+
+    @field_validator("brevete_vencimiento", "certificado_vencimiento", mode="before")
+    @classmethod
+    def validar_fechas_opcionales(cls, v):
+        if v is None or v == "" or (isinstance(v, str) and not v.strip()):
+            return None
+        if isinstance(v, str):
+            for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d"):
+                try:
+                    return datetime.strptime(v.strip(), fmt).date()
+                except ValueError:
+                    pass
+        return v
+
+    @field_validator("telefono", "brevete_numero", "brevete_categoria", "certificado_nombre", "certificado_archivo_url", mode="before")
+    @classmethod
+    def limpiar_strings_vacios(cls, v):
+        if isinstance(v, str) and not v.strip():
+            return None
+        return v
 
 
 class PersonalCreate(PersonalBase):
