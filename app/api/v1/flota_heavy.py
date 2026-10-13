@@ -4,6 +4,7 @@ from sqlalchemy import func
 from sqlalchemy.orm import Session
 from typing import List, Optional
 from datetime import datetime, date
+from pydantic import BaseModel
 import os
 import uuid
 import shutil
@@ -557,5 +558,36 @@ def registrar_telemetria_gps(
         "lng": equipo.ultima_longitud,
         "operador_id": equipo.operador_asignado_id
     }
+
+
+class AnalisisTableroIARequest(BaseModel):
+    foto_base64: Optional[str] = None
+    imagen_base64: Optional[str] = None
+    tipo_control: Optional[str] = "HOROMETRO"
+    valor_ingresado: Optional[float] = None
+    lectura_ingresada: Optional[float] = None
+    valor_anterior: Optional[float] = None
+    equipo_codigo: Optional[str] = None
+
+
+@router.post("/ia/analizar-tablero")
+def analizar_tablero_con_ia(payload: AnalisisTableroIARequest):
+    """
+    Analiza con IA multimodal la foto del tablero tomada por el operador.
+    Extrae la lectura de números del horómetro u odómetro y la compara
+    con el valor ingresado para alertar sobre discrepancias o validar en vivo.
+    """
+    from app.services.ia_vision_service import IAVisionService
+
+    foto = payload.foto_base64 or payload.imagen_base64 or ""
+    val = payload.valor_ingresado if payload.valor_ingresado is not None else payload.lectura_ingresada
+
+    resultado = IAVisionService.analizar_foto_tablero(
+        foto_base64=foto,
+        tipo_control=payload.tipo_control or "HOROMETRO",
+        valor_ingresado=val,
+        valor_anterior=payload.valor_anterior
+    )
+    return resultado
 
 

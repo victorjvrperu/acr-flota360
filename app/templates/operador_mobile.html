@@ -495,6 +495,39 @@
           <input type="file" accept="image/*" capture="environment" id="input-cam-inicio_tablero" class="hidden" onchange="procesarFotoConSello(this, 'inicio_tablero', 'Tablero Inicial')">
         </div>
 
+        <!-- ASISTENTE DE VISIÓN IA: LECTURA Y COMPARACIÓN AUTOMÁTICA -->
+        <div id="ia-box-inicio" class="hidden rounded-2xl p-4 border transition-all duration-300 bg-carbon/95 border-gray-800 shadow-lg space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🤖</span>
+              <span class="text-xs font-black uppercase tracking-wider text-machinery">Asistente IA de Lectura</span>
+            </div>
+            <span id="ia-badge-modo-inicio" class="text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold bg-graphite text-gray-300 border border-gray-700">Gemini Vision</span>
+          </div>
+
+          <div id="ia-loader-inicio" class="hidden flex items-center gap-3 py-2 text-xs text-amber-300 font-bold">
+            <svg class="animate-spin h-5 w-5 text-amber-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span class="animate-pulse">Leyendo dígitos del tablero con Inteligencia Artificial...</span>
+          </div>
+
+          <div id="ia-resultado-inicio" class="hidden space-y-2.5">
+            <div id="ia-status-banner-inicio" class="p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 transition-all">
+              <span id="ia-status-icon-inicio" class="text-xl shrink-0 mt-0.5">✅</span>
+              <div class="space-y-1 flex-1">
+                <div id="ia-status-title-inicio" class="font-black text-sm">Lectura detectada</div>
+                <div id="ia-status-desc-inicio" class="text-[11px] leading-relaxed opacity-90">Comparando con el valor ingresado...</div>
+              </div>
+            </div>
+
+            <button type="button" id="ia-btn-aplicar-inicio" onclick="aplicarLecturaIA('inicio')" class="hidden w-full py-2.5 px-3 rounded-xl bg-machinery/20 hover:bg-machinery/30 border border-machinery text-machinery text-xs font-black uppercase flex items-center justify-center gap-2 transition active:scale-[0.98]">
+              <span>✨ Usar lectura de IA (<span id="ia-valor-sugerido-inicio" class="font-mono">--</span>)</span>
+            </button>
+          </div>
+        </div>
+
         <div id="err-ini-4" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
 
         <div class="grid grid-cols-2 gap-3 pt-2">
@@ -881,6 +914,39 @@
             <span class="text-[10px] text-gray-500 mt-0.5">Sello con Logo y Fecha</span>
           </div>
           <input type="file" accept="image/*" capture="environment" id="input-cam-fin_tablero" class="hidden" onchange="procesarFotoConSello(this, 'fin_tablero', 'Tablero Final Cierre')">
+        </div>
+
+        <!-- ASISTENTE DE VISIÓN IA: LECTURA Y COMPARACIÓN AUTOMÁTICA CIERRE -->
+        <div id="ia-box-fin" class="hidden rounded-2xl p-4 border transition-all duration-300 bg-carbon/95 border-gray-800 shadow-lg space-y-3">
+          <div class="flex items-center justify-between pb-2 border-b border-gray-800">
+            <div class="flex items-center gap-2">
+              <span class="text-base">🤖</span>
+              <span class="text-xs font-black uppercase tracking-wider text-alertGreen">Asistente IA de Lectura Cierre</span>
+            </div>
+            <span id="ia-badge-modo-fin" class="text-[10px] font-mono px-2.5 py-0.5 rounded-full font-bold bg-graphite text-gray-300 border border-gray-700">Gemini Vision</span>
+          </div>
+
+          <div id="ia-loader-fin" class="hidden flex items-center gap-3 py-2 text-xs text-amber-300 font-bold">
+            <svg class="animate-spin h-5 w-5 text-amber-400 shrink-0" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+            </svg>
+            <span class="animate-pulse">Leyendo horómetro/odómetro final con Inteligencia Artificial...</span>
+          </div>
+
+          <div id="ia-resultado-fin" class="hidden space-y-2.5">
+            <div id="ia-status-banner-fin" class="p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 transition-all">
+              <span id="ia-status-icon-fin" class="text-xl shrink-0 mt-0.5">✅</span>
+              <div class="space-y-1 flex-1">
+                <div id="ia-status-title-fin" class="font-black text-sm">Lectura detectada</div>
+                <div id="ia-status-desc-fin" class="text-[11px] leading-relaxed opacity-90">Comparando con el valor final ingresado...</div>
+              </div>
+            </div>
+
+            <button type="button" id="ia-btn-aplicar-fin" onclick="aplicarLecturaIA('fin')" class="hidden w-full py-2.5 px-3 rounded-xl bg-alertGreen/20 hover:bg-alertGreen/30 border border-alertGreen text-alertGreen text-xs font-black uppercase flex items-center justify-center gap-2 transition active:scale-[0.98]">
+              <span>✨ Usar lectura de IA (<span id="ia-valor-sugerido-fin" class="font-mono">--</span>)</span>
+            </button>
+          </div>
         </div>
 
         <div id="err-cie-1" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
@@ -1609,6 +1675,13 @@
             fotosEstado[fotoKey] = dataUrl;
 
             actualizarSlotFotoUI(fotoKey, dataUrl, `${fechaStr} ${horaStr}`, etiqueta);
+
+            // Disparar reconocimiento y validación con Inteligencia Artificial
+            if (fotoKey === 'inicio_tablero') {
+              analizarTableroConIA('inicio', dataUrl);
+            } else if (fotoKey === 'fin_tablero') {
+              analizarTableroConIA('fin', dataUrl);
+            }
           };
 
           const logoImg = new Image();
@@ -1658,6 +1731,197 @@
           <span class="text-[10px] text-gray-500 mt-0.5">Sello de Fecha, Hora y Logo</span>
         `;
       }
+      if (fotoKey === 'inicio_tablero') {
+        iaAnalisisEstado.inicio = null;
+        const box = document.getElementById('ia-box-inicio');
+        if (box) box.classList.add('hidden');
+      } else if (fotoKey === 'fin_tablero') {
+        iaAnalisisEstado.fin = null;
+        const box = document.getElementById('ia-box-fin');
+        if (box) box.classList.add('hidden');
+      }
+    }
+
+    // ==========================================================
+    // ASISTENTE DE VISIÓN IA: LECTURA DE HORÓMETRO Y COMPARACIÓN
+    // ==========================================================
+    const iaAnalisisEstado = {
+      inicio: null,
+      fin: null
+    };
+
+    async function analizarTableroConIA(tipo, dataUrl) {
+      const box = document.getElementById(`ia-box-${tipo}`);
+      const loader = document.getElementById(`ia-loader-${tipo}`);
+      const resContainer = document.getElementById(`ia-resultado-${tipo}`);
+      const badgeModo = document.getElementById(`ia-badge-modo-${tipo}`);
+
+      if (!box || !loader || !resContainer) return;
+
+      box.classList.remove('hidden');
+      loader.classList.remove('hidden');
+      resContainer.classList.add('hidden');
+
+      // Determinar equipo, tipo de control y lectura ingresada
+      let tipoControl = 'HOROMETRO';
+      let equipoCodigo = 'EQ-MAQ';
+      let valManual = null;
+
+      if (tipo === 'inicio') {
+        const eqId = parseInt(document.getElementById('select-maquinaria')?.value);
+        const eq = (catalogosLocales.equipos || []).find(e => e.id === eqId);
+        if (eq) {
+          tipoControl = (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE' ? 'KILOMETRAJE' : 'HOROMETRO';
+          equipoCodigo = eq.codigo_interno || eq.patente || `EQ-${eq.id}`;
+        }
+        valManual = parseFloat(document.getElementById('wizard-horometro-inicio')?.value) || null;
+      } else {
+        if (turnoEnCurso) {
+          tipoControl = (turnoEnCurso.tipo_control || '').toUpperCase() === 'KILOMETRAJE' ? 'KILOMETRAJE' : 'HOROMETRO';
+          equipoCodigo = turnoEnCurso.equipo_nombre || 'EQ-TURNO';
+        }
+        valManual = parseFloat(document.getElementById('wizard-horometro-fin')?.value) || null;
+      }
+
+      try {
+        const resp = await fetch('/api/v1/heavy/ia/analizar-tablero', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imagen_base64: dataUrl,
+            lectura_ingresada: valManual,
+            tipo_control: tipoControl,
+            equipo_codigo: equipoCodigo
+          })
+        });
+
+        if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+        const data = await resp.json();
+
+        iaAnalisisEstado[tipo] = data;
+
+        if (badgeModo) {
+          if (data.modo === 'IA_GEMINI_MULTIMODAL') {
+            badgeModo.textContent = '✨ Gemini Vision';
+            badgeModo.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-machinery/20 text-machinery border border-machinery/40';
+          } else {
+            badgeModo.textContent = '⚙️ Asistido ACR';
+            badgeModo.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-graphite text-gray-300 border border-gray-700';
+          }
+        }
+
+        loader.classList.add('hidden');
+        resContainer.classList.remove('hidden');
+        actualizarUIIA(tipo);
+      } catch (err) {
+        console.warn('Error en análisis IA de tablero:', err);
+        loader.classList.add('hidden');
+        resContainer.classList.remove('hidden');
+
+        // Modo resiliente offline
+        const statusBanner = document.getElementById(`ia-status-banner-${tipo}`);
+        const statusIcon = document.getElementById(`ia-status-icon-${tipo}`);
+        const statusTitle = document.getElementById(`ia-status-title-${tipo}`);
+        const statusDesc = document.getElementById(`ia-status-desc-${tipo}`);
+        const btnAplicar = document.getElementById(`ia-btn-aplicar-${tipo}`);
+
+        if (statusBanner) {
+          statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-graphite border border-gray-700 text-gray-300';
+          if (statusIcon) statusIcon.textContent = '🛡️';
+          if (statusTitle) statusTitle.textContent = 'Foto Sellada y Guardada';
+          if (statusDesc) statusDesc.textContent = 'Modo de campo offline: la foto y su sello oficial quedaron registrados con éxito.';
+          if (btnAplicar) btnAplicar.classList.add('hidden');
+        }
+      }
+    }
+
+    function actualizarUIIA(tipo) {
+      const ia = iaAnalisisEstado[tipo];
+      if (!ia) return;
+
+      const input = document.getElementById(tipo === 'inicio' ? 'wizard-horometro-inicio' : 'wizard-horometro-fin');
+      const statusBanner = document.getElementById(`ia-status-banner-${tipo}`);
+      const statusIcon = document.getElementById(`ia-status-icon-${tipo}`);
+      const statusTitle = document.getElementById(`ia-status-title-${tipo}`);
+      const statusDesc = document.getElementById(`ia-status-desc-${tipo}`);
+      const btnAplicar = document.getElementById(`ia-btn-aplicar-${tipo}`);
+      const valSugeridoSpan = document.getElementById(`ia-valor-sugerido-${tipo}`);
+
+      if (!statusBanner || !statusTitle || !statusDesc) return;
+
+      const esKm = (tipo === 'inicio' 
+        ? ((document.getElementById('lbl-medicion-input')?.textContent || '').toLowerCase().includes('km') || (document.getElementById('lbl-medicion-input')?.textContent || '').toLowerCase().includes('kilometraje'))
+        : (turnoEnCurso && turnoEnCurso.tipo_control === 'KILOMETRAJE'));
+      const unidad = esKm ? 'km' : 'h';
+
+      const valManual = parseFloat(input?.value);
+      const valIA = parseFloat(ia.lectura_detectada);
+
+      if (valSugeridoSpan && !isNaN(valIA)) {
+        valSugeridoSpan.textContent = `${valIA} ${unidad}`;
+      }
+
+      if (isNaN(valIA) || valIA <= 0) {
+        // No se pudo leer números
+        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-amber-950/70 border border-amber-600/50 text-amber-200';
+        if (statusIcon) statusIcon.textContent = '🔍';
+        statusTitle.textContent = 'Lectura con baja nitidez';
+        statusDesc.textContent = ia.observacion || 'Asegúrese de enfocar los números del tablero sin reflejos ni polvo.';
+        if (btnAplicar) btnAplicar.classList.add('hidden');
+        return;
+      }
+
+      if (isNaN(valManual) || valManual <= 0) {
+        // Operador aún no ha ingresado el valor
+        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-blue-950/70 border border-blue-500/50 text-blue-200';
+        if (statusIcon) statusIcon.textContent = '✨';
+        statusTitle.textContent = `Lectura leída en foto: ${valIA} ${unidad}`;
+        statusDesc.textContent = `Confianza ${ia.confianza || 'ALTA'}. Pulsa el botón para autocompletar tu formulario.`;
+        if (btnAplicar) btnAplicar.classList.remove('hidden');
+        return;
+      }
+
+      // Comparación en vivo
+      const diff = Math.abs(valManual - valIA);
+      const margenPermitido = 0.05;
+
+      if (diff <= margenPermitido) {
+        // Coincidencia exacta o redondeo menor
+        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-emerald-950/80 border-2 border-emerald-500 text-emerald-300';
+        if (statusIcon) statusIcon.textContent = '✅';
+        statusTitle.textContent = `¡Lectura Verificada! Coincide al 100%`;
+        statusDesc.textContent = `El número manual (${valManual} ${unidad}) y la lectura de la foto (${valIA} ${unidad}) concuerdan perfectamente.`;
+        if (btnAplicar) btnAplicar.classList.add('hidden');
+      } else {
+        // Discrepancia detectada
+        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-rose-950/85 border-2 border-alertRed text-rose-200';
+        if (statusIcon) statusIcon.textContent = '⚠️';
+        statusTitle.textContent = `Discrepancia detectada (Diferencia: ${diff.toFixed(1)} ${unidad})`;
+        statusDesc.textContent = `En la foto se lee "${valIA} ${unidad}", pero escribiste "${valManual} ${unidad}". Si te equivocaste al digitar, puedes corregirlo abajo:`;
+        if (btnAplicar) btnAplicar.classList.remove('hidden');
+      }
+    }
+
+    function aplicarLecturaIA(tipo) {
+      const ia = iaAnalisisEstado[tipo];
+      if (!ia || isNaN(parseFloat(ia.lectura_detectada))) return;
+
+      const input = document.getElementById(tipo === 'inicio' ? 'wizard-horometro-inicio' : 'wizard-horometro-fin');
+      if (!input) return;
+
+      input.value = ia.lectura_detectada;
+
+      if (tipo === 'inicio') {
+        validarHorometroInicioLive();
+      } else {
+        calcularHorasFinLive();
+      }
+
+      actualizarUIIA(tipo);
+
+      // Efecto de pulso en el input
+      input.classList.add('ring-4', 'ring-machinery');
+      setTimeout(() => input.classList.remove('ring-4', 'ring-machinery'), 1000);
     }
 
     // ==========================================
@@ -1785,12 +2049,14 @@
         alertaTxt.textContent = `🚨 ¡LECTURA MENOR DETECTADA! El ${tipoNombre} ingresado (${val} ${unidad}) es MENOR al registrado anteriormente (${lecturaAnterior} ${unidad}). Verifique el tablero.`;
         alertaBox.classList.remove('hidden');
         if (errBox) errBox.classList.add('hidden');
+        if (iaAnalisisEstado.inicio) actualizarUIIA('inicio');
         return false;
       } else {
         // RESTAURAR ESTILO NORMAL
         input.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
         input.classList.add('border-gray-700', 'text-machinery', 'focus:border-machinery');
         alertaBox.classList.add('hidden');
+        if (iaAnalisisEstado.inicio) actualizarUIIA('inicio');
         return true;
       }
     }
@@ -2071,6 +2337,7 @@
         if (errBox) errBox.classList.add('hidden');
         liveTot.textContent = `0 ${unidad}`;
         liveTot.className = "text-2xl font-mono font-black text-alertRed";
+        if (iaAnalisisEstado.fin) actualizarUIIA('fin');
       } else {
         // RESTAURAR ESTILO NORMAL
         inputFin.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
@@ -2084,6 +2351,7 @@
         }
         const diffStr = esKm ? `${Math.round(diff)}` : `${diff.toFixed(1)}`;
         liveTot.textContent = `${diffStr} ${unidad}`;
+        if (iaAnalisisEstado.fin) actualizarUIIA('fin');
       }
     }
 
