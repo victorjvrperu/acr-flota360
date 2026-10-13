@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str = "sqlite:///./acr_flota360.db"
     SECRET_KEY: str = "acr_flota360_secret_key"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
+    GEMINI_API_KEY: Optional[str] = None
 
     model_config = SettingsConfigDict(
         env_file=".env",

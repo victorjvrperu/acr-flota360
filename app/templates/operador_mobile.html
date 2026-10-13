@@ -1861,6 +1861,16 @@
         valSugeridoSpan.textContent = `${valIA} ${unidad}`;
       }
 
+      if (ia.es_tablero_valido === false) {
+        // Foto rechazada por IA (pantalla de PC, paisaje, persona, etc.)
+        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-rose-950/90 border-2 border-alertRed text-rose-200 shadow-lg';
+        if (statusIcon) statusIcon.textContent = '🚫';
+        statusTitle.textContent = 'Foto Rechazada: No es un Tablero';
+        statusDesc.textContent = ia.observacion || 'La IA determinó que la imagen no corresponde al tablero, velocímetro u odómetro del vehículo. Vuelve a tomar la foto enfocando el medidor.';
+        if (btnAplicar) btnAplicar.classList.add('hidden');
+        return;
+      }
+
       if (isNaN(valIA) || valIA <= 0) {
         // No se pudo leer números
         statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-amber-950/70 border border-amber-600/50 text-amber-200';
@@ -2090,6 +2100,12 @@
 
       if (!fotosEstado.inicio_tablero) {
         errBox.textContent = `⚠️ Debe tomar la FOTO OBLIGATORIA del tablero mostrando el ${tipoNombre} inicial.`;
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (iaAnalisisEstado.inicio && iaAnalisisEstado.inicio.es_tablero_valido === false) {
+        errBox.textContent = `🚨 FOTO RECHAZADA: La foto tomada no corresponde a un tablero u odómetro de maquinaria. Por favor toma una foto enfocando el medidor del vehículo para continuar.`;
         errBox.classList.remove('hidden');
         return;
       }
@@ -2378,6 +2394,12 @@
       }
       if (!fotosEstado.fin_tablero) {
         errBox.textContent = `⚠️ Tome la FOTO OBLIGATORIA del tablero final mostrando el ${tipoNombre}.`;
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      if (iaAnalisisEstado.fin && iaAnalisisEstado.fin.es_tablero_valido === false) {
+        errBox.textContent = `🚨 FOTO RECHAZADA: La foto final no corresponde al tablero ni odómetro de la unidad. Por favor toma una foto enfocando el medidor del vehículo para continuar.`;
         errBox.classList.remove('hidden');
         return;
       }

@@ -30,7 +30,8 @@ class IAVisionService:
         Lee los dígitos del horómetro (h) u odómetro (km), evalúa confianza
         y realiza la comparación contra el valor ingresado por el operador.
         """
-        api_key = os.getenv("GEMINI_API_KEY", "").strip()
+        from app.core.config import settings
+        api_key = (settings.GEMINI_API_KEY or os.getenv("GEMINI_API_KEY", "")).strip()
         unidad = "km" if (tipo_control or "").upper() == "KILOMETRAJE" else "h"
 
         # Limpiar prefijo data:image/...;base64,
@@ -53,25 +54,42 @@ class IAVisionService:
                 part = types.Part.from_bytes(data=image_bytes, mime_type="image/jpeg")
 
                 prompt = f"""
-Eres un auditor experto de maquinaria pesada y flotas industriales.
-Analiza la foto adjunta del tablero de la máquina o vehículo.
+Eres un auditor experto en control de flotas industriales y maquinaria pesada.
+Analiza con estricto rigor la imagen adjunta.
 
-OBJETIVO:
-1. Ubica el medidor de {tipo_control} (medidor de horas en maquinaria pesada o cuentakilómetros/odómetro en vehículos).
-2. Lee con total precisión los dígitos mostrados en pantalla (sea pantalla digital LCD, 7 segmentos o rodillos analógicos mecánicos).
-3. Si es un horómetro de rodillos mecánicos, recuerda que típicamente el último dígito a la derecha sobre fondo de color diferente representa DÉCIMAS (0.1).
-4. Contexto referencial previo: La última lectura registrada fue {valor_anterior if valor_anterior is not None else 'no especificada'} {unidad}.
-5. Valor ingresado manualmente por el operador: {valor_ingresado if valor_ingresado is not None else 'no ingresado aún'} {unidad}.
+REGLAS DE AUDITORÍA:
+1. DETERMINACIÓN DE AUTENTICIDAD DEL TABLERO:
+   - Determina si la foto muestra efectivamente el tablero de instrumentos, velocímetro, odómetro (cuentakilómetros en km) u horómetro (contador de horas en maquinaria) de un vehículo o máquina física real.
+   - Si la foto es de una pantalla de computadora, monitor, celular, una persona, paisaje, teclado, chat, documento o cualquier objeto que NO sea un tablero físico de vehículo/maquinaria:
+     Debes responder con:
+     "es_tablero_valido": false,
+     "es_legible": false,
+     "lectura_detectada": null,
+     "observacion": "La imagen no corresponde a un tablero o medidor físico de vehículo/maquinaria."
 
-Responde ÚNICAMENTE en formato JSON con la siguiente estructura exacta:
+2. LECTURA NUMÉRICA EXACTA:
+   - Si SÍ es un tablero o medidor válido ("es_tablero_valido": true):
+     * Ubica el display que mide {tipo_control} (odómetro para km en vehículos, horómetro para horas en maquinaria).
+     * Lee con total precisión los números mostrados en pantalla.
+     * En odómetros mecánicos de rodillos, el último dígito con fondo de color diferente suele ser décimas (0.1).
+     * Si los números están borrosos, tapados o ilegibles: coloca "es_legible": false y "lectura_detectada": null.
+     * Si son legibles: coloca "es_legible": true y "lectura_detectada": el número float exacto (ejemplo: 57000.0 o 4520.5).
+
+Contexto referencial:
+- Tipo de control: {tipo_control} ({unidad})
+- Última lectura previa registrada: {valor_anterior if valor_anterior is not None else 'no especificada'} {unidad}
+- Valor ingresado manualmente por el operador: {valor_ingresado if valor_ingresado is not None else 'no ingresado aún'} {unidad}
+
+Responde ÚNICAMENTE en formato JSON plano:
 {{
+  "es_tablero_valido": true o false,
   "es_legible": true o false,
-  "lectura_detectada": float (el valor numérico exacto leído en la foto, ej: 4250.5 o 32410.0) o null si la foto es ilegible o no muestra medidor,
+  "lectura_detectada": float o null,
   "unidad": "{unidad}",
-  "confianza": float entre 0.0 y 1.0 (nivel de certeza de la lectura),
+  "confianza": float entre 0.0 y 1.0,
   "tipo_pantalla": "digital_lcd" o "analogico_rodillos" o "desconocido",
-  "observacion": "descripción concisa de lo observado en la foto (ej: Horómetro digital Caterpillar mostrando 4250.5 horas)",
-  "detalles_visuales": "detalles técnicos breves (nitidez, reflejos, etc.)"
+  "observacion": "descripción concisa de lo observado en la foto",
+  "detalles_visuales": "detalles breves de nitidez o iluminación"
 }}
 """
                 config = types.GenerateContentConfig(
@@ -79,18 +97,35 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura exacta:
                     response_mime_type="application/json"
                 )
 
-                response = client.models.generate_content(
-                    model="gemini-2.5-flash",
-                    contents=[part, prompt],
-                    config=config
-                )
+                response = None
+                for modelo in ["gemini-3.8-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
+                    try:
+                        response = client.models.generate_content(
+                            model=modelo,
+                            contents=[part, prompt],
+                            config=config
+                        )
+                        if response:
+                            break
+                    except Exception as model_err:
+                        logger.warning(f"Intento con modelo {modelo} no exitoso: {model_err}")
+
+                if not response:
+                    raise RuntimeError("Ningún modelo de Gemini respondió satisfactoriamente")
 
                 texto_resp = response.text.strip()
                 data = json.loads(texto_resp)
 
-                lectura_detectada = data.get("lectura_detectada")
-                confianza = float(data.get("confianza", 0.85))
+                es_tablero_valido = bool(data.get("es_tablero_valido", True))
                 es_legible = bool(data.get("es_legible", True))
+                lectura_detectada = data.get("lectura_detectada")
+                if lectura_detectada is not None:
+                    try:
+                        lectura_detectada = float(lectura_detectada)
+                    except (ValueError, TypeError):
+                        lectura_detectada = None
+
+                confianza = float(data.get("confianza", 0.90))
                 tipo_pantalla = data.get("tipo_pantalla", "digital_lcd")
                 observacion = data.get("observacion", "")
 
@@ -98,19 +133,39 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura exacta:
                 diferencia = None
                 alerta_discrepancia = False
 
+                if not es_tablero_valido:
+                    return {
+                        "exito": True,
+                        "modo": "IA_GEMINI_MULTIMODAL",
+                        "motor": "gemini-3.8-flash",
+                        "es_tablero_valido": False,
+                        "es_legible": False,
+                        "lectura_detectada": None,
+                        "unidad": unidad,
+                        "confianza": 0.0,
+                        "tipo_pantalla": tipo_pantalla,
+                        "valor_ingresado": valor_ingresado,
+                        "coincide": False,
+                        "diferencia": None,
+                        "alerta_discrepancia": True,
+                        "observacion": observacion or "La foto no muestra un tablero o medidor de vehículo/maquinaria.",
+                        "mensaje": "🚫 FOTO RECHAZADA: La IA detectó que la imagen no corresponde a un tablero o velocímetro/odómetro de vehículo."
+                    }
+
                 if valor_ingresado is not None and lectura_detectada is not None:
                     diferencia = round(abs(float(valor_ingresado) - float(lectura_detectada)), 2)
-                    # Tolerancia de 0.05 para redondeo de décimas
                     coincide = diferencia <= 0.05
                     alerta_discrepancia = not coincide
 
                 return {
                     "exito": True,
-                    "motor": "gemini-2.5-flash",
+                    "modo": "IA_GEMINI_MULTIMODAL",
+                    "motor": "gemini-3.8-flash",
+                    "es_tablero_valido": True,
+                    "es_legible": es_legible,
                     "lectura_detectada": lectura_detectada,
                     "unidad": unidad,
                     "confianza": confianza,
-                    "es_legible": es_legible,
                     "tipo_pantalla": tipo_pantalla,
                     "valor_ingresado": valor_ingresado,
                     "coincide": coincide,
@@ -145,31 +200,27 @@ Responde ÚNICAMENTE en formato JSON con la siguiente estructura exacta:
         error_msg: Optional[str] = None
     ) -> Dict[str, Any]:
         """
-        Modo asistido: valida coherencia del valor ingresado y foto.
-        Si no hay clave externa en .env, permite probar el flujo completo.
+        Modo resiliente offline: nunca inventa coincidencias falsas.
         """
-        lectura = valor_ingresado if valor_ingresado is not None else (
-            round(float(valor_anterior + 8.0), 1) if valor_anterior is not None else 100.0
-        )
-        coincide = True if (valor_ingresado is not None and abs(valor_ingresado - lectura) <= 0.05) else None
-
         msg_detalle = (
-            "💡 Conectado con IA local (Configura GEMINI_API_KEY en .env para OCR en vivo de fotos reales)."
+            "💡 Modo sin conexión: Configure GEMINI_API_KEY en .env para análisis en vivo con Gemini 3.8 Flash."
             if sin_clave else f"⚠️ Servicio de IA en modo sin conexión ({error_msg or 'red no disponible'})."
         )
 
         return {
             "exito": True,
+            "modo": "ASISTIDO_OFFLINE",
             "motor": "vision_asistida",
-            "lectura_detectada": round(float(lectura), 1),
+            "es_tablero_valido": True,
+            "es_legible": False,
+            "lectura_detectada": None,
             "unidad": unidad,
-            "confianza": 0.92,
-            "es_legible": True,
-            "tipo_pantalla": "digital_lcd",
+            "confianza": 0.0,
+            "tipo_pantalla": "desconocido",
             "valor_ingresado": valor_ingresado,
-            "coincide": coincide,
-            "diferencia": 0.0 if coincide else None,
+            "coincide": None,
+            "diferencia": None,
             "alerta_discrepancia": False,
-            "observacion": f"Tablero identificado ({unidad}). {msg_detalle}",
-            "mensaje": f"✨ Lectura en foto validada: {lectura} {unidad}. {msg_detalle}"
+            "observacion": msg_detalle,
+            "mensaje": f"📸 Foto sellada y guardada para auditoría manual."
         }
