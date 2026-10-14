@@ -1,5 +1,5 @@
 // HeavyTrack Enterprise - Service Worker (Offline-First App Shell)
-const CACHE_NAME = 'acr-flota360-v2.0.0';
+const CACHE_NAME = 'acr-flota360-v2.1.0';
 const STATIC_ASSETS = [
   '/',
   '/operador',

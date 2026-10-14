@@ -151,32 +151,34 @@
   <!-- ============================================================ -->
   <!-- HEADER PERSISTENTE CON LOGO, OPERADOR Y CONECTIVIDAD         -->
   <!-- ============================================================ -->
-  <header class="bg-graphite border-b border-gray-800 p-3 sticky top-0 z-50 shadow-md">
-    <div class="flex items-center justify-between gap-1.5">
-      <div class="flex items-center gap-2 min-w-0">
-        <img src="/static/img/logo_acr360_white.png" alt="ACR Flota 360°" class="h-7 w-auto max-w-[110px] sm:max-w-[130px] object-contain shrink-0">
-        <div class="border-l border-gray-700/80 pl-2 min-w-0 flex items-center gap-1.5">
-          <span class="text-[10px] text-machinery font-black block truncate max-w-[85px] sm:max-w-[120px]" id="header-operador-badge">👷 SIN SESIÓN</span>
-          <button type="button" id="btn-cerrar-sesion-header" onclick="abrirModalCerrarSesion()" class="hidden text-[10px] bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 px-2 py-0.5 rounded-lg font-bold transition items-center gap-1 shrink-0 shadow-sm" title="Cerrar sesión del operador">
-            <span>🚪</span> <span class="hidden xs:inline sm:inline">Salir</span>
+  <header class="bg-graphite border-b border-gray-800 px-3 py-2 sticky top-0 z-50 shadow-md">
+    <div class="flex items-center justify-between gap-1 w-full max-w-md mx-auto">
+      <!-- Izquierda: Logo y Operador -->
+      <div class="flex items-center gap-1.5 min-w-0 shrink">
+        <img src="/static/img/logo_acr360_white.png" alt="ACR Flota 360°" class="h-6 sm:h-7 w-auto max-w-[85px] xs:max-w-[100px] sm:max-w-[125px] object-contain shrink-0">
+        <div class="border-l border-gray-700/80 pl-1.5 min-w-0 flex items-center gap-1">
+          <span class="text-[10px] text-machinery font-black block truncate max-w-[65px] xs:max-w-[80px] sm:max-w-[120px]" id="header-operador-badge">👷 SIN SESIÓN</span>
+          <button type="button" id="btn-cerrar-sesion-header" onclick="abrirModalCerrarSesion()" class="hidden text-[10px] bg-rose-950/80 hover:bg-rose-900 text-rose-300 border border-rose-800 px-1.5 py-0.5 rounded-lg font-bold transition items-center gap-1 shrink-0 shadow-sm" title="Cerrar sesión del operador">
+            <span>🚪</span> <span class="hidden sm:inline">Salir</span>
           </button>
         </div>
       </div>
 
-      <div class="flex items-center gap-1.5 shrink-0">
+      <!-- Derecha: Acciones Compactas y Estado -->
+      <div class="flex items-center gap-1 shrink-0">
         <!-- Botón PWA Instalar en Celular -->
-        <button type="button" id="btn-pwa-header" onclick="ejecutarInstalacionPWA()" class="network-badge bg-machinery/20 hover:bg-machinery/30 text-machinery border border-machinery/50 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none font-black shadow-sm" title="Instalar aplicación en tu celular">
-          <span>📲</span> <span class="hidden xs:inline sm:inline">Instalar</span>
+        <button type="button" id="btn-pwa-header" onclick="ejecutarInstalacionPWA()" class="px-2 py-1 rounded-full bg-machinery/20 hover:bg-machinery/30 text-machinery border border-machinery/50 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none font-black shadow-sm shrink-0" title="Instalar aplicación en tu celular">
+          <span>📲</span> <span class="hidden sm:inline">Instalar</span>
         </button>
         <!-- Botón / Indicador Interactivo de GPS -->
-        <button type="button" id="btn-gps-toggle-header" onclick="toggleSeguimientoGPS()" class="network-badge bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none" title="Toca para activar/desactivar seguimiento GPS">
-          <span id="gps-status-icon">📍</span> <span id="gps-status-text">GPS: OFF</span>
+        <button type="button" id="btn-gps-toggle-header" onclick="toggleSeguimientoGPS()" class="px-2 py-1 rounded-full bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none font-bold shrink-0" title="Toca para activar/desactivar seguimiento GPS">
+          <span id="gps-status-icon">📍</span> <span id="gps-status-text" class="hidden sm:inline">GPS: OFF</span>
         </button>
         <!-- Conectividad -->
-        <div id="network-status-banner" class="network-badge badge-online">
+        <div id="network-status-banner" class="network-badge badge-online shrink-0 select-none">
           <span class="pulse-dot bg-emerald"></span>
           <span class="hidden sm:inline">🟢 En línea</span>
-          <span class="sm:hidden">🟢</span>
+          <span class="sm:hidden">🟢 OK</span>
         </div>
       </div>
     </div>
@@ -1461,11 +1463,19 @@
           <span id="sync-modal-turnos-count" class="font-bold text-white">0</span>
         </div>
         <div class="flex justify-between items-center">
+          <span class="text-gray-400">Combustibles en cola:</span>
+          <span id="sync-modal-combustibles-count" class="font-bold text-white">0</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Incidentes en cola:</span>
+          <span id="sync-modal-incidentes-count" class="font-bold text-white">0</span>
+        </div>
+        <div class="flex justify-between items-center">
           <span class="text-gray-400">Fotos de Tablero en cola:</span>
           <span id="sync-modal-fotos-count" class="font-bold text-white">0</span>
         </div>
         <div class="flex justify-between items-center pt-1 border-t border-gray-800">
-          <span class="text-gray-400">Total ítems pendientes:</span>
+          <span class="text-gray-300 font-bold">Total ítems pendientes:</span>
           <span id="sync-modal-total-count" class="font-black text-amber-400 text-sm">0</span>
         </div>
       </div>
@@ -1483,6 +1493,9 @@
       <div class="space-y-2 pt-1">
         <button type="button" id="btn-sync-modal-forzar" onclick="forzarSincronizacionDesdeModal()" class="btn-industrial w-full bg-machinery hover:bg-machineryActive text-carbon text-xs uppercase font-black flex items-center justify-center gap-2">
           <span>🔄</span> <span>REINTENTAR SUBIDA AHORA</span>
+        </button>
+        <button type="button" id="btn-sync-modal-purgar-fotos" onclick="purgarFotosObsoletasDesdeModal()" class="w-full py-2 bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 font-bold text-xs uppercase rounded-xl transition border border-rose-800/80 flex items-center justify-center gap-2">
+          <span>🧹</span> <span>LIMPIAR FOTOS IA ATASCADAS</span>
         </button>
         <button type="button" onclick="cerrarModalSincronizacion()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs uppercase rounded-xl transition border border-gray-700">
           Cerrar
@@ -1650,22 +1663,36 @@
       const modal = document.getElementById('modal-estado-sincronizacion');
       if (!modal) return;
 
-      const conteo = window.heavyDB ? await window.heavyDB.contarPendientes() : { total: 0, turnos: 0, fotosIA: 0 };
+      const conteo = window.heavyDB ? await window.heavyDB.contarPendientes() : { total: 0, turnos: 0, combustibles: 0, incidentes: 0, fotosIA: 0 };
       const redStatus = document.getElementById('sync-modal-red-status');
       const turnosCount = document.getElementById('sync-modal-turnos-count');
+      const combCount = document.getElementById('sync-modal-combustibles-count');
+      const incCount = document.getElementById('sync-modal-incidentes-count');
       const fotosCount = document.getElementById('sync-modal-fotos-count');
       const totalCount = document.getElementById('sync-modal-total-count');
       const alertaBox = document.getElementById('sync-modal-alerta-box');
       const alertaTitulo = document.getElementById('sync-modal-alerta-titulo');
       const alertaMsg = document.getElementById('sync-modal-alerta-mensaje');
+      const btnPurgar = document.getElementById('btn-sync-modal-purgar-fotos');
 
       if (redStatus) {
         redStatus.textContent = navigator.onLine ? '🟢 En Línea' : '🔴 Sin Señal de Internet';
         redStatus.className = navigator.onLine ? 'font-bold text-emerald-400' : 'font-bold text-rose-400';
       }
       if (turnosCount) turnosCount.textContent = conteo.turnos || 0;
+      if (combCount) combCount.textContent = conteo.combustibles || 0;
+      if (incCount) incCount.textContent = conteo.incidentes || 0;
       if (fotosCount) fotosCount.textContent = conteo.fotosIA || 0;
       if (totalCount) totalCount.textContent = conteo.total || 0;
+
+      if (btnPurgar) {
+        if ((conteo.fotosIA || 0) > 0) {
+          btnPurgar.classList.remove('hidden');
+          btnPurgar.innerHTML = `<span>🧹</span> <span>LIMPIAR FOTOS IA ATASCADAS (${conteo.fotosIA})</span>`;
+        } else {
+          btnPurgar.classList.add('hidden');
+        }
+      }
 
       if (alertaBox) {
         if (window.heavyDB && window.heavyDB.ultimoErrorSync) {
@@ -1720,6 +1747,16 @@
       }
     }
 
+    async function purgarFotosObsoletasDesdeModal() {
+      if (!confirm('¿Deseas vaciar la cola de fotos IA de tablero pendientes? (Tus turnos y check-ins NO se borrarán).')) return;
+      if (window.heavyDB) {
+        await window.heavyDB.purgarFotosPendientesIA();
+        await window.heavyDB.contarPendientes();
+        actualizarBannerConectividad();
+        await abrirModalSincronizacion();
+      }
+    }
+
     // Cache de fotografías selladas con Canvas
     const fotosEstado = {
       inicio_tablero: null,
@@ -1737,15 +1774,38 @@
       fin_incidente: null
     };
 
-    // Inicialización al cargar la página
+    // Inicialización resiliente al cargar la página
     document.addEventListener('DOMContentLoaded', async () => {
-      actualizarUIInstalacionPWA();
-      setTimeout(async () => {
-        await cargarCatalogosEnUI();
-        cargarOperadorActivo();
-        verificarTurnoEnCurso();
+      try {
         actualizarUIInstalacionPWA();
-      }, 300);
+      } catch (e) {
+        console.warn('PWA UI error:', e);
+      }
+
+      setTimeout(async () => {
+        try {
+          await cargarCatalogosEnUI();
+        } catch (e) {
+          console.warn("Fallo cargando catálogos locales:", e);
+        }
+
+        try {
+          cargarOperadorActivo();
+        } catch (e) {
+          console.warn("Fallo cargando operador activo:", e);
+        }
+
+        try {
+          verificarTurnoEnCurso();
+        } catch (e) {
+          console.error("Fallo verificando turno en curso:", e);
+          irVentana('win-bienvenida');
+        }
+
+        try {
+          actualizarUIInstalacionPWA();
+        } catch (e) {}
+      }, 250);
     });
 
     // ==========================================
@@ -3422,12 +3482,12 @@
       const iconHeader = document.getElementById('gps-status-icon');
       if (btnHeader && textHeader) {
         if (isActivo) {
-          btnHeader.className = 'network-badge bg-emerald-950/80 text-emerald-300 border border-emerald-600 animate-pulse text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none';
-          textHeader.textContent = 'GPS: ACTIVO';
+          btnHeader.className = 'px-2 py-1 rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-600 animate-pulse text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none font-bold shrink-0 shadow-sm';
+          textHeader.textContent = 'GPS: ON';
           if (iconHeader) iconHeader.textContent = '🛰️';
           btnHeader.title = 'GPS Satelital Activo. Toca para desactivar';
         } else {
-          btnHeader.className = 'network-badge bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none';
+          btnHeader.className = 'px-2 py-1 rounded-full bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none font-bold shrink-0 shadow-sm';
           textHeader.textContent = 'GPS: OFF';
           if (iconHeader) iconHeader.textContent = '📍';
           btnHeader.title = 'GPS Desactivado. Toca para activar seguimiento';
