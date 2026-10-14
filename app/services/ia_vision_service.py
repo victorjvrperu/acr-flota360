@@ -99,11 +99,11 @@ Responde ÚNICAMENTE en formato JSON plano:
 
                 response = None
                 modelo_usado = None
+                # Modelos en orden de preferencia — nombres confirmados por la API de Google
                 modelos_candidatos = [
-                    "gemini-3.5-flash",
-                    "gemini-3.8-flash",
-                    "gemini-3.7-flash",
-                    "gemini-3.1-flash-lite"
+                    "gemini-3.8-flash",       # Principal: más reciente y capaz para visión
+                    "gemini-3.5-flash-lite",  # Fallback económico
+                    "gemini-3.6-flash",       # Alternativo estable
                 ]
 
                 for modelo in modelos_candidatos:
@@ -169,7 +169,7 @@ Responde ÚNICAMENTE en formato JSON plano:
                 return {
                     "exito": True,
                     "modo": "IA_GEMINI_MULTIMODAL",
-                    "motor": "gemini-3.8-flash",
+                    "motor": modelo_usado or "gemini-2.5-flash",
                     "es_tablero_valido": True,
                     "es_legible": es_legible,
                     "lectura_detectada": lectura_detectada,

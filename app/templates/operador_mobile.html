@@ -1783,6 +1783,33 @@
         valManual = parseFloat(document.getElementById('wizard-horometro-fin')?.value) || null;
       }
 
+      // Registrar callback para cuando la foto se procese offline y luego se reconecte
+      if (window.heavyDB) {
+        window.heavyDB.onIAResultado(tipo, (resultado) => {
+          iaAnalisisEstado[tipo] = resultado;
+          if (badgeModo) {
+            badgeModo.textContent = '✨ Gemini Vision (reconectado)';
+            badgeModo.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-machinery/20 text-machinery border border-machinery/40';
+          }
+          loader.classList.add('hidden');
+          resContainer.classList.remove('hidden');
+          actualizarUIIA(tipo);
+
+          // Auto-rellenar el campo de horómetro si la IA lo leyó correctamente
+          if (resultado.lectura_detectada !== null && !isNaN(parseFloat(resultado.lectura_detectada))) {
+            const inputId = tipo === 'inicio' ? 'wizard-horometro-inicio' : 'wizard-horometro-fin';
+            const inputEl = document.getElementById(inputId);
+            if (inputEl && !inputEl.value) {
+              // Solo auto-rellena si el campo está vacío (el operador no lo llenó antes)
+              aplicarLecturaIA(tipo);
+            }
+          }
+
+          // Mostrar notificación tipo toast
+          mostrarToastIAReconectado(tipo, resultado);
+        });
+      }
+
       try {
         const resp = await fetch('/api/v1/heavy/ia/analizar-tablero', {
           method: 'POST',
@@ -1810,6 +1837,15 @@
           }
         }
 
+        // Auto-rellenar el campo si la IA leyó correctamente y el campo está vacío
+        if (data.lectura_detectada !== null && !isNaN(parseFloat(data.lectura_detectada))) {
+          const inputId = tipo === 'inicio' ? 'wizard-horometro-inicio' : 'wizard-horometro-fin';
+          const inputEl = document.getElementById(inputId);
+          if (inputEl && !inputEl.value) {
+            aplicarLecturaIA(tipo);
+          }
+        }
+
         loader.classList.add('hidden');
         resContainer.classList.remove('hidden');
         actualizarUIIA(tipo);
@@ -1818,7 +1854,20 @@
         loader.classList.add('hidden');
         resContainer.classList.remove('hidden');
 
-        // Modo resiliente offline
+        // Encolar foto en IndexedDB para procesarla cuando vuelva la señal
+        if (window.heavyDB) {
+          window.heavyDB.encolarFotoIA({
+            tipo,
+            imagen_base64: dataUrl,
+            lectura_ingresada: valManual,
+            tipo_control: tipoControl,
+            equipo_codigo: equipoCodigo,
+          }).then(() => {
+            actualizarBannerConectividad();
+          });
+        }
+
+        // Mostrar banner informativo offline
         const statusBanner = document.getElementById(`ia-status-banner-${tipo}`);
         const statusIcon = document.getElementById(`ia-status-icon-${tipo}`);
         const statusTitle = document.getElementById(`ia-status-title-${tipo}`);
@@ -1826,13 +1875,34 @@
         const btnAplicar = document.getElementById(`ia-btn-aplicar-${tipo}`);
 
         if (statusBanner) {
-          statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-graphite border border-gray-700 text-gray-300';
-          if (statusIcon) statusIcon.textContent = '🛡️';
-          if (statusTitle) statusTitle.textContent = 'Foto Sellada y Guardada';
-          if (statusDesc) statusDesc.textContent = 'Modo de campo offline: la foto y su sello oficial quedaron registrados con éxito.';
+          statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-amber-950/70 border border-amber-600/50 text-amber-200';
+          if (statusIcon) statusIcon.textContent = '📡';
+          if (statusTitle) statusTitle.textContent = 'Foto encolada — Análisis IA pendiente';
+          if (statusDesc) statusDesc.textContent = 'Sin señal de red. La foto está guardada localmente. Cuando recuperes conexión, Gemini Vision la analizará automáticamente y completará el horómetro.';
           if (btnAplicar) btnAplicar.classList.add('hidden');
+          if (badgeModo) {
+            badgeModo.textContent = '📡 En cola offline';
+            badgeModo.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-amber-900/40 text-amber-300 border border-amber-600/40';
+          }
         }
       }
+    }
+
+    // Toast de notificación cuando una foto offline es procesada al reconectar
+    function mostrarToastIAReconectado(tipo, resultado) {
+      const unidad = resultado.unidad || 'h';
+      const lectura = resultado.lectura_detectada;
+      const tipoLabel = tipo === 'inicio' ? 'Inicio' : 'Fin';
+      const msg = lectura !== null
+        ? `✅ IA leyó ${lectura} ${unidad} en foto de ${tipoLabel} (al reconectar)`
+        : `📸 Foto de tablero ${tipoLabel} procesada (sin lectura clara)`;
+
+      const toast = document.createElement('div');
+      toast.className = 'fixed bottom-20 left-1/2 -translate-x-1/2 z-50 px-4 py-2.5 rounded-xl text-xs font-bold text-white shadow-2xl bg-machinery/90 backdrop-blur border border-machinery/60 transition-all';
+      toast.style.cssText = 'max-width:90vw;text-align:center;animation:fadeInUp 0.3s ease';
+      toast.textContent = msg;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 5000);
     }
 
     function actualizarUIIA(tipo) {

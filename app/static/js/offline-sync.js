@@ -3,12 +3,14 @@
  */
 
 const DB_NAME = 'heavytrack_offline_db';
-const DB_VERSION = 1;
+const DB_VERSION = 2; // v2: agrega store fotos_pendientes_ia
 
 class HeavyTrackDB {
   constructor() {
     this.db = null;
     this.isOnline = navigator.onLine;
+    // Callbacks registrados por la UI para recibir resultados IA al reconectar
+    this._onIAResultadoCallbacks = {};
   }
 
   async init() {
@@ -29,6 +31,10 @@ class HeavyTrackDB {
         if (!db.objectStoreNames.contains('catalogos')) {
           db.createObjectStore('catalogos', { keyPath: 'tipo' });
         }
+        // v2: Cola de fotos de tablero pendientes de análisis IA
+        if (!db.objectStoreNames.contains('fotos_pendientes_ia')) {
+          db.createObjectStore('fotos_pendientes_ia', { keyPath: 'uuid_local' });
+        }
       };
 
       request.onsuccess = (e) => {
@@ -38,6 +44,105 @@ class HeavyTrackDB {
 
       request.onerror = (e) => reject(e.target.error);
     });
+  }
+
+  /**
+   * Registra un callback que será invocado cuando se procese una foto
+   * pendiente IA y vuelva un resultado. La UI lo usa para auto-rellenar
+   * el campo de horómetro cuando el operador aún está en el formulario.
+   *
+   * @param {string} tipo - 'inicio' | 'fin'
+   * @param {Function} callback - fn(resultado) donde resultado es el JSON del backend
+   */
+  onIAResultado(tipo, callback) {
+    this._onIAResultadoCallbacks[tipo] = callback;
+  }
+
+  /**
+   * Guarda una foto de tablero en IndexedDB para ser procesada por Gemini
+   * cuando se recupere la conexión.
+   */
+  async encolarFotoIA(params) {
+    const item = {
+      uuid_local: this.generarUUID(),
+      _timestamp_local: new Date().toISOString(),
+      tipo: params.tipo,                         // 'inicio' | 'fin'
+      imagen_base64: params.imagen_base64,       // dataURL completo
+      lectura_ingresada: params.lectura_ingresada ?? null,
+      tipo_control: params.tipo_control || 'HOROMETRO',
+      equipo_codigo: params.equipo_codigo || 'EQ-MAQ',
+    };
+    await this.guardarItem('fotos_pendientes_ia', item);
+    console.log(`[IA-Queue] Foto de tablero (${item.tipo}) encolada offline. UUID: ${item.uuid_local}`);
+    return item;
+  }
+
+  /**
+   * Procesa todas las fotos pendientes de análisis IA contra el backend
+   * (que a su vez llama a Gemini). Se invoca automáticamente al recuperar
+   * la conexión. Dispara callbacks registrados para que la UI actualice
+   * el campo de horómetro si el operador sigue en el formulario.
+   */
+  async procesarFotosPendientesIA() {
+    if (!navigator.onLine) return { procesadas: 0, motivo: 'offline' };
+
+    const pendientes = await this.obtenerTodos('fotos_pendientes_ia');
+    if (pendientes.length === 0) return { procesadas: 0 };
+
+    console.log(`[IA-Queue] Procesando ${pendientes.length} foto(s) pendiente(s) con Gemini...`);
+    let procesadas = 0;
+
+    for (const foto of pendientes) {
+      try {
+        const resp = await fetch('/api/v1/heavy/ia/analizar-tablero', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            imagen_base64: foto.imagen_base64,
+            lectura_ingresada: foto.lectura_ingresada,
+            tipo_control: foto.tipo_control,
+            equipo_codigo: foto.equipo_codigo,
+          })
+        });
+
+        if (!resp.ok) {
+          console.warn(`[IA-Queue] Error HTTP ${resp.status} al procesar foto ${foto.uuid_local}`);
+          continue;
+        }
+
+        const resultado = await resp.json();
+        resultado._uuid_foto = foto.uuid_local;
+        resultado._tipo = foto.tipo;
+        resultado._procesado_offline = true;
+
+        console.log(`[IA-Queue] ✅ Foto (${foto.tipo}) procesada:`, resultado);
+
+        // Notificar a la UI si hay un callback registrado para este tipo
+        const cb = this._onIAResultadoCallbacks[foto.tipo];
+        if (typeof cb === 'function') {
+          try { cb(resultado); } catch (e) { console.warn('[IA-Queue] Error en callback UI:', e); }
+        }
+
+        // Emitir evento global para que cualquier parte de la app pueda reaccionar
+        window.dispatchEvent(new CustomEvent('ia-resultado-offline', {
+          detail: resultado
+        }));
+
+        await this.eliminarItem('fotos_pendientes_ia', foto.uuid_local);
+        procesadas++;
+
+      } catch (err) {
+        console.warn(`[IA-Queue] Error procesando foto ${foto.uuid_local}:`, err);
+      }
+    }
+
+    console.log(`[IA-Queue] ${procesadas}/${pendientes.length} fotos procesadas.`);
+    return { procesadas, total: pendientes.length };
+  }
+
+  async contarFotosPendientesIA() {
+    const items = await this.obtenerTodos('fotos_pendientes_ia');
+    return items.length;
   }
 
   // Generador universal de UUID local para idempotencia
@@ -87,7 +192,11 @@ class HeavyTrackDB {
     const turnos = await this.obtenerTodos('turnos');
     const combustibles = await this.obtenerTodos('combustibles');
     const incidentes = await this.obtenerTodos('incidentes');
-    return turnos.length + combustibles.length + incidentes.length;
+    const fotosIA = await this.obtenerTodos('fotos_pendientes_ia');
+    return {
+      total: turnos.length + combustibles.length + incidentes.length + fotosIA.length,
+      fotosIA: fotosIA.length
+    };
   }
 
   // Sincronización en lote con el backend FastAPI (/api/sync/batch)
@@ -189,6 +298,11 @@ document.addEventListener('DOMContentLoaded', async () => {
     actualizarBannerConectividad();
     console.log('[Red] Conexión recuperada. Disparando sincronización en lote...');
     await window.heavyDB.sincronizarBatch();
+    // Procesar fotos de tablero que quedaron pendientes de análisis IA
+    const iaRes = await window.heavyDB.procesarFotosPendientesIA();
+    if (iaRes.procesadas > 0) {
+      console.log(`[Red] ${iaRes.procesadas} foto(s) de tablero analizadas con Gemini Vision.`);
+    }
     actualizarBannerConectividad();
   });
 
@@ -210,7 +324,9 @@ async function actualizarBannerConectividad() {
   const banner = document.getElementById('network-status-banner');
   if (!banner) return;
 
-  const pendientes = await window.heavyDB.contarPendientes();
+  const conteo = await window.heavyDB.contarPendientes();
+  const pendientes = typeof conteo === 'object' ? conteo.total : conteo;
+  const fotosIA = typeof conteo === 'object' ? conteo.fotosIA : 0;
 
   if (navigator.onLine) {
     if (pendientes > 0) {
@@ -221,7 +337,8 @@ async function actualizarBannerConectividad() {
       banner.innerHTML = `<span class="pulse-dot bg-emerald"></span> 🟢 En línea (Sincronizado)`;
     }
   } else {
+    const extraIA = fotosIA > 0 ? ` · 📸 ${fotosIA} foto(s) IA en cola` : '';
     banner.className = 'network-badge badge-offline';
-    banner.innerHTML = `<span class="pulse-dot bg-rose"></span> 🟠 Modo sin señal (${pendientes} pendientes de subir)`;
+    banner.innerHTML = `<span class="pulse-dot bg-rose"></span> 🔴 Sin señal (${pendientes} pendientes${extraIA})`;
   }
 }
