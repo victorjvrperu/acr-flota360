@@ -14,7 +14,7 @@ from app.core.database import get_db
 from app.models.heavytrack import (
     MaquinariaEquipo, Proyecto, Personal, OrdenMantenimiento,
     InventarioRepuesto, Proveedor, TurnoOperacion, ControlCombustible,
-    EstadoOperativo, EstadoOrdenMantenimiento
+    EstadoOperativo, EstadoOrdenMantenimiento, RolPersonal
 )
 from app.schemas.heavytrack import (
     MaquinariaEquipoCreate, MaquinariaEquipoResponse,
@@ -644,11 +644,39 @@ def actualizar_personal(personal_id: int, personal_in: PersonalUpdate, db: Sessi
     return colaborador
 
 
+@router.delete("/personal/operadores/todos")
+def eliminar_todos_los_operadores(db: Session = Depends(get_db)):
+    """
+    Elimina a todos los operadores registrados (rol=operador) para comenzar el padrón de cero.
+    Mantiene intactos los usuarios administradores / staff.
+    """
+    operadores = db.query(Personal).filter(Personal.rol == RolPersonal.OPERADOR.value).all()
+    count = len(operadores)
+    op_ids = [op.id for op in operadores]
+    if op_ids:
+        # Desvincular de maquinaria asignada
+        db.query(MaquinariaEquipo).filter(MaquinariaEquipo.operador_asignado_id.in_(op_ids)).update(
+            {"operador_asignado_id": None}, synchronize_session=False
+        )
+        for op in operadores:
+            db.delete(op)
+        db.commit()
+    return {
+        "success": True,
+        "eliminados": count,
+        "mensaje": f"Se eliminaron {count} operadores correctamente. Padrón listo para comenzar de cero."
+    }
+
+
 @router.delete("/personal/{personal_id}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_personal(personal_id: int, db: Session = Depends(get_db)):
     personal = db.query(Personal).filter(Personal.id == personal_id).first()
     if not personal:
         raise HTTPException(status_code=404, detail="Colaborador no encontrado.")
+    # Desvincular de maquinaria asignada
+    db.query(MaquinariaEquipo).filter(MaquinariaEquipo.operador_asignado_id == personal_id).update(
+        {"operador_asignado_id": None}, synchronize_session=False
+    )
     db.delete(personal)
     db.commit()
     return None
@@ -735,7 +763,7 @@ def consultar_reniec_dni(dni: str):
 
     try:
         url = f"https://api.apis.net.pe/v1/dni?numero={dni}"
-        with httpx.Client(timeout=5.0) as client:
+        with httpx.Client(timeout=7.0) as client:
             resp = client.get(url, headers={"User-Agent": "ACR-Flota360/1.0"})
             if resp.status_code == 200:
                 data = resp.json()
@@ -743,7 +771,19 @@ def consultar_reniec_dni(dni: str):
                 paterno = data.get("apellidoPaterno", "").strip()
                 materno = data.get("apellidoMaterno", "").strip()
                 apellidos = f"{paterno} {materno}".strip()
-                nombre_completo = data.get("nombre", f"{nombres} {apellidos}".strip())
+                nombre_completo = data.get("nombre", f"{nombres} {apellidos}".strip()).strip()
+
+                if not nombres and nombre_completo:
+                    partes = nombre_completo.split()
+                    if len(partes) >= 3:
+                        apellidos = f"{partes[0]} {partes[1]}"
+                        nombres = " ".join(partes[2:])
+                    elif len(partes) == 2:
+                        apellidos = partes[0]
+                        nombres = partes[1]
+                    else:
+                        nombres = nombre_completo
+
                 return {
                     "success": True,
                     "dni": dni,
