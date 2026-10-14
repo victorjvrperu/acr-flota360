@@ -35,3 +35,9 @@ uvicorn app.main:app --reload --port 8000
 Documentación interactiva disponible en:
 - Swagger UI: `http://localhost:8000/docs`
 - ReDoc: `http://localhost:8000/redoc`
+
+## Regla Mandatoria de Despliegue y Control de Versiones
+
+1. **GitHub Obligatorio:** Todo cambio, corrección, nueva funcionalidad o refacción realizada en el código debe comitearse inmediatamente y subirse a GitHub (`git push origin main`).
+2. **Despliegue Automático al Servidor:** Inmediatamente después del push a GitHub, se debe sincronizar y actualizar el servidor Ubuntu de producción (`192.168.1.92`) ejecutando `python3 scripts/deploy_server.py` y reiniciando el servicio systemd (`maquinaria.service` y `acr-flota360.service`).
+3. **Verificación de Disponibilidad:** Validar que el servidor responda correctamente con código HTTP 200 antes de dar por finalizada la tarea.
