@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 """
 Script de sincronización y despliegue automático de ACR Flota 360° al servidor Ubuntu (192.168.1.92).
+Despliega en AMBOS directorios:
+  - /home/bodylab/maquinaria  -> maquinaria.service (puerto 8000)
+  - /var/www/acr-flota360    -> acr-flota360.service (puerto 8001, producción pública)
 """
 import os
 import subprocess
@@ -9,18 +12,31 @@ import sys
 
 SERVER_USER = "bodylab"
 SERVER_IP = "192.168.1.92"
-SERVER_DIR = "/home/bodylab/maquinaria"
-SERVICE_NAME = "maquinaria.service"
 SUDO_PASS = "Kamita12"
+
+# Ambos servicios y directorios
+DEPLOY_TARGETS = [
+    {
+        "dir": "/home/bodylab/maquinaria",
+        "service": "maquinaria.service",
+        "port": 8000,
+    },
+    {
+        "dir": "/var/www/acr-flota360",
+        "service": "acr-flota360.service",
+        "port": 8001,
+    },
+]
+
 
 def main():
     repo_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     print(f"📦 Empaquetando ACR Flota 360° desde: {repo_root}")
-    
+
     tar_path = "/tmp/acr_flota360_deploy.tar.gz"
     if os.path.exists(tar_path):
         os.remove(tar_path)
-        
+
     tar_cmd = [
         "tar",
         "--exclude=.git",
@@ -49,30 +65,40 @@ def main():
 
     try:
         print(f"🚀 Enviando a {SERVER_USER}@{SERVER_IP}...")
-        subprocess.run(["scp"] + ssh_opts + [tar_path, f"{SERVER_USER}@{SERVER_IP}:/tmp/acr_flota360_deploy.tar.gz"], env=env, check=True)
+        subprocess.run(
+            ["scp"] + ssh_opts + [tar_path, f"{SERVER_USER}@{SERVER_IP}:/tmp/acr_flota360_deploy.tar.gz"],
+            env=env, check=True
+        )
 
-        remote_cmds = f"""
+        for target in DEPLOY_TARGETS:
+            server_dir = target["dir"]
+            service_name = target["service"]
+            port = target["port"]
+            print(f"🔄 Desplegando en {server_dir} ({service_name} puerto {port})...")
+
+            remote_cmds = f"""
 set -e
-cd {SERVER_DIR}
-tar -xzf /tmp/acr_flota360_deploy.tar.gz -C {SERVER_DIR}
-cat << 'EOF' > {SERVER_DIR}/main.py
-from app.main import app
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("main:app", host="0.0.0.0", port=8000)
-EOF
-echo "{SUDO_PASS}" | sudo -S systemctl restart {SERVICE_NAME}
-sleep 1
+echo "{SUDO_PASS}" | sudo -S tar -xzf /tmp/acr_flota360_deploy.tar.gz -C {server_dir} --no-overwrite-dir 2>/dev/null || true
+echo "{SUDO_PASS}" | sudo -S tar -xzf /tmp/acr_flota360_deploy.tar.gz -C {server_dir}
+echo "{SUDO_PASS}" | sudo -S systemctl restart {service_name}
+sleep 2
+echo "✅ {service_name} reiniciado"
 """
-        print("🔄 Aplicando cambios y reiniciando servicio systemd...")
-        subprocess.run(["ssh"] + ssh_opts + [f"{SERVER_USER}@{SERVER_IP}", remote_cmds], env=env, check=True)
-        print("🎉 ¡Despliegue exitoso en http://192.168.1.92:8000!")
+            subprocess.run(
+                ["ssh"] + ssh_opts + [f"{SERVER_USER}@{SERVER_IP}", remote_cmds],
+                env=env, check=True
+            )
+            print(f"   ✅ http://{SERVER_IP}:{port} actualizado")
+
+        print(f"\n🎉 ¡Despliegue exitoso en ambos servicios!")
+        print(f"   • Puerto 8000 (maquinaria.service): http://{SERVER_IP}:8000")
+        print(f"   • Puerto 8001 (acr-flota360.service / producción): http://{SERVER_IP}:8001")
     finally:
         if os.path.exists(askpass_path):
             os.unlink(askpass_path)
         if os.path.exists(tar_path):
             os.unlink(tar_path)
+
 
 if __name__ == "__main__":
     main()
