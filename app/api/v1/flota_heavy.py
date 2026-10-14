@@ -24,7 +24,7 @@ from app.schemas.heavytrack import (
     OrdenMantenimientoCreate, OrdenMantenimientoResponse,
     InventarioRepuestoCreate, InventarioRepuestoResponse,
     ProveedorCreate, ProveedorResponse,
-    TelemetriaGPSRequest
+    TelemetriaGPSRequest, ActualizarCombustibleTurno
 )
 from app.services.heavytrack_service import HeavyTrackService
 
@@ -298,6 +298,8 @@ def listar_turnos_operacion(
             "foto_fin": t.foto_horometro_fin,
             "abastecio_combustible": t.abastecio_combustible or False,
             "combustible_galones": t.combustible_galones or 0.0,
+            "combustible_precio_galon": t.combustible_precio_galon or 0.0,
+            "combustible_total_soles": t.combustible_total_soles or 0.0,
             "ratio_gal_hora": ratio,
             "foto_combustible": t.foto_combustible,
             "foto_inicio_delantera": t.foto_inicio_delantera,
@@ -345,6 +347,52 @@ def exportar_turnos_excel(
             "Access-Control-Expose-Headers": "Content-Disposition"
         }
     )
+
+
+@router.patch("/turnos/{turno_id}/combustible")
+def actualizar_combustible_turno(
+    turno_id: int,
+    payload: ActualizarCombustibleTurno,
+    db: Session = Depends(get_db)
+):
+    """
+    Permite al Jefe de Flotas ingresar o actualizar el precio por galón y monto total
+    de combustible reportado por los operadores en campo de manera personal y controlada.
+    """
+    turno = db.query(TurnoOperacion).filter(TurnoOperacion.id == turno_id).first()
+    if not turno:
+        raise HTTPException(status_code=404, detail="Turno no encontrado")
+
+    precio = round(float(payload.precio_por_galon or 0.0), 2)
+    galones = float(turno.combustible_galones or 0.0)
+    
+    if payload.costo_total is not None and payload.costo_total > 0:
+        total = round(float(payload.costo_total), 2)
+    else:
+        total = round(galones * precio, 2)
+
+    turno.combustible_precio_galon = precio
+    turno.combustible_total_soles = total
+
+    # También actualizar el registro asociado en control_combustible si existe
+    comb_rec = db.query(ControlCombustible).filter(
+        ControlCombustible.uuid_local == f"comb-{turno.uuid_local}"
+    ).first()
+    if comb_rec:
+        comb_rec.precio_por_galon = precio
+        comb_rec.costo_total = total
+
+    db.commit()
+    db.refresh(turno)
+
+    return {
+        "success": True,
+        "mensaje": f"Combustible actualizado para turno #{turno.id}",
+        "turno_id": turno.id,
+        "combustible_galones": turno.combustible_galones,
+        "combustible_precio_galon": turno.combustible_precio_galon,
+        "combustible_total_soles": turno.combustible_total_soles
+    }
 
 
 @router.get("/repuestos", response_model=List[InventarioRepuestoResponse])

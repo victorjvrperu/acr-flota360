@@ -1222,6 +1222,74 @@
     </div>
   </div>
 
+  <!-- MODAL: REGISTRO DE PRECIO Y TOTAL DE COMBUSTIBLE (JEFE DE FLOTAS) -->
+  <div id="modal-precio-combustible" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border-2 border-machinery/60 rounded-3xl max-w-md w-full p-6 relative space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+            ⛽
+          </div>
+          <div>
+            <h3 class="text-base font-black text-white uppercase">Registrar Combustible</h3>
+            <p class="text-[11px] text-gray-400">Control valorizado por Jefe de Flotas</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalPrecioCombustible()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <!-- Resumen del abastecimiento reportado por el operador -->
+      <div class="bg-carbon/90 rounded-2xl p-3.5 border border-gray-800 space-y-2 text-xs">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Equipo / Maquinaria:</span>
+          <span id="modal-comb-equipo" class="font-mono font-bold text-machinery">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Fecha de Turno:</span>
+          <span id="modal-comb-fecha" class="font-mono text-gray-200">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Galones Reportados en Campo:</span>
+          <span id="modal-comb-galones" class="font-mono font-black text-amber-400 text-sm">0.0 Gal</span>
+        </div>
+        <div id="modal-comb-voucher-box" class="pt-2 border-t border-gray-800 flex items-center justify-between hidden">
+          <span class="text-gray-400">Comprobante de Vale / Ticket:</span>
+          <button type="button" id="btn-ver-voucher-modal" class="px-2.5 py-1 bg-graphiteLight hover:bg-gray-700 text-gray-200 text-[11px] font-bold rounded-lg border border-gray-700 flex items-center gap-1 transition">
+            <span>📸</span> <span>Ver Voucher</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Formulario para que el Jefe de Flotas ingrese el precio y total -->
+      <form id="form-precio-combustible" onsubmit="guardarPrecioCombustible(event)" class="space-y-4">
+        <input type="hidden" id="modal-comb-turno-id">
+        <input type="hidden" id="modal-comb-galones-val">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-gray-300 uppercase mb-1">Precio por Galón (S/.) *</label>
+            <input type="number" step="0.01" id="modal-comb-precio-input" oninput="calcularTotalCombustibleModal()" placeholder="Ej: 18.50" required class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-white font-mono font-bold text-lg text-center rounded-xl py-2 px-3 focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[11px] font-bold text-gray-300 uppercase mb-1">Total Facturado S/. *</label>
+            <input type="number" step="0.01" id="modal-comb-total-input" oninput="calcularPrecioCombustibleModal()" placeholder="Ej: 832.50" required class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-emerald-400 font-mono font-bold text-lg text-center rounded-xl py-2 px-3 focus:outline-none">
+          </div>
+        </div>
+
+        <div id="modal-comb-error" class="hidden p-2.5 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="submit" id="btn-guardar-comb-modal" class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-machinery/25 flex items-center justify-center gap-1.5">
+            <span>💾</span> <span>Guardar Valorización</span>
+          </button>
+          <button type="button" onclick="cerrarModalPrecioCombustible()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     let equiposCache = [];
     let frentesCache = [];
@@ -2293,6 +2361,30 @@
           ? `<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-rose-950/80 text-rose-300 border border-rose-800" title="${t.incidencia_descripcion || 'Incidencia'}">⚠️ ${t.incidencia_descripcion ? (t.incidencia_descripcion.substring(0, 25) + '...') : 'Incidencia'}</span>`
           : `<span class="text-gray-500 text-[11px]">Conforme</span>`;
 
+        let combustibleHtml = '<span class="text-gray-600">-</span>';
+        if (gal > 0) {
+          const prc = Number(t.combustible_precio_galon || 0);
+          const tot = Number(t.combustible_total_soles || (prc > 0 ? gal * prc : 0));
+          const voucherBtn = t.foto_combustible
+            ? `<button onclick="verFoto('${t.foto_combustible}', 'Vale Combustible - ${t.equipo_codigo}')" class="text-[10px] text-gray-400 hover:text-white underline ml-1" title="Ver vale/ticket">🧾 Vale</button>`
+            : '';
+
+          if (prc > 0) {
+            combustibleHtml = `
+              <div class="font-mono text-xs font-bold text-amber-300">${gal.toFixed(1)} Gal ${voucherBtn}</div>
+              <div class="text-[10px] text-emerald-400 font-mono">S/ ${prc.toFixed(2)}/G · Tot: S/ ${tot.toFixed(2)}</div>
+              <button onclick="abrirModalPrecioCombustible(${t.id}, ${gal}, ${prc}, ${tot}, '${t.equipo_codigo}', '${t.fecha}', '${t.foto_combustible || ''}')" class="text-[9px] text-gray-400 hover:text-machinery underline block mx-auto mt-0.5" title="Modificar precio combustible">✏️ Modificar S/.</button>
+            `;
+          } else {
+            combustibleHtml = `
+              <div class="font-mono text-xs font-bold text-amber-300">${gal.toFixed(1)} Gal ${voucherBtn}</div>
+              <button onclick="abrirModalPrecioCombustible(${t.id}, ${gal}, 0, 0, '${t.equipo_codigo}', '${t.fecha}', '${t.foto_combustible || ''}')" class="mt-1 px-2 py-0.5 bg-machinery/20 hover:bg-machinery hover:text-carbon text-machinery border border-machinery/50 rounded text-[10px] font-bold transition inline-flex items-center gap-1 shadow-sm" title="Jefe de Flotas: Ingresar precio por galón y total">
+                <span>💰</span> <span>Asignar S/.</span>
+              </button>
+            `;
+          }
+        }
+
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-graphiteLight/50 transition';
         tr.innerHTML = `
@@ -2315,7 +2407,7 @@
             </span>
           </td>
           <td class="py-3 px-4 text-center whitespace-nowrap">
-            ${gal > 0 ? `<span class="font-mono text-xs font-bold text-amber-300">${gal.toFixed(1)} Gal</span>` : '<span class="text-gray-600">-</span>'}
+            ${combustibleHtml}
           </td>
           <td class="py-3 px-4 text-center whitespace-nowrap font-mono text-xs ${ratioBadgeClass}">
             ${ratioStr}
@@ -3207,6 +3299,110 @@
         window.open(data.whatsapp_link, '_blank');
       } catch (err) {
         alert("Error al preparar el mensaje de WhatsApp.");
+      }
+    }
+
+    // ==========================================
+    // MODAL PRECIO COMBUSTIBLE (JEFE DE FLOTAS)
+    // ==========================================
+    function abrirModalPrecioCombustible(turnoId, galones, precioActual, totalActual, equipoCodigo, fecha, fotoCombustible) {
+      document.getElementById('modal-comb-turno-id').value = turnoId;
+      document.getElementById('modal-comb-galones-val').value = galones;
+      document.getElementById('modal-comb-equipo').textContent = equipoCodigo || 'Equipo';
+      document.getElementById('modal-comb-fecha').textContent = fecha || '-';
+      document.getElementById('modal-comb-galones').textContent = `${Number(galones).toFixed(1)} Gal`;
+
+      const inputPrecio = document.getElementById('modal-comb-precio-input');
+      const inputTotal = document.getElementById('modal-comb-total-input');
+      const boxVoucher = document.getElementById('modal-comb-voucher-box');
+      const btnVoucher = document.getElementById('btn-ver-voucher-modal');
+      const errBox = document.getElementById('modal-comb-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const prcNum = Number(precioActual || 0);
+      const totNum = Number(totalActual || 0);
+      inputPrecio.value = prcNum > 0 ? prcNum.toFixed(2) : '';
+      inputTotal.value = totNum > 0 ? totNum.toFixed(2) : (prcNum > 0 ? (galones * prcNum).toFixed(2) : '');
+
+      if (fotoCombustible && fotoCombustible.length > 10) {
+        boxVoucher.classList.remove('hidden');
+        btnVoucher.onclick = () => verFoto(fotoCombustible, `Comprobante Combustible - ${equipoCodigo}`);
+      } else {
+        boxVoucher.classList.add('hidden');
+      }
+
+      const modal = document.getElementById('modal-precio-combustible');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+      inputPrecio.focus();
+    }
+
+    function cerrarModalPrecioCombustible() {
+      const modal = document.getElementById('modal-precio-combustible');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function calcularTotalCombustibleModal() {
+      const gal = parseFloat(document.getElementById('modal-comb-galones-val').value) || 0;
+      const precio = parseFloat(document.getElementById('modal-comb-precio-input').value) || 0;
+      const inTotal = document.getElementById('modal-comb-total-input');
+      if (inTotal && gal > 0 && precio > 0) {
+        inTotal.value = (gal * precio).toFixed(2);
+      }
+    }
+
+    function calcularPrecioCombustibleModal() {
+      const gal = parseFloat(document.getElementById('modal-comb-galones-val').value) || 0;
+      const total = parseFloat(document.getElementById('modal-comb-total-input').value) || 0;
+      const inPrecio = document.getElementById('modal-comb-precio-input');
+      if (inPrecio && gal > 0 && total > 0) {
+        inPrecio.value = (total / gal).toFixed(2);
+      }
+    }
+
+    async function guardarPrecioCombustible(e) {
+      e.preventDefault();
+      const turnoId = document.getElementById('modal-comb-turno-id').value;
+      const precio = parseFloat(document.getElementById('modal-comb-precio-input').value) || 0;
+      const total = parseFloat(document.getElementById('modal-comb-total-input').value) || 0;
+      const errBox = document.getElementById('modal-comb-error');
+      const btn = document.getElementById('btn-guardar-comb-modal');
+
+      if (precio <= 0 && total <= 0) {
+        errBox.textContent = 'Ingrese un precio por galón o total válido.';
+        errBox.classList.remove('hidden');
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span>⏳</span> <span>Guardando...</span>';
+
+      try {
+        const resp = await fetch(`/api/v1/heavy/turnos/${turnoId}/combustible`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            precio_por_galon: precio,
+            costo_total: total
+          })
+        });
+
+        if (!resp.ok) {
+          const txt = await resp.text();
+          throw new Error(`Error en servidor: ${txt.substring(0, 100)}`);
+        }
+
+        cerrarModalPrecioCombustible();
+        await cargarTablaHorometros();
+      } catch (err) {
+        errBox.textContent = err.message || 'Error al guardar precio';
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>💾</span> <span>Guardar Valorización</span>';
       }
     }
   </script>

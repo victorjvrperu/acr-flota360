@@ -621,22 +621,11 @@
           </button>
         </div>
 
-        <!-- CASO SÍ: Galones + Precio + Total + Foto Voucher -->
+        <!-- CASO SÍ: Galones + Foto Voucher -->
         <div id="seccion-comb-si" class="hidden space-y-3 pt-3 border-t border-gray-800">
           <div>
             <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Galones Abastecidos *</label>
-            <input type="number" step="0.1" id="wizard-comb-galones" oninput="calcularCombustibleTotalLive()" placeholder="Ej: 45.0" class="w-full bg-carbon border-2 border-gray-700 text-white font-mono font-bold text-2xl text-center rounded-xl py-3 px-3 focus:border-machinery focus:outline-none">
-          </div>
-
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Precio por Galón (S/.) *</label>
-              <input type="number" step="0.01" id="wizard-comb-precio" oninput="calcularCombustibleTotalLive()" placeholder="Ej: 18.50" class="w-full bg-carbon border-2 border-gray-700 text-machinery font-mono font-bold text-lg text-center rounded-xl py-2.5 px-3 focus:border-machinery focus:outline-none">
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Total S/. *</label>
-              <input type="number" step="0.01" id="wizard-comb-total" oninput="calcularCombustiblePrecioLive()" placeholder="Ej: 832.50" class="w-full bg-carbon border-2 border-gray-700 text-machinery font-mono font-bold text-lg text-center rounded-xl py-2.5 px-3 focus:border-machinery focus:outline-none">
-            </div>
+            <input type="number" step="0.1" id="wizard-comb-galones" placeholder="Ej: 45.0" class="w-full bg-carbon border-2 border-gray-700 text-white font-mono font-bold text-2xl text-center rounded-xl py-3 px-3 focus:border-machinery focus:outline-none">
           </div>
 
           <div>
@@ -2972,28 +2961,6 @@
         secSi.classList.add('hidden');
         fotosEstado.comb_voucher = null;
         document.getElementById('wizard-comb-galones').value = '';
-        const inPrecio = document.getElementById('wizard-comb-precio');
-        const inTotal = document.getElementById('wizard-comb-total');
-        if (inPrecio) inPrecio.value = '';
-        if (inTotal) inTotal.value = '';
-      }
-    }
-
-    function calcularCombustibleTotalLive() {
-      const gal = parseFloat(document.getElementById('wizard-comb-galones')?.value) || 0;
-      const precio = parseFloat(document.getElementById('wizard-comb-precio')?.value) || 0;
-      const inTotal = document.getElementById('wizard-comb-total');
-      if (inTotal && gal > 0 && precio > 0) {
-        inTotal.value = (gal * precio).toFixed(2);
-      }
-    }
-
-    function calcularCombustiblePrecioLive() {
-      const gal = parseFloat(document.getElementById('wizard-comb-galones')?.value) || 0;
-      const total = parseFloat(document.getElementById('wizard-comb-total')?.value) || 0;
-      const inPrecio = document.getElementById('wizard-comb-precio');
-      if (inPrecio && gal > 0 && total > 0) {
-        inPrecio.value = (total / gal).toFixed(2);
       }
     }
 
@@ -3012,15 +2979,6 @@
           errBox.textContent = "⚠️ Ingrese los galones abastecidos.";
           errBox.classList.remove('hidden');
           return;
-        }
-
-        const precio = parseFloat(document.getElementById('wizard-comb-precio')?.value) || 0;
-        const total = parseFloat(document.getElementById('wizard-comb-total')?.value) || 0;
-
-        if (precio > 0 && total <= 0) {
-          calcularCombustibleTotalLive();
-        } else if (total > 0 && precio <= 0) {
-          calcularCombustiblePrecioLive();
         }
 
         if (!fotosEstado.comb_voucher) {
@@ -3094,8 +3052,6 @@
 
       const fotoComb = abastecioCombustibleOpcion ? fotosEstado.comb_voucher : fotosEstado.comb_nivel;
       const galonesComb = abastecioCombustibleOpcion ? (parseFloat(document.getElementById('wizard-comb-galones')?.value) || 0) : 0;
-      const precioGalonComb = abastecioCombustibleOpcion ? (parseFloat(document.getElementById('wizard-comb-precio')?.value) || 0) : 0;
-      const totalSolesComb = abastecioCombustibleOpcion ? (parseFloat(document.getElementById('wizard-comb-total')?.value) || (galonesComb * precioGalonComb)) : 0;
       const observacionesInicio = (document.getElementById('wizard-checkin-observaciones')?.value || '').trim();
 
       const turnoData = {
@@ -3112,8 +3068,8 @@
         longitud_inicio: ultimaPosicionGPS ? ultimaPosicionGPS.lng : null,
         abastecio_combustible: abastecioCombustibleOpcion,
         combustible_galones: galonesComb,
-        combustible_precio_galon: precioGalonComb,
-        combustible_total_soles: totalSolesComb,
+        combustible_precio_galon: 0.0,
+        combustible_total_soles: 0.0,
         observaciones_inicio: observacionesInicio,
         foto_combustible: fotoComb,
         foto_inicio_delantera: fotosEstado.ini_frente,

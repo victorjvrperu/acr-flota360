@@ -448,3 +448,8 @@ class BatchSyncResponse(BaseModel):
     total_duplicados: int
     detalles: List[BatchSyncItemStatus]
     timestamp_servidor: datetime
+
+
+class ActualizarCombustibleTurno(BaseModel):
+    precio_por_galon: float
+    costo_total: Optional[float] = None

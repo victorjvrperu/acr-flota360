@@ -113,7 +113,7 @@ class HeavyTrackService:
             if getattr(turno_in, "abastecio_combustible", False) and getattr(turno_in, "foto_combustible", None):
                 galones_in = getattr(turno_in, "combustible_galones", 0.0) or 0.0
                 precio_in = getattr(turno_in, "combustible_precio_galon", 0.0) or 0.0
-                total_in = getattr(turno_in, "combustible_total_soles", 0.0) or (galones_in * (precio_in or 18.5))
+                total_in = getattr(turno_in, "combustible_total_soles", 0.0) or (galones_in * precio_in if precio_in > 0 else 0.0)
                 comb_rec = ControlCombustible(
                     uuid_local=f"comb-{turno_in.uuid_local}",
                     equipo_id=turno_in.equipo_id,
