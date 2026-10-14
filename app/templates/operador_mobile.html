@@ -23,6 +23,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
+  <!-- Leaflet.js para Mapa GPS Satelital Móvil -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+
   <script>
     tailwind.config = {
       theme: {
@@ -268,9 +272,14 @@
               DESACTIVADO
             </span>
           </div>
-          <button type="button" id="btn-bienvenida-gps-toggle" onclick="toggleSeguimientoGPS()" class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-carbon border border-emerald-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
-            <span>📍</span> <span id="btn-bienvenida-gps-text">Activar Seguimiento GPS</span>
-          </button>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button type="button" id="btn-bienvenida-gps-toggle" onclick="toggleSeguimientoGPS()" class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-carbon border border-emerald-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
+              <span>📍</span> <span id="btn-bienvenida-gps-text">Activar Seguimiento GPS</span>
+            </button>
+            <button type="button" onclick="abrirModalMapaOperador()" class="w-full py-2.5 px-3 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-sm">
+              <span>🗺️</span> <span>Ver Mapa Satelital</span>
+            </button>
+          </div>
         </div>
 
         <!-- Tarjeta Prominente: INSTALACIÓN DE APP EN CELULAR (PWA) -->
@@ -886,9 +895,14 @@
           </div>
         </div>
 
-        <button type="button" id="btn-encurso-gps-toggle" onclick="toggleSeguimientoGPS()" class="w-full py-3 px-4 rounded-xl font-black text-xs uppercase transition-all flex items-center justify-center gap-2 border shadow-lg bg-emerald-600 hover:bg-emerald-500 text-carbon border-emerald-400 active:scale-95">
-          <span>📍</span> <span id="btn-encurso-gps-text">ACTIVAR SEGUIMIENTO POR GPS</span>
-        </button>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+          <button type="button" id="btn-encurso-gps-toggle" onclick="toggleSeguimientoGPS()" class="w-full py-3 px-4 rounded-xl font-black text-xs uppercase transition-all flex items-center justify-center gap-2 border shadow-lg bg-emerald-600 hover:bg-emerald-500 text-carbon border-emerald-400 active:scale-95">
+            <span>📍</span> <span id="btn-encurso-gps-text">ACTIVAR SEGUIMIENTO POR GPS</span>
+          </button>
+          <button type="button" onclick="abrirModalMapaOperador()" class="w-full py-3 px-4 rounded-xl font-black text-xs uppercase transition-all flex items-center justify-center gap-2 border shadow-lg bg-graphiteLight hover:bg-gray-700 text-gray-200 border-gray-700 active:scale-95">
+            <span>🗺️</span> <span>VER EN MAPA SATELITAL</span>
+          </button>
+        </div>
       </div>
 
       <!-- CARD CIERRE DE JORNADA -->
@@ -1507,8 +1521,70 @@
     </div>
   </div>
 
-  <!-- Scripts: IndexedDB y Offline Sync con Cache-Buster v2.2.1 -->
-  <script src="/static/js/offline-sync.js?v=2.2.1"></script>
+  <!-- ============================================================ -->
+  <!-- MODAL: VISUALIZADOR DE MAPA GPS Y UBICACIÓN SATELITAL        -->
+  <!-- ============================================================ -->
+  <div id="modal-mapa-operador" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden items-center justify-center p-3">
+    <div class="bg-graphite border border-gray-700 rounded-2xl max-w-lg w-full p-4 relative space-y-3 flex flex-col max-h-[92vh] shadow-2xl">
+      <!-- Header del modal -->
+      <div class="flex items-center justify-between border-b border-gray-800 pb-2.5 shrink-0">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🛰️</span>
+          <div>
+            <h3 class="text-sm font-black text-white uppercase">Mi Ubicación GPS Satelital</h3>
+            <p class="text-[10px] text-gray-400">Posición satelital del operador y maquinaria en tiempo real</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalMapaOperador()" class="text-gray-400 hover:text-white text-2xl font-bold leading-none p-1">&times;</button>
+      </div>
+
+      <!-- Barra de Estado y Capas -->
+      <div class="flex items-center justify-between gap-2 shrink-0 text-xs">
+        <div class="flex items-center gap-1.5">
+          <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
+          <span id="modal-mapa-estado-txt" class="text-[11px] font-bold text-emerald-400">GPS Conectado</span>
+          <span id="modal-mapa-precision-badge" class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-carbon text-gray-300 border border-gray-700">± 5m</span>
+        </div>
+        <!-- Selector Satelital / Calles -->
+        <div class="inline-flex rounded-lg bg-carbon border border-gray-700 p-0.5 text-[10px] font-bold">
+          <button type="button" onclick="cambiarCapaMapaOperador('satelite')" id="btn-op-capa-sat" class="px-2 py-0.5 rounded bg-machinery text-carbon font-black">
+            🛰️ Satélite
+          </button>
+          <button type="button" onclick="cambiarCapaMapaOperador('calles')" id="btn-op-capa-cal" class="px-2 py-0.5 rounded text-gray-300">
+            🏙️ Calles
+          </button>
+        </div>
+      </div>
+
+      <!-- Contenedor del Mapa Leaflet -->
+      <div id="contenedor-mapa-operador" class="w-full flex-1 min-h-[300px] h-[45vh] rounded-xl overflow-hidden border border-gray-800 relative shadow-inner z-0"></div>
+
+      <!-- Coordenadas y detalles -->
+      <div class="bg-carbon rounded-xl p-2.5 border border-gray-800 space-y-1.5 shrink-0 text-xs font-mono">
+        <div class="flex justify-between items-center text-[11px]">
+          <span class="text-gray-400">Coordenadas:</span>
+          <span id="modal-mapa-coords" class="font-bold text-machinery">-- , --</span>
+        </div>
+        <div class="flex justify-between items-center text-[10px]">
+          <span class="text-gray-400">Última lectura:</span>
+          <span id="modal-mapa-hora" class="text-gray-300">Conectando...</span>
+        </div>
+      </div>
+
+      <!-- Botones de Acción -->
+      <div class="grid grid-cols-2 gap-2 pt-1 shrink-0">
+        <button type="button" onclick="centrarEnMiUbicacionOperador()" class="py-2.5 px-3 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition active:scale-95">
+          <span>🎯</span> <span>Centrar en Mí</span>
+        </button>
+        <button type="button" onclick="abrirEnGoogleMapsOperador()" class="py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-carbon rounded-xl text-xs font-black uppercase flex items-center justify-center gap-1.5 transition active:scale-95 shadow-md">
+          <span>🧭</span> <span>Google Maps</span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts: IndexedDB y Offline Sync con Cache-Buster v2.2.2 -->
+  <script src="/static/js/offline-sync.js?v=2.2.2"></script>
 
   <!-- ============================================================ -->
   <!-- CONTROLADOR DEL WIZARD, CANVAS WATERMARKING Y REGLAS         -->
@@ -3766,6 +3842,190 @@
           timestamp: new Date().toISOString()
         })
       }).catch(e => console.warn("Telemetría:", e));
+    }
+
+    // ==========================================
+    // VISUALIZADOR DE MAPA GPS SATELITAL MÓVIL
+    // ==========================================
+    let mapaOperadorInstance = null;
+    let marcadorOperadorLayer = null;
+    let capaOpSatelite = null;
+    let capaOpCalles = null;
+    let capaOpEtiquetas = null;
+
+    function inicializarMapaOperador() {
+      const contenedor = document.getElementById('contenedor-mapa-operador');
+      if (!contenedor || mapaOperadorInstance) return;
+
+      const latDef = (ultimaPosicionGPS && ultimaPosicionGPS.lat) || -5.7078;
+      const lngDef = (ultimaPosicionGPS && ultimaPosicionGPS.lng) || -78.8078;
+
+      mapaOperadorInstance = L.map('contenedor-mapa-operador', {
+        zoomControl: true,
+        attributionControl: false
+      }).setView([latDef, lngDef], 16);
+
+      // Capa Satelital Esri
+      capaOpSatelite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19
+      });
+
+      // Overlay etiquetas
+      capaOpEtiquetas = L.tileLayer('https://services.arcgisonline.com/ArcGIS/rest/services/Reference/World_Boundaries_and_Places/MapServer/tile/{z}/{y}/{x}', {
+        maxZoom: 19
+      });
+
+      // Capa Calles
+      capaOpCalles = L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        maxZoom: 19
+      });
+
+      capaOpSatelite.addTo(mapaOperadorInstance);
+      capaOpEtiquetas.addTo(mapaOperadorInstance);
+
+      marcadorOperadorLayer = L.layerGroup().addTo(mapaOperadorInstance);
+    }
+
+    function cambiarCapaMapaOperador(tipo) {
+      if (!mapaOperadorInstance) inicializarMapaOperador();
+      if (!mapaOperadorInstance) return;
+
+      if (mapaOperadorInstance.hasLayer(capaOpSatelite)) mapaOperadorInstance.removeLayer(capaOpSatelite);
+      if (mapaOperadorInstance.hasLayer(capaOpEtiquetas)) mapaOperadorInstance.removeLayer(capaOpEtiquetas);
+      if (mapaOperadorInstance.hasLayer(capaOpCalles)) mapaOperadorInstance.removeLayer(capaOpCalles);
+
+      const bSat = document.getElementById('btn-op-capa-sat');
+      const bCal = document.getElementById('btn-op-capa-cal');
+
+      if (tipo === 'satelite') {
+        capaOpSatelite.addTo(mapaOperadorInstance);
+        capaOpEtiquetas.addTo(mapaOperadorInstance);
+        if (bSat) { bSat.className = 'px-2 py-0.5 rounded bg-machinery text-carbon font-black'; }
+        if (bCal) { bCal.className = 'px-2 py-0.5 rounded text-gray-300'; }
+      } else {
+        capaOpCalles.addTo(mapaOperadorInstance);
+        if (bSat) { bSat.className = 'px-2 py-0.5 rounded text-gray-300'; }
+        if (bCal) { bCal.className = 'px-2 py-0.5 rounded bg-machinery text-carbon font-black'; }
+      }
+    }
+
+    async function abrirModalMapaOperador() {
+      const modal = document.getElementById('modal-mapa-operador');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
+
+      inicializarMapaOperador();
+
+      // Solicitar o refrescar posición GPS
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const hora = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            ultimaPosicionGPS = {
+              lat: pos.coords.latitude,
+              lng: pos.coords.longitude,
+              accuracy: pos.coords.accuracy,
+              timestamp: new Date().toISOString(),
+              horaEnvio: hora
+            };
+            dibujarMarcadorOperadorEnMapa(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, hora);
+          },
+          err => {
+            console.warn("GPS modal error:", err);
+            if (ultimaPosicionGPS && ultimaPosicionGPS.lat) {
+              dibujarMarcadorOperadorEnMapa(ultimaPosicionGPS.lat, ultimaPosicionGPS.lng, ultimaPosicionGPS.accuracy || 15, ultimaPosicionGPS.horaEnvio);
+            }
+          },
+          { enableHighAccuracy: true, timeout: 8000, maximumAge: 3000 }
+        );
+      } else if (ultimaPosicionGPS && ultimaPosicionGPS.lat) {
+        dibujarMarcadorOperadorEnMapa(ultimaPosicionGPS.lat, ultimaPosicionGPS.lng, ultimaPosicionGPS.accuracy || 15, ultimaPosicionGPS.horaEnvio);
+      }
+
+      setTimeout(() => {
+        if (mapaOperadorInstance) mapaOperadorInstance.invalidateSize();
+      }, 250);
+    }
+
+    function dibujarMarcadorOperadorEnMapa(lat, lng, accuracy, hora) {
+      if (!mapaOperadorInstance || !marcadorOperadorLayer) return;
+
+      marcadorOperadorLayer.clearLayers();
+
+      const nombreOp = operadorActivo ? `${operadorActivo.nombres} ${operadorActivo.apellidos}` : 'Operador en Campo';
+      const equipoNom = turnoEnCurso ? turnoEnCurso.equipo_nombre : 'Maquinaria ACR';
+
+      const customIcon = L.divIcon({
+        html: `
+          <div style="background-color: #01A95B; border: 3px solid #ffffff; border-radius: 50%; width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; font-size: 18px; box-shadow: 0 0 15px rgba(1,169,91,0.8); cursor: pointer;">
+            🚜
+          </div>
+        `,
+        className: 'custom-op-marker',
+        iconSize: [36, 36],
+        iconAnchor: [18, 18]
+      });
+
+      const marker = L.marker([lat, lng], { icon: customIcon });
+      marker.bindPopup(`
+        <div style="font-family: 'Outfit', sans-serif; color: #121417; min-width: 170px;">
+          <div style="font-weight: 900; font-size: 12px; color: #01A95B; border-bottom: 1px solid #ddd; padding-bottom: 3px; margin-bottom: 4px;">
+            ${equipoNom}
+          </div>
+          <div style="font-size: 11px;"><strong>👷 Operador:</strong> ${nombreOp}</div>
+          <div style="font-size: 10px; color: #666; margin-top: 4px;">🛰️ ${hora || 'En vivo'} (±${Math.round(accuracy || 5)}m)</div>
+        </div>
+      `);
+      marcadorOperadorLayer.addLayer(marker);
+
+      // Círculo de precisión
+      if (accuracy) {
+        const circle = L.circle([lat, lng], {
+          radius: Math.max(accuracy, 10),
+          color: '#01A95B',
+          fillColor: '#01A95B',
+          fillOpacity: 0.15,
+          weight: 1.5
+        });
+        marcadorOperadorLayer.addLayer(circle);
+      }
+
+      mapaOperadorInstance.setView([lat, lng], 17);
+      marker.openPopup();
+
+      // Actualizar UI del modal
+      const cBox = document.getElementById('modal-mapa-coords');
+      const hBox = document.getElementById('modal-mapa-hora');
+      const pBadge = document.getElementById('modal-mapa-precision-badge');
+      if (cBox) cBox.textContent = `${lat.toFixed(5)}, ${lng.toFixed(5)}`;
+      if (hBox) hBox.textContent = hora || new Date().toLocaleTimeString();
+      if (pBadge) pBadge.textContent = `± ${Math.round(accuracy || 5)}m`;
+    }
+
+    function centrarEnMiUbicacionOperador() {
+      if (ultimaPosicionGPS && ultimaPosicionGPS.lat && mapaOperadorInstance) {
+        mapaOperadorInstance.setView([ultimaPosicionGPS.lat, ultimaPosicionGPS.lng], 17);
+      } else {
+        abrirModalMapaOperador();
+      }
+    }
+
+    function abrirEnGoogleMapsOperador() {
+      if (ultimaPosicionGPS && ultimaPosicionGPS.lat) {
+        window.open(`https://www.google.com/maps?q=${ultimaPosicionGPS.lat},${ultimaPosicionGPS.lng}`, '_blank');
+      } else {
+        alert("Obteniendo posición GPS... Intenta nuevamente en 2 segundos.");
+      }
+    }
+
+    function cerrarModalMapaOperador() {
+      const modal = document.getElementById('modal-mapa-operador');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
     }
 
     // ==========================================

@@ -1430,6 +1430,13 @@
       // Cargar sección inicial por URL hash o 'dashboard'
       const hashInicial = window.location.hash.replace('#', '') || 'dashboard';
       mostrarSeccion(hashInicial);
+
+      // Monitoreo GPS en Vivo: Refresco automático cada 20 segundos
+      setInterval(() => {
+        try {
+          actualizarMapaGPS();
+        } catch (e) {}
+      }, 20000);
     });
 
     // ==========================================
