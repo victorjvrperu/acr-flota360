@@ -21,8 +21,13 @@ if [ ! -f ".env" ]; then
     sed -i 's|APP_ENV=.*|APP_ENV=production|' .env || true
     sed -i 's|DEBUG=.*|DEBUG=False|' .env || true
     sed -i 's|PORT=.*|PORT=8001|' .env || true
-    if [ -n "$1" ]; then
+fi
+
+if [ -n "$1" ]; then
+    if grep -q "GEMINI_API_KEY" .env; then
         sed -i "s|GEMINI_API_KEY=.*|GEMINI_API_KEY=$1|" .env || true
+    else
+        echo "GEMINI_API_KEY=$1" >> .env
     fi
 fi
 
