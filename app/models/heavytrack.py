@@ -375,3 +375,49 @@ class MantenimientoRepuesto(Base):
     # Relaciones
     orden = relationship("OrdenMantenimiento", back_populates="repuestos_utilizados")
     repuesto = relationship("InventarioRepuesto", back_populates="ordenes")
+
+
+# ==========================================
+# 11. NOTIFICACIONES Y ALERTAS
+# ==========================================
+class TipoNotificacion(str, enum.Enum):
+    MANTENIMIENTO_ENTRADA = "mantenimiento_entrada"       # Equipo entra a taller / OT abierta
+    MANTENIMIENTO_PROXIMO = "mantenimiento_proximo"       # Próximo a servicio (<25h o <500km)
+    MANTENIMIENTO_VENCIDO = "mantenimiento_vencido"       # Horómetro superó límite de mantenimiento
+    REVISION_TECNICA = "revision_tecnica"                 # Revisión técnica por vencer / vencida
+    SOAT_POLIZA = "soat_poliza"                           # SOAT o póliza por vencer / vencida
+    INCONGRUENCIA_DATOS = "incongruencia_datos"           # Lectura menor a la anterior, salto anómalo
+    INCIDENCIA_FALLA = "incidencia_falla"                 # Operador reportó falla en checklist
+
+
+class NotificacionAlerta(Base):
+    __tablename__ = "notificaciones_alertas"
+
+    id = Column(Integer, primary_key=True, index=True)
+    tipo = Column(String(50), nullable=False, index=True)
+    titulo = Column(String(200), nullable=False)
+    mensaje = Column(Text, nullable=False)
+    severidad = Column(String(20), default="warning", nullable=False)  # info, warning, critical
+    equipo_id = Column(Integer, ForeignKey("maquinaria_equipos.id", ondelete="SET NULL"), nullable=True)
+    leido = Column(Boolean, default=False, nullable=False)
+    canal_whatsapp_enviado = Column(Boolean, default=False, nullable=False)
+    whatsapp_link = Column(Text, nullable=True)
+    datos_extra = Column(Text, nullable=True)  # JSON string con detalles técnicos
+    creado_en = Column(DateTime, default=datetime.utcnow, index=True)
+
+    # Relación
+    equipo = relationship("MaquinariaEquipo")
+
+
+# ==========================================
+# 12. AJUSTES Y CONFIGURACIÓN DEL SISTEMA
+# ==========================================
+class AjusteSistema(Base):
+    __tablename__ = "ajustes_sistema"
+
+    id = Column(Integer, primary_key=True, index=True)
+    clave = Column(String(100), unique=True, nullable=False, index=True)
+    valor = Column(Text, nullable=True)
+    descripcion = Column(String(255), nullable=True)
+    actualizado_en = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+

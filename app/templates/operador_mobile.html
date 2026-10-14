@@ -486,6 +486,7 @@
           <div class="font-black text-machinery text-sm" id="info-eq-nombre">-</div>
           <div class="text-gray-300" id="info-eq-marca-modelo">-</div>
           <div class="text-[11px] font-mono text-gray-400 bg-graphite/60 p-2 rounded-lg border border-gray-800" id="info-eq-horometro-ant">Lectura anterior: -</div>
+          <div id="info-eq-alerta-mantenimiento" class="hidden p-2 rounded-lg text-[11px] font-bold"></div>
         </div>
 
         <div id="err-ini-3" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
@@ -2102,6 +2103,25 @@
         badgeCtrl.className = 'inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-300 border border-emerald-700/60';
         badgeCtrl.innerHTML = '⏱️ Control por Horas (Horómetro)';
         infoAnt.textContent = `Último Horómetro registrado: ${eq.horometro_actual || 0} h`;
+      }
+
+      // Alerta Preventiva / Crítica del Equipo en Móvil
+      const alertaBox = document.getElementById('info-eq-alerta-mantenimiento');
+      if (alertaBox) {
+        const prox = eq.horometro_proximo_servicio || (esKm ? 5000 : 250);
+        const act = esKm ? (eq.odometro_actual || 0) : (eq.horometro_actual || 0);
+        const margen = prox - act;
+        const umbral = esKm ? 500 : 25;
+        if (margen <= 0) {
+          alertaBox.className = 'p-2 rounded-lg text-[11px] font-black bg-rose-950/90 text-rose-300 border border-rose-800 block';
+          alertaBox.innerHTML = `🔴 <strong>¡MANTENIMIENTO VENCIDO!</strong> Excedido por ${Math.abs(margen).toFixed(1)} ${esKm ? 'km' : 'h'}. Notificado al Jefe de Mantenimiento.`;
+        } else if (margen <= umbral) {
+          alertaBox.className = 'p-2 rounded-lg text-[11px] font-bold bg-amber-950/90 text-amber-300 border border-amber-800 block';
+          alertaBox.innerHTML = `🟡 <strong>Próximo a Mantenimiento:</strong> Faltan solo ${margen.toFixed(1)} ${esKm ? 'km' : 'h'} para el servicio.`;
+        } else {
+          alertaBox.className = 'hidden';
+          alertaBox.innerHTML = '';
+        }
       }
 
       card.classList.remove('hidden');

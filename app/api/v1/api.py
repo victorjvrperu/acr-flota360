@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1.flota_heavy import router as heavy_router
+from app.api.v1.notificaciones import router as notificaciones_router
 from app.api.v1.vehiculos import router as vehiculos_router
 from app.api.v1.conductores import router as conductores_router
 from app.api.v1.mantenimientos import router as mantenimientos_router
@@ -10,8 +11,10 @@ from app.api.v1.dashboard import router as dashboard_router
 
 api_router = APIRouter()
 
-# HeavyTrack Operations
+# HeavyTrack Operations & Notificaciones
 api_router.include_router(heavy_router)
+api_router.include_router(notificaciones_router, prefix="/heavy")
+
 
 # Flota base routers
 api_router.include_router(dashboard_router)

@@ -150,6 +150,23 @@ class HeavyTrackService:
                 if km_ini > (equipo.odometro_actual or 0.0):
                     equipo.odometro_actual = km_ini
 
+                # Detección de Incongruencias en Check-In
+                lectura_actual = equipo.odometro_actual if equipo.tipo_control == "KILOMETRAJE" else (equipo.horometro_actual or 0.0)
+                lectura_ingresada = km_ini if equipo.tipo_control == "KILOMETRAJE" else (turno_in.horometro_inicio or 0.0)
+                if lectura_actual > 0 and lectura_ingresada < (lectura_actual - 0.1):
+                    try:
+                        from app.services.notification_service import NotificationService
+                        NotificationService.notificar_incongruencia_datos(
+                            db=db,
+                            equipo=equipo,
+                            operador=operador,
+                            detalle_incongruencia=f"Lectura inicial ({lectura_ingresada}) es MENOR a la registrada previamente ({lectura_actual})",
+                            lectura_anterior=lectura_actual,
+                            lectura_nueva=lectura_ingresada
+                        )
+                    except Exception as ex:
+                        print(f"[ALERTA INCONGRUENCIA ERROR]: {ex}")
+
             procesados += 1
             detalles.append(BatchSyncItemStatus(
                 uuid_local=turno_in.uuid_local,
@@ -199,6 +216,22 @@ class HeavyTrackService:
                 )
                 db.add(inc_rec)
 
+                # Notificar incidencia al Jefe de Área
+                try:
+                    from app.services.notification_service import NotificationService
+                    op_inc = db.query(Personal).filter(Personal.id == turno.operador_id).first()
+                    eq_inc = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == turno.equipo_id).first()
+                    if eq_inc:
+                        NotificationService.notificar_incidencia_operador(
+                            db=db,
+                            equipo=eq_inc,
+                            operador=op_inc,
+                            descripcion=out.incidencia_descripcion,
+                            severidad="MEDIA"
+                        )
+                except Exception as ex:
+                    print(f"[ALERTA INCIDENCIA ERROR]: {ex}")
+
             lat_fin = getattr(out, "latitud_fin", None)
             lng_fin = getattr(out, "longitud_fin", None)
             if lat_fin is not None and lng_fin is not None:
@@ -209,13 +242,31 @@ class HeavyTrackService:
                     turno.equipo.ultima_longitud = lng_fin
                     turno.equipo.ultima_ubicacion_fecha = datetime.utcnow()
 
-            if out.horometro_fin is not None and turno.horometro_inicio is not None and out.horometro_fin >= turno.horometro_inicio:
-                diff_motor = round(out.horometro_fin - turno.horometro_inicio, 2)
-                resma_calentamiento = 0.25  # 15 minutos asignados a calentamiento previo de motor
-                horas_efectivas = round(max(0.0, diff_motor - resma_calentamiento), 2)
-                turno.horas_motor_brutas = diff_motor
-                turno.horas_calentamiento = resma_calentamiento
-                turno.horas_trabajadas = horas_efectivas
+            if out.horometro_fin is not None and turno.horometro_inicio is not None:
+                if out.horometro_fin >= turno.horometro_inicio:
+                    diff_motor = round(out.horometro_fin - turno.horometro_inicio, 2)
+                    resma_calentamiento = 0.25  # 15 minutos asignados a calentamiento previo de motor
+                    horas_efectivas = round(max(0.0, diff_motor - resma_calentamiento), 2)
+                    turno.horas_motor_brutas = diff_motor
+                    turno.horas_calentamiento = resma_calentamiento
+                    turno.horas_trabajadas = horas_efectivas
+                else:
+                    # Incongruencia de horómetro menor al de inicio
+                    try:
+                        from app.services.notification_service import NotificationService
+                        op_inc = db.query(Personal).filter(Personal.id == turno.operador_id).first()
+                        eq_inc = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == turno.equipo_id).first()
+                        if eq_inc:
+                            NotificationService.notificar_incongruencia_datos(
+                                db=db,
+                                equipo=eq_inc,
+                                operador=op_inc,
+                                detalle_incongruencia=f"Horómetro de cierre ({out.horometro_fin}) es menor al horómetro de inicio del turno ({turno.horometro_inicio})",
+                                lectura_anterior=turno.horometro_inicio,
+                                lectura_nueva=out.horometro_fin
+                            )
+                    except Exception as ex:
+                        print(f"[ALERTA INCONGRUENCIA CIERRE ERROR]: {ex}")
 
             km_fin = getattr(out, "kilometraje_fin", 0.0) or 0.0
             if km_fin > 0:
@@ -233,6 +284,24 @@ class HeavyTrackService:
                         equipo.estado_operativo = EstadoOperativo.CRITICO.value
                 if km_fin > (equipo.odometro_actual or 0.0):
                     equipo.odometro_actual = km_fin
+
+                # Alerta automática preventiva si el equipo entra a zona de servicio próximo (<25h o <500km)
+                try:
+                    tipo_c = equipo.tipo_control or "HOROMETRO"
+                    act_val = equipo.odometro_actual if tipo_c == "KILOMETRAJE" else (equipo.horometro_actual or 0.0)
+                    prox_val = equipo.horometro_proximo_servicio or (5000.0 if tipo_c == "KILOMETRAJE" else 250.0)
+                    margen_val = round(prox_val - act_val, 1)
+                    umbral_val = 500.0 if tipo_c == "KILOMETRAJE" else 25.0
+                    if margen_val <= umbral_val:
+                        from app.services.notification_service import NotificationService
+                        NotificationService.notificar_proximo_mantenimiento(
+                            db=db,
+                            equipo=equipo,
+                            margen_restante=margen_val,
+                            es_vencido=(margen_val <= 0)
+                        )
+                except Exception as ex:
+                    print(f"[ALERTA PREVENTIVO POST-TURNO ERROR]: {ex}")
 
             msg_resumen = f"Horas trabajadas: {turno.horas_trabajadas or 0}h" if (turno.horas_trabajadas and turno.horas_trabajadas > 0) else f"Km recorridos: {turno.km_recorridos or 0}km"
             procesados += 1

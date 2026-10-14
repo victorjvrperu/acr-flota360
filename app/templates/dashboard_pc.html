@@ -137,6 +137,46 @@
           <span class="w-2 h-2 rounded-full bg-alertGreen animate-pulse"></span>
           <span>Sistema Cloud Sync</span>
         </div>
+
+        <!-- Centro de Notificaciones & Alertas WhatsApp -->
+        <div class="relative">
+          <button id="btn-campana-notificaciones" onclick="togglePanelNotificaciones(event)" class="relative p-2 rounded-lg bg-graphiteLight hover:bg-gray-700 border border-gray-700 text-gray-200 transition cursor-pointer flex items-center justify-center shadow-sm" title="Centro de Notificaciones & Alertas WhatsApp">
+            <span class="text-base">🔔</span>
+            <span id="badge-contador-notificaciones" class="hidden absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-black bg-rose-600 text-white border-2 border-carbon flex items-center justify-center shadow-lg animate-pulse">0</span>
+          </button>
+
+          <!-- Dropdown Flotante -->
+          <div id="dropdown-notificaciones" class="hidden absolute right-0 mt-2 w-96 max-w-[90vw] bg-graphite border border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col text-left">
+            <div class="px-4 py-3 bg-carbon/95 border-b border-gray-800 flex items-center justify-between">
+              <div class="flex items-center gap-2">
+                <span class="text-machinery font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
+                  <span class="text-sm">🔔</span> Alertas & WhatsApp
+                </span>
+                <span id="label-num-alertas" class="text-[10px] px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 font-bold border border-rose-800">0 pendientes</span>
+              </div>
+              <div class="flex items-center gap-2">
+                <button type="button" onclick="escanearAlertasManual()" class="text-[10px] text-machinery hover:underline font-bold cursor-pointer" title="Escanear flota ahora">🔄 Escanear</button>
+                <button type="button" onclick="abrirModalConfigNotificaciones()" class="text-gray-400 hover:text-white text-xs cursor-pointer" title="Configurar Teléfono y WhatsApp">⚙️</button>
+              </div>
+            </div>
+
+            <!-- Lista de Notificaciones -->
+            <div id="lista-alertas-contenedor" class="max-h-96 overflow-y-auto divide-y divide-gray-800/80 p-2 text-xs">
+              <div class="p-6 text-center text-gray-500 italic text-xs">Cargando alertas...</div>
+            </div>
+
+            <!-- Footer -->
+            <div class="p-2.5 bg-carbon/95 border-t border-gray-800 flex items-center justify-between text-[11px]">
+              <button type="button" onclick="marcarTodasNotificacionesLeidas()" class="text-gray-400 hover:text-white font-bold cursor-pointer">
+                ✓ Marcar todas leídas
+              </button>
+              <button type="button" onclick="abrirModalConfigNotificaciones()" class="text-machinery hover:underline font-bold flex items-center gap-1 cursor-pointer">
+                <span>📱</span> Celular Jefe de Área
+              </button>
+            </div>
+          </div>
+        </div>
+
         <!-- Botones Registrar Operador y Personal -->
         <button onclick="abrirModalPersonal('operador')" class="px-3 py-2 bg-machinery hover:bg-machineryHover text-carbon rounded-lg text-xs font-black flex items-center gap-1.5 transition shadow-sm cursor-pointer" title="Registrar Operador de Maquinaria">
           <span>🚜</span> + Operador
@@ -1859,6 +1899,81 @@
     </div>
   </div>
 
+  <!-- MODAL: CONFIGURACIÓN DE NOTIFICACIONES Y WHATSAPP -->
+  <div id="modal-config-notificaciones" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-gray-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-left">
+      <div class="flex items-center justify-between pb-4 border-b border-gray-800 mb-4">
+        <div>
+          <h3 class="text-base font-black text-white uppercase flex items-center gap-2">
+            <span class="text-xl">📱</span> Notificaciones & WhatsApp del Jefe de Área
+          </h3>
+          <p class="text-xs text-gray-400 mt-0.5">Alertas automáticas ante mantenimientos, fallas e incongruencias</p>
+        </div>
+        <button type="button" onclick="cerrarModalConfigNotificaciones()" class="text-gray-400 hover:text-white text-xl font-bold cursor-pointer">&times;</button>
+      </div>
+
+      <form onsubmit="guardarConfigNotificacionesSubmit(event)" class="space-y-4 text-xs">
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">
+            Teléfono Móvil WhatsApp del Jefe de Área / Mantenimiento *
+          </label>
+          <div class="flex items-center gap-2">
+            <input type="text" id="config-whatsapp-telefono" name="whatsapp_jefe_telefono" required placeholder="+51 987 654 321" class="flex-1 bg-carbon border border-gray-700 rounded-xl px-3 py-2.5 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            <button type="button" onclick="probarWhatsAppTest()" class="px-3.5 py-2.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 font-bold rounded-xl transition text-xs shrink-0 cursor-pointer flex items-center gap-1" title="Enviar WhatsApp de prueba">
+              <span>🧪</span> Probar
+            </button>
+          </div>
+          <span class="text-[10px] text-gray-400 mt-1 block">A este número se despacharán las alertas con datos del equipo, operador e incongruencias.</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3 pt-2 border-t border-gray-800">
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Margen Horas Preventivo</label>
+            <input type="number" id="config-alerta-horas" name="alerta_horas_preventivo" min="5" max="100" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            <span class="text-[10px] text-gray-500 block mt-0.5">Avisar cuando falten menos de N horas.</span>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Margen Días Documentos</label>
+            <input type="number" id="config-alerta-dias" name="alerta_dias_documentos" min="1" max="60" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            <span class="text-[10px] text-gray-500 block mt-0.5">Avisar N días antes (SOAT, Rev. Técnica).</span>
+          </div>
+        </div>
+
+        <!-- Sección Avanzada: Gateway API (Opcional) -->
+        <div class="pt-3 border-t border-gray-800 space-y-2.5">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold text-machinery uppercase tracking-wider">Gateway Automático (Opcional)</span>
+            <label class="inline-flex items-center cursor-pointer">
+              <input type="checkbox" id="config-whatsapp-auto" name="whatsapp_auto_envio" class="sr-only peer">
+              <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-machinery"></div>
+              <span class="ml-2 text-[10px] text-gray-300 font-bold">Envío Desatendido API</span>
+            </label>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-0.5">API Gateway URL (Evolution / UltraMsg / Twilio / Webhook)</label>
+            <input type="url" id="config-whatsapp-url" name="whatsapp_api_url" placeholder="https://api.ultramsg.com/instance... o http://servidor:8080/message" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono text-[11px] focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-0.5">API Token / Clave Secreta</label>
+            <input type="password" id="config-whatsapp-token" name="whatsapp_api_token" placeholder="Bearer Token o API Key" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono text-[11px] focus:border-machinery focus:outline-none">
+          </div>
+          <span class="text-[10px] text-gray-500 block italic">Si no configuras un API Gateway externo, el sistema opera con **Enlaces Directos de 1 Clic** a WhatsApp Web y WhatsApp Móvil de inmediato.</span>
+        </div>
+
+        <div id="modal-config-notif-error" class="hidden p-2.5 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+
+        <div class="pt-3 border-t border-gray-800 flex gap-2">
+          <button type="submit" class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>💾</span> <span>Guardar Ajustes</span>
+          </button>
+          <button type="button" onclick="cerrarModalConfigNotificaciones()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700 cursor-pointer">
+            Cerrar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     let equiposCache = [];
     let frentesCache = [];
@@ -2013,8 +2128,23 @@
       await cargarTablaTurnos();
       await cargarControlHorometros();
       await cargarDashboard();
+      await cargarNotificaciones();
       cargarTablaRepuestos();
       cargarTablaProveedores();
+
+      // Cerrar dropdown de notificaciones al hacer clic fuera
+      document.addEventListener('click', (e) => {
+        const btn = document.getElementById('btn-campana-notificaciones');
+        const drop = document.getElementById('dropdown-notificaciones');
+        if (drop && !drop.classList.contains('hidden')) {
+          if (!drop.contains(e.target) && !btn.contains(e.target)) {
+            drop.classList.add('hidden');
+          }
+        }
+      });
+
+      // Refresco periódico de notificaciones cada 25 segundos
+      setInterval(cargarNotificaciones, 25000);
 
       // Cargar sección inicial por URL hash o 'dashboard'
       const hashInicial = window.location.hash.replace('#', '') || 'dashboard';
@@ -2027,6 +2157,231 @@
         } catch (e) {}
       }, 20000);
     });
+
+    // ==========================================
+    // SISTEMA DE NOTIFICACIONES Y ALERTAS WHATSAPP
+    // ==========================================
+    let notificacionesCache = [];
+    let configNotificacionesCache = {};
+
+    async function cargarNotificaciones() {
+      try {
+        const res = await fetch('/api/v1/heavy/notificaciones');
+        if (!res.ok) return;
+        const data = await res.json();
+        notificacionesCache = data.notificaciones || [];
+        configNotificacionesCache = data.config || {};
+
+        const totalNoLeidas = data.total_no_leidas || 0;
+        const badge = document.getElementById('badge-contador-notificaciones');
+        const labelNum = document.getElementById('label-num-alertas');
+
+        if (badge) {
+          if (totalNoLeidas > 0) {
+            badge.textContent = totalNoLeidas > 99 ? '99+' : totalNoLeidas;
+            badge.classList.remove('hidden');
+          } else {
+            badge.classList.add('hidden');
+          }
+        }
+
+        if (labelNum) {
+          labelNum.textContent = `${totalNoLeidas} pendiente${totalNoLeidas === 1 ? '' : 's'}`;
+        }
+
+        renderizarNotificacionesDropdown();
+      } catch (err) {
+        console.warn("Error cargando notificaciones:", err);
+      }
+    }
+
+    function renderizarNotificacionesDropdown() {
+      const container = document.getElementById('lista-alertas-contenedor');
+      if (!container) return;
+
+      if (notificacionesCache.length === 0) {
+        container.innerHTML = `
+          <div class="p-8 text-center text-gray-500 text-xs">
+            <span class="text-2xl block mb-1">✅</span>
+            <div class="font-bold text-gray-400">Sin alertas pendientes</div>
+            <div class="text-[11px] text-gray-600 mt-0.5">Toda la flota se encuentra al día.</div>
+          </div>
+        `;
+        return;
+      }
+
+      const iconosTipo = {
+        'mantenimiento_entrada': { icon: '🛠️', bg: 'bg-rose-950/60 border-rose-800 text-rose-300', tag: 'En Taller' },
+        'mantenimiento_vencido': { icon: '🔴', bg: 'bg-rose-950/70 border-rose-800 text-rose-300', tag: 'Vencido' },
+        'mantenimiento_proximo': { icon: '🟡', bg: 'bg-amber-950/60 border-amber-800 text-amber-300', tag: 'Preventivo' },
+        'revision_tecnica': { icon: '📄', bg: 'bg-purple-950/60 border-purple-800 text-purple-300', tag: 'Rev. Técnica' },
+        'soat_poliza': { icon: '📑', bg: 'bg-blue-950/60 border-blue-800 text-blue-300', tag: 'SOAT / Seguro' },
+        'incongruencia_datos': { icon: '🚨', bg: 'bg-rose-950/80 border-rose-700 text-rose-200', tag: 'Incongruencia' },
+        'incidencia_falla': { icon: '⚠️', bg: 'bg-amber-950/70 border-amber-800 text-amber-300', tag: 'Falla Campo' }
+      };
+
+      container.innerHTML = notificacionesCache.map(n => {
+        const estilo = iconosTipo[n.tipo] || { icon: '🔔', bg: 'bg-gray-800 border-gray-700 text-gray-300', tag: 'Alerta' };
+        const tiempoTexto = n.hace_minutos < 1 ? 'Hace un instante' : (n.hace_minutos < 60 ? `Hace ${n.hace_minutos}m` : `Hace ${Math.floor(n.hace_minutos / 60)}h`);
+        const opacidad = n.leido ? 'opacity-50' : 'opacity-100';
+
+        return `
+          <div class="p-3 hover:bg-carbon/60 transition rounded-xl flex flex-col gap-2 ${opacidad}">
+            <div class="flex items-start justify-between gap-2">
+              <div class="flex items-start gap-2.5">
+                <span class="text-base shrink-0 mt-0.5">${estilo.icon}</span>
+                <div>
+                  <div class="flex items-center gap-1.5 flex-wrap">
+                    <span class="px-1.5 py-0.2 rounded text-[9px] font-black uppercase border ${estilo.bg}">${estilo.tag}</span>
+                    ${n.equipo_codigo ? `<span class="px-1.5 py-0.2 rounded text-[9px] font-mono font-bold bg-carbon border border-gray-700 text-machinery">${n.equipo_codigo}</span>` : ''}
+                    <span class="text-[10px] text-gray-500 font-mono">${tiempoTexto}</span>
+                  </div>
+                  <h4 class="text-xs font-bold text-white mt-1 leading-snug">${n.titulo}</h4>
+                </div>
+              </div>
+              ${!n.leido ? `
+                <button type="button" onclick="marcarNotificacionLeida(${n.id})" class="text-gray-500 hover:text-emerald-400 p-1 text-xs shrink-0 cursor-pointer" title="Marcar como leída">
+                  ✓
+                </button>
+              ` : ''}
+            </div>
+
+            <!-- Botón WhatsApp Directo al Celular del Jefe de Área -->
+            <div class="flex items-center justify-between pt-1 border-t border-gray-800/60 mt-1">
+              <span class="text-[10px] text-gray-500 font-mono">${n.fecha}</span>
+              ${n.whatsapp_link ? `
+                <a href="${n.whatsapp_link}" target="_blank" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-950/80 hover:bg-emerald-800 border border-emerald-700 text-emerald-300 text-[10px] font-black transition shadow-sm" title="Enviar o reenviar mensaje directo a WhatsApp">
+                  <span>📲</span> <span>WhatsApp Jefe</span>
+                </a>
+              ` : ''}
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function togglePanelNotificaciones(e) {
+      if (e) e.stopPropagation();
+      const drop = document.getElementById('dropdown-notificaciones');
+      if (drop) {
+        drop.classList.toggle('hidden');
+        if (!drop.classList.contains('hidden')) {
+          cargarNotificaciones();
+        }
+      }
+    }
+
+    async function marcarNotificacionLeida(id) {
+      try {
+        await fetch(`/api/v1/heavy/notificaciones/${id}/leida`, { method: 'PUT' });
+        await cargarNotificaciones();
+      } catch (err) {
+        console.error("Error al marcar leída:", err);
+      }
+    }
+
+    async function marcarTodasNotificacionesLeidas() {
+      try {
+        await fetch('/api/v1/heavy/notificaciones/marcar-todas', { method: 'PUT' });
+        await cargarNotificaciones();
+      } catch (err) {
+        console.error("Error al marcar todas leídas:", err);
+      }
+    }
+
+    async function escanearAlertasManual() {
+      const btn = event?.target;
+      try {
+        if (btn) btn.textContent = 'Buscando...';
+        const res = await fetch('/api/v1/heavy/notificaciones/escanear', { method: 'POST' });
+        const data = await res.json();
+        alert(`🔍 Escaneo completado:\n• Equipos evaluados: ${data.total_equipos_evaluados}\n• Nuevas alertas generadas: ${data.nuevas_alertas}`);
+        await cargarNotificaciones();
+      } catch (err) {
+        alert("Error al escanear flota: " + err.message);
+      } finally {
+        if (btn) btn.textContent = '🔄 Escanear';
+      }
+    }
+
+    async function abrirModalConfigNotificaciones() {
+      const modal = document.getElementById('modal-config-notificaciones');
+      const errBox = document.getElementById('modal-config-notif-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      try {
+        const res = await fetch('/api/v1/heavy/notificaciones/config');
+        const cfg = await res.json();
+        document.getElementById('config-whatsapp-telefono').value = cfg.whatsapp_jefe_telefono || '';
+        document.getElementById('config-alerta-horas').value = cfg.alerta_horas_preventivo || 25;
+        document.getElementById('config-alerta-dias').value = cfg.alerta_dias_documentos || 15;
+        document.getElementById('config-whatsapp-url').value = cfg.whatsapp_api_url || '';
+        document.getElementById('config-whatsapp-token').value = cfg.whatsapp_api_token || '';
+        const chkAuto = document.getElementById('config-whatsapp-auto');
+        if (chkAuto) chkAuto.checked = !!cfg.whatsapp_auto_envio;
+      } catch (e) {
+        console.error("Error cargando config:", e);
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalConfigNotificaciones() {
+      const modal = document.getElementById('modal-config-notificaciones');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function guardarConfigNotificacionesSubmit(e) {
+      e.preventDefault();
+      const form = e.target;
+      const payload = {
+        whatsapp_jefe_telefono: form.whatsapp_jefe_telefono.value.trim(),
+        alerta_horas_preventivo: parseInt(form.alerta_horas_preventivo.value) || 25,
+        alerta_dias_documentos: parseInt(form.alerta_dias_documentos.value) || 15,
+        whatsapp_auto_envio: form.whatsapp_auto_envio.checked,
+        whatsapp_api_url: form.whatsapp_api_url.value.trim(),
+        whatsapp_api_token: form.whatsapp_api_token.value.trim()
+      };
+
+      try {
+        const res = await fetch('/api/v1/heavy/notificaciones/config', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error("Error al guardar ajustes");
+        alert("✅ Ajustes de WhatsApp y Notificaciones guardados exitosamente.");
+        cerrarModalConfigNotificaciones();
+        await cargarNotificaciones();
+      } catch (err) {
+        const errBox = document.getElementById('modal-config-notif-error');
+        if (errBox) {
+          errBox.textContent = err.message || "Error al guardar configuración";
+          errBox.classList.remove('hidden');
+        }
+      }
+    }
+
+    async function probarWhatsAppTest() {
+      const tel = (document.getElementById('config-whatsapp-telefono')?.value || '').trim();
+      if (!tel) {
+        alert("Por favor ingrese un número de teléfono primero.");
+        return;
+      }
+      try {
+        const res = await fetch('/api/v1/heavy/notificaciones/test-whatsapp', { method: 'POST' });
+        const data = await res.json();
+        if (data.whatsapp_link) {
+          window.open(data.whatsapp_link, '_blank');
+        }
+      } catch (err) {
+        alert("Error al enviar mensaje de prueba: " + err.message);
+      }
+    }
 
     // ==========================================
     // 1. GESTIÓN MULTI-FRENTE / PROYECTOS

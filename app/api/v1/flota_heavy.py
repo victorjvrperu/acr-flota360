@@ -577,9 +577,19 @@ def crear_orden_mantenimiento(payload: dict, db: Session = Depends(get_db)):
         estado=payload.get("estado", "programado"),
         fecha_programada=datetime.strptime(payload.get("fecha_programada", date.today().isoformat()), "%Y-%m-%d").date() if payload.get("fecha_programada") else date.today()
     )
+    # Marcar equipo como En Taller
+    equipo.estado_operativo = EstadoOperativo.TALLER.value
     db.add(nueva)
     db.commit()
     db.refresh(nueva)
+
+    # Disparar alerta de WhatsApp y Notificación del Sistema
+    try:
+        from app.services.notification_service import NotificationService
+        NotificationService.notificar_entrada_mantenimiento(db, nueva, equipo)
+    except Exception as e:
+        print(f"[NOTIFICACION MANTENIMIENTO ERROR]: {e}")
+
     return {"success": True, "codigo_ot": nueva.codigo_ot, "id": nueva.id}
 
 
