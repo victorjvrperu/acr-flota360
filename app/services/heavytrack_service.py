@@ -97,7 +97,10 @@ class HeavyTrackService:
                 longitud_inicio=getattr(turno_in, "longitud_inicio", None),
                 abastecio_combustible=getattr(turno_in, "abastecio_combustible", False),
                 combustible_galones=getattr(turno_in, "combustible_galones", 0.0) or 0.0,
+                combustible_precio_galon=getattr(turno_in, "combustible_precio_galon", 0.0) or 0.0,
+                combustible_total_soles=getattr(turno_in, "combustible_total_soles", 0.0) or 0.0,
                 foto_combustible=getattr(turno_in, "foto_combustible", None),
+                observaciones_inicio=getattr(turno_in, "observaciones_inicio", None),
                 foto_inicio_delantera=getattr(turno_in, "foto_inicio_delantera", None),
                 foto_inicio_trasera=getattr(turno_in, "foto_inicio_trasera", None),
                 foto_inicio_izquierda=getattr(turno_in, "foto_inicio_izquierda", None),
@@ -108,15 +111,19 @@ class HeavyTrackService:
 
             # Si abasteció combustible en el check-in, registrar automáticamente en control_combustible
             if getattr(turno_in, "abastecio_combustible", False) and getattr(turno_in, "foto_combustible", None):
+                galones_in = getattr(turno_in, "combustible_galones", 0.0) or 0.0
+                precio_in = getattr(turno_in, "combustible_precio_galon", 0.0) or 0.0
+                total_in = getattr(turno_in, "combustible_total_soles", 0.0) or (galones_in * (precio_in or 18.5))
                 comb_rec = ControlCombustible(
                     uuid_local=f"comb-{turno_in.uuid_local}",
                     equipo_id=turno_in.equipo_id,
                     operador_id=turno_in.operador_id,
                     proyecto_id=turno_in.proyecto_id,
                     horometro_tanqueo=turno_in.horometro_inicio,
-                    galones_cargados=getattr(turno_in, "combustible_galones", 0.0) or 0.0,
+                    galones_cargados=galones_in,
+                    precio_por_galon=precio_in,
                     foto_comprobante=turno_in.foto_combustible,
-                    costo_total=(getattr(turno_in, "combustible_galones", 0.0) or 0.0) * 18.5,
+                    costo_total=total_in,
                     estado_sync=EstadoSync.SINCRONIZADO.value
                 )
                 db.add(comb_rec)
@@ -203,7 +210,12 @@ class HeavyTrackService:
                     turno.equipo.ultima_ubicacion_fecha = datetime.utcnow()
 
             if out.horometro_fin is not None and turno.horometro_inicio is not None and out.horometro_fin >= turno.horometro_inicio:
-                turno.horas_trabajadas = round(max(0.0, out.horometro_fin - turno.horometro_inicio), 1)
+                diff_motor = round(out.horometro_fin - turno.horometro_inicio, 2)
+                resma_calentamiento = 0.25  # 15 minutos asignados a calentamiento previo de motor
+                horas_efectivas = round(max(0.0, diff_motor - resma_calentamiento), 2)
+                turno.horas_motor_brutas = diff_motor
+                turno.horas_calentamiento = resma_calentamiento
+                turno.horas_trabajadas = horas_efectivas
 
             km_fin = getattr(out, "kilometraje_fin", 0.0) or 0.0
             if km_fin > 0:

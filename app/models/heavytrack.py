@@ -184,7 +184,9 @@ class TurnoOperacion(Base):
     
     horometro_fin = Column(Float, nullable=True)
     foto_horometro_fin = Column(Text, nullable=True)
-    horas_trabajadas = Column(Float, default=0.0, nullable=True)
+    horas_trabajadas = Column(Float, default=0.0, nullable=True)  # Horas efectivas netas
+    horas_motor_brutas = Column(Float, default=0.0, nullable=True)  # Diferencia total de horómetro
+    horas_calentamiento = Column(Float, default=0.25, nullable=True)  # Resma de 15 min (0.25h) calentamiento de motor
     
     # Control de Odómetro / Kilometraje (Volquetes, Camiones, Camionetas)
     kilometraje_inicio = Column(Float, default=0.0, nullable=True)
@@ -194,7 +196,12 @@ class TurnoOperacion(Base):
     # Verificación de Combustible al Iniciar (SÍ con foto voucher o NO con foto medidor)
     abastecio_combustible = Column(Boolean, default=False, nullable=True)
     combustible_galones = Column(Float, default=0.0, nullable=True)
+    combustible_precio_galon = Column(Float, default=0.0, nullable=True)
+    combustible_total_soles = Column(Float, default=0.0, nullable=True)
     foto_combustible = Column(Text, nullable=True)
+
+    # Observaciones registradas al finalizar el Check-In
+    observaciones_inicio = Column(Text, nullable=True)
 
     # Inspección Inicial 360° (4 vistas obligatorias)
     foto_inicio_delantera = Column(Text, nullable=True)
@@ -242,6 +249,7 @@ class ControlCombustible(Base):
     
     horometro_tanqueo = Column(Float, nullable=False)
     galones_cargados = Column(Float, nullable=False)
+    precio_por_galon = Column(Float, default=0.0, nullable=True)
     tipo_combustible = Column(String(40), default="Diesel D2 B5", nullable=False)
     foto_comprobante = Column(Text, nullable=False)
     costo_total = Column(Float, default=0.0, nullable=False)

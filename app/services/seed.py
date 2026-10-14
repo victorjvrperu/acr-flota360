@@ -29,7 +29,23 @@ def seed_flota_inicial(db: Session):
         db.add(admin_user)
         db.commit()
 
-    # Base de datos en blanco para permitir llenado manual de flota por el usuario
+    # Auto-migración segura de columnas nuevas en tablas existentes
+    from sqlalchemy import text
+    columnas_nuevas = [
+        ("turnos_operacion", "combustible_precio_galon", "FLOAT DEFAULT 0.0"),
+        ("turnos_operacion", "combustible_total_soles", "FLOAT DEFAULT 0.0"),
+        ("turnos_operacion", "observaciones_inicio", "TEXT"),
+        ("turnos_operacion", "horas_calentamiento", "FLOAT DEFAULT 0.25"),
+        ("turnos_operacion", "horas_motor_brutas", "FLOAT DEFAULT 0.0"),
+        ("control_combustible", "precio_por_galon", "FLOAT DEFAULT 0.0"),
+    ]
+    for tabla, columna, definicion in columnas_nuevas:
+        try:
+            db.execute(text(f"ALTER TABLE {tabla} ADD COLUMN {columna} {definicion}"))
+            db.commit()
+        except Exception:
+            db.rollback()
+
     return
 
     hoy = date.today()

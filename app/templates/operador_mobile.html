@@ -589,12 +589,24 @@
           </button>
         </div>
 
-        <!-- CASO SÍ: Galones + Foto Voucher -->
+        <!-- CASO SÍ: Galones + Precio + Total + Foto Voucher -->
         <div id="seccion-comb-si" class="hidden space-y-3 pt-3 border-t border-gray-800">
           <div>
             <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Galones Abastecidos *</label>
-            <input type="number" step="0.1" id="wizard-comb-galones" placeholder="Ej: 45.0" class="w-full bg-carbon border-2 border-gray-700 text-white font-mono font-bold text-2xl text-center rounded-xl py-3 px-3 focus:border-machinery focus:outline-none">
+            <input type="number" step="0.1" id="wizard-comb-galones" oninput="calcularCombustibleTotalLive()" placeholder="Ej: 45.0" class="w-full bg-carbon border-2 border-gray-700 text-white font-mono font-bold text-2xl text-center rounded-xl py-3 px-3 focus:border-machinery focus:outline-none">
           </div>
+
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Precio por Galón (S/.) *</label>
+              <input type="number" step="0.01" id="wizard-comb-precio" oninput="calcularCombustibleTotalLive()" placeholder="Ej: 18.50" class="w-full bg-carbon border-2 border-gray-700 text-machinery font-mono font-bold text-lg text-center rounded-xl py-2.5 px-3 focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">Total S/. *</label>
+              <input type="number" step="0.01" id="wizard-comb-total" oninput="calcularCombustiblePrecioLive()" placeholder="Ej: 832.50" class="w-full bg-carbon border-2 border-gray-700 text-machinery font-mono font-bold text-lg text-center rounded-xl py-2.5 px-3 focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+
           <div>
             <label class="block text-[11px] font-bold text-gray-400 uppercase mb-1">📸 Foto Voucher / Vale de Combustible (Obligatoria)</label>
             <div id="slot-foto-comb_voucher" class="photo-slot" onclick="document.getElementById('input-cam-comb_voucher').click()">
@@ -697,6 +709,15 @@
             </div>
             <input type="file" accept="image/*" capture="environment" id="input-cam-ini_der" class="hidden" onchange="procesarFotoConSello(this, 'ini_der', 'Insp. Inicio Derecha')">
           </div>
+        </div>
+
+        <!-- CUADRO DE OBSERVACIONES INICIALES -->
+        <div>
+          <label class="block text-[11px] font-bold text-gray-300 uppercase mb-1 flex items-center justify-between">
+            <span>📝 Observaciones del Operador (Opcional)</span>
+            <span class="text-[10px] text-gray-500 font-normal">Novedades o estado físico</span>
+          </label>
+          <textarea id="wizard-checkin-observaciones" rows="3" placeholder="Ej: Espejo lateral con ligera fisura, niveles de fluidos conformes, terreno húmedo..." class="w-full bg-carbon border-2 border-gray-700 text-gray-200 text-xs rounded-xl p-3 focus:border-machinery focus:outline-none transition-all placeholder:text-gray-600 resize-none"></textarea>
         </div>
 
         <div id="err-ini-6" class="hidden text-xs text-rose-300 font-bold bg-rose-950/70 p-3 rounded-xl border border-rose-800"></div>
@@ -912,9 +933,25 @@
           </div>
         </div>
 
-        <div class="bg-carbon/90 p-3 rounded-xl border border-gray-800 text-center">
-          <div class="text-[10px] uppercase font-bold text-gray-400" id="cierre-tot-label">Total Horas Trabajadas:</div>
-          <div class="text-2xl font-mono font-black text-machinery" id="live-horas-trabajadas">0.0 h</div>
+        <div class="bg-carbon/90 p-3.5 rounded-xl border border-gray-800 space-y-2.5">
+          <!-- Desglose específico para Horómetro: Horas brutas de motor vs calentamiento previo -->
+          <div id="cierre-desglose-horometro" class="text-xs space-y-1.5 pb-2.5 border-b border-gray-800/80">
+            <div class="flex justify-between items-center text-gray-300">
+              <span class="flex items-center gap-1.5">⏱️ <span>Horas de Motor (Brutas):</span></span>
+              <span class="font-mono font-bold text-gray-100" id="live-horas-motor">0.0 h</span>
+            </div>
+            <div class="flex justify-between items-center text-amber-400 font-semibold bg-amber-950/40 px-2.5 py-1 rounded-lg border border-amber-600/30">
+              <span class="flex items-center gap-1.5">🔥 <span>Calentamiento previo motor (15 min):</span></span>
+              <span class="font-mono font-black" id="live-horas-calentamiento">-0.25 h</span>
+            </div>
+          </div>
+          <div class="flex justify-between items-center pt-0.5">
+            <div class="text-left">
+              <div class="text-xs uppercase font-black text-white" id="cierre-tot-label">Total Horas Trabajadas:</div>
+              <div class="text-[10px] text-gray-400 font-medium" id="cierre-tot-sublabel">Horas efectivas descontando 15 min de calentamiento</div>
+            </div>
+            <div class="text-2xl font-mono font-black text-machinery text-right" id="live-horas-trabajadas">0.0 h</div>
+          </div>
         </div>
 
         <div>
@@ -2532,6 +2569,28 @@
         secSi.classList.add('hidden');
         fotosEstado.comb_voucher = null;
         document.getElementById('wizard-comb-galones').value = '';
+        const inPrecio = document.getElementById('wizard-comb-precio');
+        const inTotal = document.getElementById('wizard-comb-total');
+        if (inPrecio) inPrecio.value = '';
+        if (inTotal) inTotal.value = '';
+      }
+    }
+
+    function calcularCombustibleTotalLive() {
+      const gal = parseFloat(document.getElementById('wizard-comb-galones')?.value) || 0;
+      const precio = parseFloat(document.getElementById('wizard-comb-precio')?.value) || 0;
+      const inTotal = document.getElementById('wizard-comb-total');
+      if (inTotal && gal > 0 && precio > 0) {
+        inTotal.value = (gal * precio).toFixed(2);
+      }
+    }
+
+    function calcularCombustiblePrecioLive() {
+      const gal = parseFloat(document.getElementById('wizard-comb-galones')?.value) || 0;
+      const total = parseFloat(document.getElementById('wizard-comb-total')?.value) || 0;
+      const inPrecio = document.getElementById('wizard-comb-precio');
+      if (inPrecio && gal > 0 && total > 0) {
+        inPrecio.value = (total / gal).toFixed(2);
       }
     }
 
@@ -2551,6 +2610,16 @@
           errBox.classList.remove('hidden');
           return;
         }
+
+        const precio = parseFloat(document.getElementById('wizard-comb-precio')?.value) || 0;
+        const total = parseFloat(document.getElementById('wizard-comb-total')?.value) || 0;
+
+        if (precio > 0 && total <= 0) {
+          calcularCombustibleTotalLive();
+        } else if (total > 0 && precio <= 0) {
+          calcularCombustiblePrecioLive();
+        }
+
         if (!fotosEstado.comb_voucher) {
           errBox.textContent = "⚠️ Suba la FOTO OBLIGATORIA del voucher o comprobante de combustible.";
           errBox.classList.remove('hidden');
@@ -2621,7 +2690,10 @@
       const horaStr = now.toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' });
 
       const fotoComb = abastecioCombustibleOpcion ? fotosEstado.comb_voucher : fotosEstado.comb_nivel;
-      const galonesComb = abastecioCombustibleOpcion ? (parseFloat(document.getElementById('wizard-comb-galones').value) || 0) : 0;
+      const galonesComb = abastecioCombustibleOpcion ? (parseFloat(document.getElementById('wizard-comb-galones')?.value) || 0) : 0;
+      const precioGalonComb = abastecioCombustibleOpcion ? (parseFloat(document.getElementById('wizard-comb-precio')?.value) || 0) : 0;
+      const totalSolesComb = abastecioCombustibleOpcion ? (parseFloat(document.getElementById('wizard-comb-total')?.value) || (galonesComb * precioGalonComb)) : 0;
+      const observacionesInicio = (document.getElementById('wizard-checkin-observaciones')?.value || '').trim();
 
       const turnoData = {
         uuid_local: uuid,
@@ -2637,6 +2709,9 @@
         longitud_inicio: ultimaPosicionGPS ? ultimaPosicionGPS.lng : null,
         abastecio_combustible: abastecioCombustibleOpcion,
         combustible_galones: galonesComb,
+        combustible_precio_galon: precioGalonComb,
+        combustible_total_soles: totalSolesComb,
+        observaciones_inicio: observacionesInicio,
         foto_combustible: fotoComb,
         foto_inicio_delantera: fotosEstado.ini_frente,
         foto_inicio_trasera: fotosEstado.ini_atras,
@@ -2731,6 +2806,19 @@
       if (fotoTitle) fotoTitle.textContent = esKm ? '📸 Foto Obligatoria del Tablero Final (Odómetro)' : '📸 Foto Obligatoria del Tablero Final (Horómetro)';
       if (fotoBtn) fotoBtn.textContent = esKm ? 'Tomar Foto del Odómetro Final' : 'Tomar Foto del Tablero Final';
 
+      // Configurar desglose de motor y calentamiento si es maquinaria con horómetro
+      const desgloseBox = document.getElementById('cierre-desglose-horometro');
+      const totSublabel = document.getElementById('cierre-tot-sublabel');
+      if (desgloseBox) {
+        if (esKm) {
+          desgloseBox.classList.add('hidden');
+          if (totSublabel) totSublabel.textContent = 'Kilómetros netos recorridos en turno';
+        } else {
+          desgloseBox.classList.remove('hidden');
+          if (totSublabel) totSublabel.textContent = 'Horas efectivas descontando 15 min de calentamiento';
+        }
+      }
+
       // Resetear alertas y estilos previos en el input de cierre
       const alertaFinBox = document.getElementById('alerta-horometro-fin-menor');
       if (alertaFinBox) alertaFinBox.classList.add('hidden');
@@ -2752,6 +2840,8 @@
       const alertaBox = document.getElementById('alerta-horometro-fin-menor');
       const alertaTxt = document.getElementById('txt-alerta-horometro-fin-menor');
       const liveTot = document.getElementById('live-horas-trabajadas');
+      const liveMotor = document.getElementById('live-horas-motor');
+      const desgloseBox = document.getElementById('cierre-desglose-horometro');
       const errBox = document.getElementById('err-cie-1');
 
       if (valFin > 0 && valIni > 0 && valFin < valIni) {
@@ -2777,8 +2867,18 @@
         if (valFin >= valIni && valIni > 0) {
           diff = valFin - valIni;
         }
-        const diffStr = esKm ? `${Math.round(diff)}` : `${diff.toFixed(1)}`;
-        liveTot.textContent = `${diffStr} ${unidad}`;
+
+        if (esKm) {
+          if (desgloseBox) desgloseBox.classList.add('hidden');
+          liveTot.textContent = `${Math.round(diff)} km`;
+        } else {
+          if (desgloseBox) desgloseBox.classList.remove('hidden');
+          const resmaCalentamiento = 0.25; // 15 minutos de calentamiento previo de motor
+          const horasEfectivas = Math.max(0.0, diff - resmaCalentamiento);
+          if (liveMotor) liveMotor.textContent = `${diff.toFixed(2)} h`;
+          liveTot.textContent = `${horasEfectivas.toFixed(2)} h`;
+        }
+
         if (iaAnalisisEstado.fin) actualizarUIIA('fin');
       }
     }
@@ -2878,7 +2978,11 @@
       const valIni = turnoEnCurso ? (turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio)) : 0;
       const valFin = parseFloat(document.getElementById('wizard-horometro-fin').value);
       const diffVal = (valFin >= valIni && valIni > 0) ? (valFin - valIni) : 0;
-      const totalDiffStr = esKm ? `${Math.round(diffVal)} km` : `${diffVal.toFixed(1)} h`;
+
+      // Resma de 15 min (0.25h) para calentamiento previo de motor en maquinaria (horómetro)
+      const resmaCalentamiento = esKm ? 0.0 : 0.25;
+      const horasEfectivas = esKm ? 0.0 : Math.max(0.0, parseFloat((diffVal - resmaCalentamiento).toFixed(2)));
+      const totalDiffStr = esKm ? `${Math.round(diffVal)} km` : `${horasEfectivas.toFixed(2)} h (Efectivas, -15m calentamiento)`;
 
       const turnoUuid = turnoEnCurso ? turnoEnCurso.uuid_local : window.heavyDB.generarUUID();
       const descInc = huboIncidenciaOpcion ? document.getElementById('wizard-inc-desc').value.trim() : null;
@@ -2886,7 +2990,9 @@
       const turnoUpdate = {
         uuid_local: turnoUuid,
         horometro_fin: esKm ? 0.0 : valFin,
-        horas_trabajadas: esKm ? 0.0 : parseFloat(diffVal.toFixed(1)),
+        horas_motor_brutas: esKm ? 0.0 : parseFloat(diffVal.toFixed(2)),
+        horas_calentamiento: esKm ? 0.0 : resmaCalentamiento,
+        horas_trabajadas: esKm ? 0.0 : horasEfectivas,
         kilometraje_fin: esKm ? valFin : 0.0,
         km_recorridos: esKm ? Math.round(diffVal) : 0.0,
         foto_horometro_fin: fotosEstado.fin_tablero,
@@ -2909,7 +3015,7 @@
       if (lblFin) lblFin.textContent = esKm ? 'Kilometraje Final:' : 'Horómetro Final:';
       document.getElementById('checkout-resumen-hfin').textContent = `${valFin} ${unidad}`;
       const lblTot = document.getElementById('checkout-lbl-tot');
-      if (lblTot) lblTot.textContent = esKm ? 'Km Recorridos:' : 'Horas Trabajadas:';
+      if (lblTot) lblTot.textContent = esKm ? 'Km Recorridos:' : 'Horas Efectivas:';
       document.getElementById('checkout-resumen-tot').textContent = totalDiffStr;
 
       localStorage.removeItem('heavy_turno_activo');

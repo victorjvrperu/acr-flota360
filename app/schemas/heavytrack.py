@@ -224,7 +224,11 @@ class TurnoCheckInCreate(BaseModel):
     # Combustible al iniciar
     abastecio_combustible: Optional[bool] = False
     combustible_galones: Optional[float] = 0.0
+    combustible_precio_galon: Optional[float] = 0.0
+    combustible_total_soles: Optional[float] = 0.0
     foto_combustible: Optional[str] = None
+    # Observaciones registradas al Check-In
+    observaciones_inicio: Optional[str] = None
     # Inspección inicial 360° (4 vistas obligatorias)
     foto_inicio_delantera: Optional[str] = None
     foto_inicio_trasera: Optional[str] = None
@@ -236,6 +240,9 @@ class TurnoCheckOutUpdate(BaseModel):
     uuid_local: str
     horometro_fin: Optional[float] = None
     foto_horometro_fin: Optional[str] = None
+    horas_motor_brutas: Optional[float] = None
+    horas_calentamiento: Optional[float] = 0.25
+    horas_trabajadas: Optional[float] = None
     kilometraje_fin: Optional[float] = None
     latitud_fin: Optional[float] = None
     longitud_fin: Optional[float] = None
@@ -260,9 +267,14 @@ class TurnoOperacionResponse(BaseModel):
     horometro_inicio: Optional[float] = 0.0
     horometro_fin: Optional[float] = None
     horas_trabajadas: Optional[float] = None
+    horas_motor_brutas: Optional[float] = None
+    horas_calentamiento: Optional[float] = None
     kilometraje_inicio: Optional[float] = 0.0
     kilometraje_fin: Optional[float] = None
     km_recorridos: Optional[float] = None
+    combustible_precio_galon: Optional[float] = None
+    combustible_total_soles: Optional[float] = None
+    observaciones_inicio: Optional[str] = None
     estado_sync: str
     creado_en: datetime
 
@@ -280,6 +292,7 @@ class ControlCombustibleCreate(BaseModel):
     proyecto_id: int
     horometro_tanqueo: float
     galones_cargados: float
+    precio_por_galon: Optional[float] = 0.0
     tipo_combustible: str = "Diesel D2 B5"
     foto_comprobante: str
     costo_total: float = 0.0
