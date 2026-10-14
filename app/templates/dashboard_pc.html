@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es" class="h-full bg-[#121417]">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,12 +10,16 @@
   <!-- Google Fonts: Industry/Modern -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link
+    href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap"
+    rel="stylesheet">
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Leaflet.js para Mapa GPS en Vivo -->
-  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+    integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
   <!-- SheetJS para Exportación Directa a Excel -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 
@@ -40,66 +45,130 @@
     }
   </script>
   <style>
-    body { font-family: 'Outfit', sans-serif; background-color: #121417; }
+    body {
+      font-family: 'Outfit', sans-serif;
+      background-color: #121417;
+    }
+
     /* Custom Scrollbar */
-    ::-webkit-scrollbar { width: 6px; height: 6px; }
-    ::-webkit-scrollbar-track { background: #121417; }
-    ::-webkit-scrollbar-thumb { background: #282D35; border-radius: 3px; }
-    ::-webkit-scrollbar-thumb:hover { background: #01A95B; }
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #121417;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #282D35;
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #01A95B;
+    }
   </style>
 </head>
+
 <body class="h-full text-gray-100 flex overflow-hidden">
 
   <!-- SIDEBAR NAVEGACIÓN PC ESCRITORIO -->
-  <aside id="sidebar" class="w-64 bg-graphite border-r border-gray-800 flex flex-col justify-between shrink-0 transition-all duration-300 z-40">
+  <aside id="sidebar"
+    class="w-64 bg-graphite border-r border-gray-800 flex flex-col justify-between shrink-0 transition-all duration-300 z-40">
     <div>
       <!-- Brand Logo Oficial ACR FLOTA 360° -->
       <div class="h-20 flex items-center justify-center px-5 border-b border-gray-800/80 bg-graphite">
-        <a href="javascript:void(0)" onclick="mostrarSeccion('dashboard')" class="flex items-center justify-center w-full py-2 hover:opacity-90 transition">
-          <img src="/static/img/logo_acr360_white.png" alt="ACR Flota 360°" class="h-10 w-auto max-w-[210px] object-contain">
+        <a href="javascript:void(0)" onclick="mostrarSeccion('dashboard')"
+          class="flex items-center justify-center w-full py-2 hover:opacity-90 transition">
+          <img src="/static/img/logo_acr360_white.png" alt="ACR Flota 360°"
+            class="h-10 w-auto max-w-[210px] object-contain">
         </a>
       </div>
 
       <!-- Navigation Links -->
       <nav id="sidebar-nav" class="p-4 space-y-1.5 text-sm font-medium">
-        <button type="button" onclick="mostrarSeccion('dashboard')" data-tab="dashboard" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-machinery/15 text-machinery border border-machinery/40 font-bold transition text-left cursor-pointer shadow-sm">
-          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        <button type="button" onclick="mostrarSeccion('dashboard')" data-tab="dashboard"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-machinery/15 text-machinery border border-machinery/40 font-bold transition text-left cursor-pointer shadow-sm">
+          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+          </svg>
           <span>Dashboard</span>
         </button>
-        <button type="button" onclick="mostrarSeccion('flota')" data-tab="flota" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        <button type="button" onclick="mostrarSeccion('flota')" data-tab="flota"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
           <span>Maquinaria y Flota</span>
         </button>
-        <button type="button" onclick="mostrarSeccion('horometros')" data-tab="horometros" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
-          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2m10-10h-2M4 12H2"/></svg>
+        <button type="button" onclick="mostrarSeccion('horometros')" data-tab="horometros"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2m10-10h-2M4 12H2" />
+          </svg>
           <span>Control de Horómetros</span>
         </button>
-        <button type="button" onclick="mostrarSeccion('mantenimiento')" data-tab="mantenimiento" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
-          <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <button type="button" onclick="mostrarSeccion('mantenimiento')" data-tab="mantenimiento"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+          </svg>
           <span>Mantenimiento</span>
         </button>
-        <button type="button" onclick="mostrarSeccion('combustible')" data-tab="combustible" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
-          <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+        <button type="button" onclick="mostrarSeccion('combustible')" data-tab="combustible"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+          </svg>
           <span>Combustible & Pagos</span>
         </button>
-        <button type="button" onclick="mostrarSeccion('personal')" data-tab="personal" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
-          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+        <button type="button" onclick="mostrarSeccion('personal')" data-tab="personal"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+          </svg>
           <span>Operadores & Personal</span>
         </button>
-        <button type="button" onclick="mostrarSeccion('proyectos')" data-tab="proyectos" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
-          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        <button type="button" onclick="mostrarSeccion('proyectos')" data-tab="proyectos"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
           <span>Frentes</span>
         </button>
-        <button type="button" onclick="mostrarSeccion('almacen')" data-tab="almacen" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        <button type="button" onclick="mostrarSeccion('almacen')" data-tab="almacen"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+          </svg>
           <span>Almacén & Repuestos</span>
         </button>
-        <button type="button" onclick="mostrarSeccion('proveedores')" data-tab="proveedores" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
-          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+        <button type="button" onclick="mostrarSeccion('proveedores')" data-tab="proveedores"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+          </svg>
           <span>Proveedores</span>
         </button>
-        <button type="button" onclick="mostrarSeccion('turnos')" data-tab="turnos" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
-          <svg class="w-5 h-5 text-alertGreen shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        <button type="button" onclick="mostrarSeccion('turnos')" data-tab="turnos"
+          class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-alertGreen shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
           <span>Bitácora de Operaciones</span>
         </button>
       </nav>
@@ -107,10 +176,12 @@
 
     <!-- Switch to Mobile View Quick Link -->
     <div class="p-4 border-t border-gray-800 space-y-2">
-      <a href="/mobile" target="_blank" class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-machinery text-carbon font-bold text-xs uppercase tracking-wider hover:bg-machineryHover transition shadow-md">
+      <a href="/mobile" target="_blank"
+        class="w-full flex items-center justify-center gap-2 px-3 py-2.5 rounded-lg bg-machinery text-carbon font-bold text-xs uppercase tracking-wider hover:bg-machineryHover transition shadow-md">
         📱 Abrir App Móvil Operador
       </a>
-      <a href="/logout" class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-rose-950/40 border border-rose-900/60 text-rose-300 font-bold text-xs hover:bg-rose-900/60 transition">
+      <a href="/logout"
+        class="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-rose-950/40 border border-rose-900/60 text-rose-300 font-bold text-xs hover:bg-rose-900/60 transition">
         🚪 Cerrar Sesión
       </a>
     </div>
@@ -118,45 +189,60 @@
 
   <!-- CONTENIDO PRINCIPAL -->
   <main class="flex-1 flex flex-col overflow-hidden bg-carbon">
-    
+
     <!-- Header Superior -->
-    <header class="h-20 bg-graphite/60 backdrop-blur-md border-b border-gray-800 px-8 flex items-center justify-between shrink-0">
+    <header
+      class="h-20 bg-graphite/60 backdrop-blur-md border-b border-gray-800 px-8 flex items-center justify-between shrink-0">
       <div class="flex items-center gap-4">
         <button id="toggleSidebar" class="p-2 rounded-lg bg-graphiteLight text-gray-300 hover:text-white">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
         </button>
         <div>
           <h2 id="header-seccion-titulo" class="text-xl font-black text-white">DASHBOARD GENERAL</h2>
-          <p id="header-seccion-subtitulo" class="text-xs text-gray-400">Indicadores industriales en tiempo real, horas operadas y semáforo preventivo</p>
+          <p id="header-seccion-subtitulo" class="text-xs text-gray-400">Indicadores industriales en tiempo real, horas
+            operadas y semáforo preventivo</p>
         </div>
       </div>
 
       <div class="flex items-center gap-3">
         <!-- Indicador de Servidor -->
-        <div class="hidden xl:flex items-center gap-2 bg-graphiteLight px-3 py-1.5 rounded-full border border-gray-700 text-xs text-gray-300">
+        <div
+          class="hidden xl:flex items-center gap-2 bg-graphiteLight px-3 py-1.5 rounded-full border border-gray-700 text-xs text-gray-300">
           <span class="w-2 h-2 rounded-full bg-alertGreen animate-pulse"></span>
           <span>Sistema Cloud Sync</span>
         </div>
 
         <!-- Centro de Notificaciones & Alertas WhatsApp -->
         <div class="relative">
-          <button id="btn-campana-notificaciones" onclick="togglePanelNotificaciones(event)" class="relative p-2 rounded-lg bg-graphiteLight hover:bg-gray-700 border border-gray-700 text-gray-200 transition cursor-pointer flex items-center justify-center shadow-sm" title="Centro de Notificaciones & Alertas WhatsApp">
+          <button id="btn-campana-notificaciones" onclick="togglePanelNotificaciones(event)"
+            class="relative p-2 rounded-lg bg-graphiteLight hover:bg-gray-700 border border-gray-700 text-gray-200 transition cursor-pointer flex items-center justify-center shadow-sm"
+            title="Centro de Notificaciones & Alertas WhatsApp">
             <span class="text-base">🔔</span>
-            <span id="badge-contador-notificaciones" class="hidden absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-black bg-rose-600 text-white border-2 border-carbon flex items-center justify-center shadow-lg animate-pulse">0</span>
+            <span id="badge-contador-notificaciones"
+              class="hidden absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 rounded-full text-[10px] font-black bg-rose-600 text-white border-2 border-carbon flex items-center justify-center shadow-lg animate-pulse">0</span>
           </button>
 
           <!-- Dropdown Flotante -->
-          <div id="dropdown-notificaciones" class="hidden absolute right-0 mt-2 w-96 max-w-[90vw] bg-graphite border border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col text-left">
+          <div id="dropdown-notificaciones"
+            class="hidden absolute right-0 mt-2 w-96 max-w-[90vw] bg-graphite border border-gray-700 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col text-left">
             <div class="px-4 py-3 bg-carbon/95 border-b border-gray-800 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <span class="text-machinery font-black text-xs uppercase tracking-wider flex items-center gap-1.5">
                   <span class="text-sm">🔔</span> Alertas & WhatsApp
                 </span>
-                <span id="label-num-alertas" class="text-[10px] px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 font-bold border border-rose-800">0 pendientes</span>
+                <span id="label-num-alertas"
+                  class="text-[10px] px-2 py-0.5 rounded-full bg-rose-950 text-rose-300 font-bold border border-rose-800">0
+                  pendientes</span>
               </div>
               <div class="flex items-center gap-2">
-                <button type="button" onclick="escanearAlertasManual()" class="text-[10px] text-machinery hover:underline font-bold cursor-pointer" title="Escanear flota ahora">🔄 Escanear</button>
-                <button type="button" onclick="abrirModalConfigNotificaciones()" class="text-gray-400 hover:text-white text-xs cursor-pointer" title="Configurar Teléfono y WhatsApp">⚙️</button>
+                <button type="button" onclick="escanearAlertasManual()"
+                  class="text-[10px] text-machinery hover:underline font-bold cursor-pointer"
+                  title="Escanear flota ahora">🔄 Escanear</button>
+                <button type="button" onclick="abrirModalConfigNotificaciones()"
+                  class="text-gray-400 hover:text-white text-xs cursor-pointer"
+                  title="Configurar Teléfono y WhatsApp">⚙️</button>
               </div>
             </div>
 
@@ -167,10 +253,12 @@
 
             <!-- Footer -->
             <div class="p-2.5 bg-carbon/95 border-t border-gray-800 flex items-center justify-between text-[11px]">
-              <button type="button" onclick="marcarTodasNotificacionesLeidas()" class="text-gray-400 hover:text-white font-bold cursor-pointer">
+              <button type="button" onclick="marcarTodasNotificacionesLeidas()"
+                class="text-gray-400 hover:text-white font-bold cursor-pointer">
                 ✓ Marcar todas leídas
               </button>
-              <button type="button" onclick="abrirModalConfigNotificaciones()" class="text-machinery hover:underline font-bold flex items-center gap-1 cursor-pointer">
+              <button type="button" onclick="abrirModalConfigNotificaciones()"
+                class="text-machinery hover:underline font-bold flex items-center gap-1 cursor-pointer">
                 <span>📱</span> Celular Jefe de Área
               </button>
             </div>
@@ -178,15 +266,23 @@
         </div>
 
         <!-- Botones Registrar Operador y Personal -->
-        <button onclick="abrirModalPersonal('operador')" class="px-3 py-2 bg-machinery hover:bg-machineryHover text-carbon rounded-lg text-xs font-black flex items-center gap-1.5 transition shadow-sm cursor-pointer" title="Registrar Operador de Maquinaria">
+        <button onclick="abrirModalPersonal('operador')"
+          class="px-3 py-2 bg-machinery hover:bg-machineryHover text-carbon rounded-lg text-xs font-black flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+          title="Registrar Operador de Maquinaria">
           <span>🚜</span> + Operador
         </button>
-        <button onclick="abrirModalPersonal('staff')" class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-bold text-gray-200 flex items-center gap-1.5 transition cursor-pointer" title="Registrar Personal / Staff / Mantenimiento">
+        <button onclick="abrirModalPersonal('staff')"
+          class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-bold text-gray-200 flex items-center gap-1.5 transition cursor-pointer"
+          title="Registrar Personal / Staff / Mantenimiento">
           <span>👔</span> + Personal
         </button>
         <!-- Botón Reporte PDF Oficial -->
-        <a href="/api/v1/heavy/reportes/pdf" target="_blank" class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-semibold text-gray-200 flex items-center gap-1.5 transition">
-          <svg class="w-4 h-4 text-machinery" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        <a href="/api/v1/heavy/reportes/pdf" target="_blank"
+          class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-semibold text-gray-200 flex items-center gap-1.5 transition">
+          <svg class="w-4 h-4 text-machinery" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
           PDF
         </a>
         <!-- Perfil Usuario Administrador -->
@@ -194,11 +290,13 @@
           <span class="text-base">🛡️</span>
           <div class="leading-tight text-left">
             <div class="font-bold text-white text-xs">{{ admin_user.nombres if admin_user else 'Administrador' }}</div>
-            <div class="text-[10px] text-machinery font-semibold uppercase tracking-wider">{{ (admin_user.rol | replace('_', ' ')) if admin_user else 'Gerencia' }}</div>
+            <div class="text-[10px] text-machinery font-semibold uppercase tracking-wider">{{ (admin_user.rol |
+              replace('_', ' ')) if admin_user else 'Gerencia' }}</div>
           </div>
         </div>
         <!-- Botón Cerrar Sesión -->
-        <a href="/logout" title="Cerrar Sesión de Administrador" class="p-2 bg-rose-950/40 hover:bg-rose-900/70 border border-rose-800/80 rounded-lg text-rose-300 text-xs font-bold flex items-center gap-1.5 transition">
+        <a href="/logout" title="Cerrar Sesión de Administrador"
+          class="p-2 bg-rose-950/40 hover:bg-rose-900/70 border border-rose-800/80 rounded-lg text-rose-300 text-xs font-bold flex items-center gap-1.5 transition">
           <span>🚪</span> <span class="hidden md:inline">Salir</span>
         </a>
       </div>
@@ -212,7 +310,8 @@
         <!-- TARJETAS KPI INDUSTRIALES -->
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
           <!-- Horas Totales -->
-          <div class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-machinery/50 transition">
+          <div
+            class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-machinery/50 transition">
             <div class="flex justify-between items-start mb-2">
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Horas Trabajadas</span>
               <div class="p-2 rounded-lg bg-machinery/10 text-machinery">⏱️</div>
@@ -222,7 +321,8 @@
           </div>
 
           <!-- Equipos en Taller -->
-          <div class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-alertYellow/50 transition">
+          <div
+            class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-alertYellow/50 transition">
             <div class="flex justify-between items-start mb-2">
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Equipos en Taller</span>
               <div class="p-2 rounded-lg bg-alertYellow/10 text-alertYellow">🔧</div>
@@ -232,9 +332,11 @@
           </div>
 
           <!-- Alertas < 25h de Mantenimiento -->
-          <div class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-alertRed/50 transition">
+          <div
+            class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-alertRed/50 transition">
             <div class="flex justify-between items-start mb-2">
-              <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Alertas Preventivas (&lt;25h)</span>
+              <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Alertas Preventivas
+                (&lt;25h)</span>
               <div class="p-2 rounded-lg bg-gray-800 text-gray-500" id="kpi-alertas-ico">⚠️</div>
             </div>
             <div class="text-3xl font-black text-gray-400" id="kpi-alertas">0 Críticas</div>
@@ -242,7 +344,8 @@
           </div>
 
           <!-- Combustible del Mes -->
-          <div class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-machinery/50 transition">
+          <div
+            class="bg-graphite border border-gray-800 rounded-xl p-5 relative overflow-hidden group hover:border-machinery/50 transition">
             <div class="flex justify-between items-start mb-2">
               <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Consumo Mes (Galones)</span>
               <div class="p-2 rounded-lg bg-machinery/10 text-machinery">⛽</div>
@@ -258,7 +361,8 @@
           <div class="lg:col-span-2 bg-graphite border border-gray-800 rounded-xl p-6">
             <div class="flex items-center justify-between mb-4">
               <div>
-                <h3 class="text-base font-bold text-white uppercase tracking-wide">Horas Operadas por Frente de Obra</h3>
+                <h3 class="text-base font-bold text-white uppercase tracking-wide">Horas Operadas por Frente de Obra
+                </h3>
                 <p class="text-xs text-gray-400">Distribución de carga de maquinaria según proyecto activo</p>
               </div>
               <span class="text-xs px-2.5 py-1 rounded bg-machinery/10 text-machinery font-bold">OCTUBRE 2026</span>
@@ -312,7 +416,8 @@
                 </h3>
                 <p class="text-xs text-gray-400">Volumen en galones y costo en Soles (S/.) por equipo</p>
               </div>
-              <span class="text-xs px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 font-bold">GALONES / SOLES</span>
+              <span class="text-xs px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 font-bold">GALONES /
+                SOLES</span>
             </div>
             <div class="h-64">
               <canvas id="chartCombustibleMaquinas"></canvas>
@@ -331,7 +436,8 @@
                 </h3>
                 <p class="text-xs text-gray-400">Semáforo de servicio según horómetro actual e intervalo configurado</p>
               </div>
-              <button onclick="mostrarSeccion('mantenimiento')" class="text-xs text-machinery hover:underline font-bold cursor-pointer">
+              <button onclick="mostrarSeccion('mantenimiento')"
+                class="text-xs text-machinery hover:underline font-bold cursor-pointer">
                 Gestionar Módulos &rarr;
               </button>
             </div>
@@ -364,7 +470,8 @@
                 </h3>
                 <p class="text-xs text-gray-400">Control legal preventivo de vigencia y días restantes para vencer</p>
               </div>
-              <span class="text-[11px] px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 font-bold border border-blue-800">
+              <span
+                class="text-[11px] px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 font-bold border border-blue-800">
                 Alerta Legal
               </span>
             </div>
@@ -395,41 +502,51 @@
               <h3 class="text-base font-black text-white uppercase tracking-wide flex items-center gap-2">
                 <span>📍</span> Monitoreo Satelital GPS en Vivo
               </h3>
-              <p class="text-xs text-gray-400">Ubicación en tiempo real de maquinaria pesada activa con operadores en turno</p>
+              <p class="text-xs text-gray-400">Ubicación en tiempo real de maquinaria pesada activa con operadores en
+                turno</p>
             </div>
             <div class="flex flex-wrap items-center gap-2">
-              <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+              <span
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                 Satelital Activo (Gratis)
               </span>
 
               <!-- Selector de Capas Satelitales Gratuitas -->
               <div class="inline-flex rounded-lg bg-carbon border border-gray-700 p-0.5 text-xs font-bold">
-                <button type="button" onclick="cambiarCapaMapa('satelite')" id="btn-capa-sat" class="px-2.5 py-1 rounded-md bg-machinery text-carbon font-black transition">
+                <button type="button" onclick="cambiarCapaMapa('satelite')" id="btn-capa-sat"
+                  class="px-2.5 py-1 rounded-md bg-machinery text-carbon font-black transition">
                   🛰️ Satelital HD
                 </button>
-                <button type="button" onclick="cambiarCapaMapa('hibrido')" id="btn-capa-hib" class="px-2.5 py-1 rounded-md text-gray-300 hover:text-white transition">
+                <button type="button" onclick="cambiarCapaMapa('hibrido')" id="btn-capa-hib"
+                  class="px-2.5 py-1 rounded-md text-gray-300 hover:text-white transition">
                   🗺️ Híbrido
                 </button>
-                <button type="button" onclick="cambiarCapaMapa('calles')" id="btn-capa-cal" class="px-2.5 py-1 rounded-md text-gray-300 hover:text-white transition">
+                <button type="button" onclick="cambiarCapaMapa('calles')" id="btn-capa-cal"
+                  class="px-2.5 py-1 rounded-md text-gray-300 hover:text-white transition">
                   🏙️ Calles
                 </button>
               </div>
 
-              <button onclick="centrarMapaFlota()" class="px-3 py-1.5 bg-graphiteLight hover:bg-machinery hover:text-carbon text-gray-200 text-xs rounded-lg font-bold border border-gray-700 transition">
+              <button onclick="centrarMapaFlota()"
+                class="px-3 py-1.5 bg-graphiteLight hover:bg-machinery hover:text-carbon text-gray-200 text-xs rounded-lg font-bold border border-gray-700 transition">
                 🎯 Centrar
               </button>
-              <button onclick="togglePantallaCompletaMapa()" id="btn-mapa-expandir" class="px-2.5 py-1.5 bg-graphiteLight hover:bg-gray-700 text-gray-300 text-xs rounded-lg font-bold border border-gray-700 transition" title="Pantalla Completa">
+              <button onclick="togglePantallaCompletaMapa()" id="btn-mapa-expandir"
+                class="px-2.5 py-1.5 bg-graphiteLight hover:bg-gray-700 text-gray-300 text-xs rounded-lg font-bold border border-gray-700 transition"
+                title="Pantalla Completa">
                 ⛶ Expandir
               </button>
             </div>
           </div>
           <!-- Contenedor del Mapa Leaflet -->
-          <div id="mapa-flota-gps" class="w-full h-96 rounded-xl overflow-hidden border border-gray-800 shadow-inner z-0 transition-all"></div>
+          <div id="mapa-flota-gps"
+            class="w-full h-96 rounded-xl overflow-hidden border border-gray-800 shadow-inner z-0 transition-all"></div>
           <div class="flex items-center justify-between mt-3 text-[11px] text-gray-400">
             <span class="flex items-center gap-1.5">
               <span>💡</span>
-              <span>El GPS se activa en el celular del operador únicamente durante su turno activo para proteger la privacidad fuera de obra.</span>
+              <span>El GPS se activa en el celular del operador únicamente durante su turno activo para proteger la
+                privacidad fuera de obra.</span>
             </span>
             <span id="mapa-flota-contador" class="font-bold text-machinery">0 equipos transmitiendo</span>
           </div>
@@ -444,18 +561,21 @@
               <span class="w-3 h-3 bg-machinery rounded-sm"></span>
               Inventario de Maquinaria y Equipos
             </h3>
-            <p class="text-xs text-gray-400">Control de horómetros actuales, estado operativo, documentación y semáforo preventivo (250h)</p>
+            <p class="text-xs text-gray-400">Control de horómetros actuales, estado operativo, documentación y semáforo
+              preventivo (250h)</p>
           </div>
 
           <!-- Filtros Rápidos -->
           <div class="flex items-center gap-2.5 flex-wrap">
-            <select id="filtroTipo" onchange="filtrarTabla()" class="bg-carbon border border-gray-700 text-gray-200 text-xs rounded-lg px-3 py-2 font-medium focus:border-machinery focus:outline-none">
+            <select id="filtroTipo" onchange="filtrarTabla()"
+              class="bg-carbon border border-gray-700 text-gray-200 text-xs rounded-lg px-3 py-2 font-medium focus:border-machinery focus:outline-none">
               <option value="">🚜 Todos los Tipos</option>
               <option value="pesada">Maquinaria Pesada</option>
               <option value="camion">Camiones / Volquetes</option>
               <option value="liviano">Liviano / Supervisión</option>
             </select>
-            <button onclick="abrirModalNuevoEquipo()" class="px-3.5 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(255,184,0,0.25)] flex items-center gap-1.5">
+            <button onclick="abrirModalNuevoEquipo()"
+              class="px-3.5 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(255,184,0,0.25)] flex items-center gap-1.5">
               + Registrar Equipo
             </button>
           </div>
@@ -464,7 +584,8 @@
         <!-- Tabla -->
         <div class="overflow-x-auto rounded-lg border border-gray-800">
           <table class="w-full text-left text-sm text-gray-300">
-            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+            <thead
+              class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
               <tr>
                 <th class="py-3.5 px-4">Equipo / Código</th>
                 <th class="py-3.5 px-4">Modelo & Serie / Placa</th>
@@ -491,9 +612,11 @@
               <span class="w-3 h-3 bg-machinery rounded-sm"></span>
               Gestión de Frentes de Obra y Proyectos
             </h3>
-            <p class="text-xs text-gray-400">Control multi-frente de construcción y minería, despliegue de maquinaria y horas trabajadas por sector</p>
+            <p class="text-xs text-gray-400">Control multi-frente de construcción y minería, despliegue de maquinaria y
+              horas trabajadas por sector</p>
           </div>
-          <button onclick="abrirModalNuevoProyecto()" class="px-4 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(255,184,0,0.25)] flex items-center gap-1.5">
+          <button onclick="abrirModalNuevoProyecto()"
+            class="px-4 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(255,184,0,0.25)] flex items-center gap-1.5">
             + Nuevo Frente de Obra
           </button>
         </div>
@@ -505,7 +628,8 @@
 
         <div class="overflow-x-auto rounded-lg border border-gray-800">
           <table class="w-full text-left text-sm text-gray-300">
-            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+            <thead
+              class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
               <tr>
                 <th class="py-3.5 px-4">Código Frente</th>
                 <th class="py-3.5 px-4">Nombre del Frente / Tramo</th>
@@ -524,7 +648,8 @@
       </div>
 
       <!-- SECCIÓN: CONTROL DE HORÓMETROS & PARTE DIARIO -->
-      <div id="seccion-horometros" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
+      <div id="seccion-horometros"
+        class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
         <!-- Encabezado con Botones de Acción -->
         <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
@@ -533,21 +658,28 @@
               <h3 class="text-lg font-black text-white uppercase tracking-wide">
                 Control de Horómetros & Parte Diario
               </h3>
-              <span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-300 border border-emerald-700">
+              <span
+                class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-300 border border-emerald-700">
                 Oficial Flota 360°
               </span>
             </div>
             <p class="text-xs text-gray-400 mt-1">
-              Monitoreo diario de horómetros (h), cálculo automático de horas efectivas, consumo de combustible (Gal/h) y exportación oficial
+              Monitoreo diario de horómetros (h), cálculo automático de horas efectivas, consumo de combustible (Gal/h)
+              y exportación oficial
             </p>
           </div>
 
           <div class="flex items-center gap-2.5 flex-wrap">
-            <button onclick="cargarControlHorometros()" class="px-3.5 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 flex items-center gap-1.5 transition">
+            <button onclick="cargarControlHorometros()"
+              class="px-3.5 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 flex items-center gap-1.5 transition">
               🔄 Actualizar
             </button>
-            <button onclick="exportarHorometrosExcel()" class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center gap-2 border border-emerald-500/50">
-              <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            <button onclick="exportarHorometrosExcel()"
+              class="px-4 py-2 bg-emerald-700 hover:bg-emerald-600 text-white font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(16,185,129,0.3)] flex items-center gap-2 border border-emerald-500/50">
+              <svg class="w-4 h-4 text-emerald-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+              </svg>
               <span>Exportar a Excel (.xlsx)</span>
             </button>
           </div>
@@ -561,7 +693,8 @@
               <h4 id="kpi-h-total" class="text-2xl font-mono font-black text-machinery mt-0.5">0.0 h</h4>
               <p id="kpi-h-total-sub" class="text-[10px] text-gray-500 font-medium mt-0.5">0 turnos computados</p>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-machinery/10 border border-machinery/30 flex items-center justify-center text-xl text-machinery shrink-0">
+            <div
+              class="w-11 h-11 rounded-xl bg-machinery/10 border border-machinery/30 flex items-center justify-center text-xl text-machinery shrink-0">
               ⏱️
             </div>
           </div>
@@ -572,7 +705,8 @@
               <h4 id="kpi-h-equipos" class="text-2xl font-mono font-black text-white mt-0.5">0</h4>
               <p id="kpi-h-equipos-sub" class="text-[10px] text-gray-500 font-medium mt-0.5">con reporte en periodo</p>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-blue-950/60 border border-blue-600/30 flex items-center justify-center text-xl text-blue-400 shrink-0">
+            <div
+              class="w-11 h-11 rounded-xl bg-blue-950/60 border border-blue-600/30 flex items-center justify-center text-xl text-blue-400 shrink-0">
               🚜
             </div>
           </div>
@@ -581,9 +715,11 @@
             <div>
               <p class="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Combustible Vinculado</p>
               <h4 id="kpi-h-combustible" class="text-2xl font-mono font-black text-amber-400 mt-0.5">0.0 Gal</h4>
-              <p id="kpi-h-combustible-sub" class="text-[10px] text-gray-500 font-medium mt-0.5">en los turnos listados</p>
+              <p id="kpi-h-combustible-sub" class="text-[10px] text-gray-500 font-medium mt-0.5">en los turnos listados
+              </p>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-amber-950/60 border border-amber-600/30 flex items-center justify-center text-xl text-amber-400 shrink-0">
+            <div
+              class="w-11 h-11 rounded-xl bg-amber-950/60 border border-amber-600/30 flex items-center justify-center text-xl text-amber-400 shrink-0">
               ⛽
             </div>
           </div>
@@ -594,7 +730,8 @@
               <h4 id="kpi-h-ratio" class="text-2xl font-mono font-black text-cyan-400 mt-0.5">0.00 Gal/h</h4>
               <p id="kpi-h-ratio-sub" class="text-[10px] text-gray-500 font-medium mt-0.5">eficiencia de operación</p>
             </div>
-            <div class="w-11 h-11 rounded-xl bg-cyan-950/60 border border-cyan-600/30 flex items-center justify-center text-xl text-cyan-400 shrink-0">
+            <div
+              class="w-11 h-11 rounded-xl bg-cyan-950/60 border border-cyan-600/30 flex items-center justify-center text-xl text-cyan-400 shrink-0">
               ⚡
             </div>
           </div>
@@ -608,9 +745,13 @@
             </span>
             <div class="flex items-center gap-1.5">
               <span class="text-gray-400 text-[11px]">Accesos rápidos:</span>
-              <button type="button" onclick="setFiltroFechaHorometro('hoy')" class="px-2.5 py-1 rounded bg-graphiteLight hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold transition">Hoy</button>
-              <button type="button" onclick="setFiltroFechaHorometro('mes')" class="px-2.5 py-1 rounded bg-graphiteLight hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold transition">Mes Actual</button>
-              <button type="button" onclick="setFiltroFechaHorometro('todo')" class="px-2.5 py-1 rounded bg-graphiteLight hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold transition">Todo</button>
+              <button type="button" onclick="setFiltroFechaHorometro('hoy')"
+                class="px-2.5 py-1 rounded bg-graphiteLight hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold transition">Hoy</button>
+              <button type="button" onclick="setFiltroFechaHorometro('mes')"
+                class="px-2.5 py-1 rounded bg-graphiteLight hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold transition">Mes
+                Actual</button>
+              <button type="button" onclick="setFiltroFechaHorometro('todo')"
+                class="px-2.5 py-1 rounded bg-graphiteLight hover:bg-gray-700 text-gray-300 hover:text-white text-[11px] font-bold transition">Todo</button>
             </div>
           </div>
 
@@ -618,7 +759,8 @@
             <!-- Frente -->
             <div>
               <label class="block text-gray-400 font-bold mb-1">Frente de Obra:</label>
-              <select id="filtro-h-proyecto" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-2 font-medium focus:border-machinery focus:outline-none">
+              <select id="filtro-h-proyecto" onchange="filtrarHorometros()"
+                class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-2 font-medium focus:border-machinery focus:outline-none">
                 <option value="">🏗️ Todos los Frentes</option>
               </select>
             </div>
@@ -626,7 +768,8 @@
             <!-- Equipo -->
             <div>
               <label class="block text-gray-400 font-bold mb-1">Maquinaria / Equipo:</label>
-              <select id="filtro-h-equipo" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-2 font-medium focus:border-machinery focus:outline-none">
+              <select id="filtro-h-equipo" onchange="filtrarHorometros()"
+                class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-2 font-medium focus:border-machinery focus:outline-none">
                 <option value="">🚜 Todos los Equipos</option>
               </select>
             </div>
@@ -634,7 +777,8 @@
             <!-- Operador -->
             <div>
               <label class="block text-gray-400 font-bold mb-1">Operador a Cargo:</label>
-              <select id="filtro-h-operador" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-2 font-medium focus:border-machinery focus:outline-none">
+              <select id="filtro-h-operador" onchange="filtrarHorometros()"
+                class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-2 font-medium focus:border-machinery focus:outline-none">
                 <option value="">👷‍♂️ Todos los Operadores</option>
               </select>
             </div>
@@ -642,26 +786,31 @@
             <!-- Fecha Desde -->
             <div>
               <label class="block text-gray-400 font-bold mb-1">Fecha Desde:</label>
-              <input type="date" id="filtro-h-desde" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-1.5 font-medium focus:border-machinery focus:outline-none font-mono">
+              <input type="date" id="filtro-h-desde" onchange="filtrarHorometros()"
+                class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-1.5 font-medium focus:border-machinery focus:outline-none font-mono">
             </div>
 
             <!-- Fecha Hasta -->
             <div>
               <label class="block text-gray-400 font-bold mb-1">Fecha Hasta:</label>
-              <input type="date" id="filtro-h-hasta" onchange="filtrarHorometros()" class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-1.5 font-medium focus:border-machinery focus:outline-none font-mono">
+              <input type="date" id="filtro-h-hasta" onchange="filtrarHorometros()"
+                class="w-full bg-graphite border border-gray-700 text-gray-200 rounded-lg px-2.5 py-1.5 font-medium focus:border-machinery focus:outline-none font-mono">
             </div>
           </div>
 
           <!-- Buscador libre de texto -->
           <div class="relative pt-1">
-            <input type="text" id="filtro-h-busqueda" oninput="filtrarHorometros()" placeholder="🔎 Filtrar en tiempo real por código, modelo, operador, frente de obra o incidencias..." class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-500 focus:border-machinery focus:outline-none">
+            <input type="text" id="filtro-h-busqueda" oninput="filtrarHorometros()"
+              placeholder="🔎 Filtrar en tiempo real por código, modelo, operador, frente de obra o incidencias..."
+              class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-xs text-white placeholder-gray-500 focus:border-machinery focus:outline-none">
           </div>
         </div>
 
         <!-- TABLA PRINCIPAL DE PARTE DIARIO DE HORÓMETROS -->
         <div class="overflow-x-auto rounded-lg border border-gray-800">
           <table class="w-full text-left text-sm text-gray-300">
-            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+            <thead
+              class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
               <tr>
                 <th class="py-3.5 px-4 text-center">N°</th>
                 <th class="py-3.5 px-4">Fecha</th>
@@ -680,7 +829,8 @@
             <tbody id="tabla-horometros-body" class="divide-y divide-gray-800 font-medium">
               <!-- Renderizado dinámico vía JavaScript -->
             </tbody>
-            <tfoot id="tabla-horometros-foot" class="bg-carbon/90 border-t-2 border-gray-700 font-bold text-xs text-white">
+            <tfoot id="tabla-horometros-foot"
+              class="bg-carbon/90 border-t-2 border-gray-700 font-bold text-xs text-white">
               <!-- Resumen consolidado -->
             </tfoot>
           </table>
@@ -695,16 +845,19 @@
               <span class="w-3 h-3 bg-machinery rounded-sm"></span>
               Bitácora de Operaciones y Maquinaria Registrada
             </h3>
-            <p class="text-xs text-gray-400">Historial en vivo de turnos reportados desde celulares de campo (online/offline) con identificación del personal a cargo y evidencia fotográfica</p>
+            <p class="text-xs text-gray-400">Historial en vivo de turnos reportados desde celulares de campo
+              (online/offline) con identificación del personal a cargo y evidencia fotográfica</p>
           </div>
-          <button onclick="cargarTablaTurnos()" class="px-3.5 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 flex items-center gap-1.5 transition">
+          <button onclick="cargarTablaTurnos()"
+            class="px-3.5 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 text-xs font-bold rounded-lg border border-gray-700 flex items-center gap-1.5 transition">
             🔄 Actualizar Bitácora
           </button>
         </div>
 
         <div class="overflow-x-auto rounded-lg border border-gray-800">
           <table class="w-full text-left text-sm text-gray-300">
-            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+            <thead
+              class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
               <tr>
                 <th class="py-3.5 px-4">Fecha</th>
                 <th class="py-3.5 px-4">Maquinaria / Equipo</th>
@@ -733,13 +886,16 @@
               <span class="w-3 h-3 bg-machinery rounded-sm"></span>
               Padrón de Operadores & Personal
             </h3>
-            <p class="text-xs text-gray-400">Control de operadores de maquinaria en campo, brevetes, homologaciones y personal administrativo / técnico</p>
+            <p class="text-xs text-gray-400">Control de operadores de maquinaria en campo, brevetes, homologaciones y
+              personal administrativo / técnico</p>
           </div>
           <div class="flex items-center gap-2">
-            <button onclick="abrirModalPersonal('operador')" class="px-4 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(255,184,0,0.25)] flex items-center gap-1.5 cursor-pointer">
+            <button onclick="abrirModalPersonal('operador')"
+              class="px-4 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black text-xs uppercase tracking-wider rounded-lg transition shadow-[0_0_15px_rgba(255,184,0,0.25)] flex items-center gap-1.5 cursor-pointer">
               <span>🚜</span> + Registrar Operador
             </button>
-            <button onclick="abrirModalPersonal('staff')" class="px-3.5 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 font-bold text-xs uppercase tracking-wider rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+            <button onclick="abrirModalPersonal('staff')"
+              class="px-3.5 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 font-bold text-xs uppercase tracking-wider rounded-lg transition flex items-center gap-1.5 cursor-pointer">
               <span>👔</span> + Registrar Personal
             </button>
           </div>
@@ -747,20 +903,27 @@
 
         <!-- Filtros Rápidos: Operadores vs Personal vs Todos -->
         <div class="flex items-center gap-2 mb-4 overflow-x-auto pb-1">
-          <button id="filtro-personal-operadores" onclick="filtrarTablaPersonal('operador')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-machinery text-carbon border border-machinery transition flex items-center gap-1.5 shadow-sm cursor-pointer">
-            <span>🚜</span> <span>Operadores de Maquinaria</span> <span id="count-filtro-operadores" class="px-1.5 py-0.2 bg-carbon/30 rounded font-black text-[10px]">0</span>
+          <button id="filtro-personal-operadores" onclick="filtrarTablaPersonal('operador')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-machinery text-carbon border border-machinery transition flex items-center gap-1.5 shadow-sm cursor-pointer">
+            <span>🚜</span> <span>Operadores de Maquinaria</span> <span id="count-filtro-operadores"
+              class="px-1.5 py-0.2 bg-carbon/30 rounded font-black text-[10px]">0</span>
           </button>
-          <button id="filtro-personal-staff" onclick="filtrarTablaPersonal('staff')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-graphiteLight text-gray-300 border border-gray-700 hover:text-white transition flex items-center gap-1.5 cursor-pointer">
-            <span>👔</span> <span>Personal Administrativo / Jefatura</span> <span id="count-filtro-staff" class="px-1.5 py-0.2 bg-carbon/50 rounded font-black text-[10px]">0</span>
+          <button id="filtro-personal-staff" onclick="filtrarTablaPersonal('staff')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-graphiteLight text-gray-300 border border-gray-700 hover:text-white transition flex items-center gap-1.5 cursor-pointer">
+            <span>👔</span> <span>Personal Administrativo / Jefatura</span> <span id="count-filtro-staff"
+              class="px-1.5 py-0.2 bg-carbon/50 rounded font-black text-[10px]">0</span>
           </button>
-          <button id="filtro-personal-todos" onclick="filtrarTablaPersonal('todos')" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-graphiteLight text-gray-300 border border-gray-700 hover:text-white transition flex items-center gap-1.5 cursor-pointer">
-            <span>📋</span> <span>Todos los Registros</span> <span id="count-filtro-todos" class="px-1.5 py-0.2 bg-carbon/50 rounded font-black text-[10px]">0</span>
+          <button id="filtro-personal-todos" onclick="filtrarTablaPersonal('todos')"
+            class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-graphiteLight text-gray-300 border border-gray-700 hover:text-white transition flex items-center gap-1.5 cursor-pointer">
+            <span>📋</span> <span>Todos los Registros</span> <span id="count-filtro-todos"
+              class="px-1.5 py-0.2 bg-carbon/50 rounded font-black text-[10px]">0</span>
           </button>
         </div>
 
         <div class="overflow-x-auto rounded-lg border border-gray-800">
           <table class="w-full text-left text-sm text-gray-300">
-            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+            <thead
+              class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
               <tr>
                 <th class="py-3.5 px-4">DNI</th>
                 <th class="py-3.5 px-4">Colaborador</th>
@@ -794,7 +957,8 @@
         </div>
         <div class="overflow-x-auto rounded-lg border border-gray-800">
           <table class="w-full text-left text-sm text-gray-300">
-            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+            <thead
+              class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
               <tr>
                 <th class="py-3.5 px-4">Código de Parte</th>
                 <th class="py-3.5 px-4">Descripción de Repuesto</th>
@@ -819,12 +983,14 @@
               <span class="w-3 h-3 bg-machinery rounded-sm"></span>
               Directorio de Proveedores Oficiales
             </h3>
-            <p class="text-xs text-gray-400">Talleres autorizados, distribuidores CAT/Komatsu/Volvo y plantas de combustible</p>
+            <p class="text-xs text-gray-400">Talleres autorizados, distribuidores CAT/Komatsu/Volvo y plantas de
+              combustible</p>
           </div>
         </div>
         <div class="overflow-x-auto rounded-lg border border-gray-800">
           <table class="w-full text-left text-sm text-gray-300">
-            <thead class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+            <thead
+              class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
               <tr>
                 <th class="py-3.5 px-4">RUC</th>
                 <th class="py-3.5 px-4">Razón Social</th>
@@ -839,201 +1005,211 @@
             </tbody>
           </table>
         </div>
-      <!-- SECCIÓN MANTENIMIENTO PREVENTIVO & ÓRDENES -->
-      <div id="seccion-mantenimiento" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+        <!-- SECCIÓN MANTENIMIENTO PREVENTIVO & ÓRDENES -->
+        <div id="seccion-mantenimiento"
+          class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+            <div>
+              <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+                <span class="w-3 h-3 bg-amber-400 rounded-sm"></span>
+                Gestión de Mantenimiento Preventivo & Correctivo
+              </h3>
+              <p class="text-xs text-gray-400">Configure los intervalos de servicio (horas) por cada máquina y supervise
+                órdenes de trabajo</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="abrirModalNuevaOrdenMantenimiento()"
+                class="px-3 py-2 bg-machinery hover:bg-machineryHover text-carbon rounded-lg text-xs font-black flex items-center gap-1.5 transition shadow-sm cursor-pointer">
+                <span>🛠️</span> + Nueva Orden de Trabajo
+              </button>
+            </div>
+          </div>
+
+          <!-- KPIs Resumen Mantenimiento -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+              <div class="text-[11px] text-gray-400 font-bold uppercase">Operativos al Día</div>
+              <div id="mant-kpi-verde" class="text-2xl font-black text-emerald-400 mt-1">0</div>
+              <div class="text-[10px] text-gray-500">Horómetros dentro de rango</div>
+            </div>
+            <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+              <div class="text-[11px] text-gray-400 font-bold uppercase">Alerta Próxima (&lt;25h)</div>
+              <div id="mant-kpi-amarillo" class="text-2xl font-black text-amber-400 mt-1">0</div>
+              <div class="text-[10px] text-amber-400/80">Requieren insumos/filtros</div>
+            </div>
+            <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+              <div class="text-[11px] text-gray-400 font-bold uppercase">Servicio Vencido</div>
+              <div id="mant-kpi-rojo" class="text-2xl font-black text-rose-400 mt-1">0</div>
+              <div class="text-[10px] text-rose-400/80">Parada preventiva requerida</div>
+            </div>
+            <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+              <div class="text-[11px] text-gray-400 font-bold uppercase">Órdenes Registradas</div>
+              <div id="mant-kpi-ordenes" class="text-2xl font-black text-machinery mt-1">0</div>
+              <div class="text-[10px] text-gray-500">Historial de taller</div>
+            </div>
+          </div>
+
+          <!-- Tabla: Intervalos y Próximo Servicio de Maquinaria -->
           <div>
-            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
-              <span class="w-3 h-3 bg-amber-400 rounded-sm"></span>
-              Gestión de Mantenimiento Preventivo & Correctivo
-            </h3>
-            <p class="text-xs text-gray-400">Configure los intervalos de servicio (horas) por cada máquina y supervise órdenes de trabajo</p>
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
+                <span>🚜</span> Intervalos de Servicio por Máquina (Horas)
+              </h4>
+              <span class="text-xs text-gray-400">Haga clic en ⚙️ para cambiar cada cuántas horas se realiza
+                mantenimiento</span>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-gray-800">
+              <table class="w-full text-left text-xs">
+                <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
+                  <tr>
+                    <th class="py-3 px-4">Código / Equipo</th>
+                    <th class="py-3 px-4">Tipo</th>
+                    <th class="py-3 px-4 text-right">Horómetro Actual</th>
+                    <th class="py-3 px-4 text-center">Intervalo Configurado</th>
+                    <th class="py-3 px-4 text-right">Próximo Mantenimiento</th>
+                    <th class="py-3 px-4 text-right">Horas Restantes</th>
+                    <th class="py-3 px-4 text-center">Semáforo</th>
+                    <th class="py-3 px-4 text-center">Acciones</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-mantenimiento-equipos-body" class="divide-y divide-gray-800 font-medium">
+                  <tr>
+                    <td colspan="8" class="py-6 text-center text-gray-500">Cargando flota para mantenimiento...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
-          <div class="flex items-center gap-2">
-            <button onclick="abrirModalNuevaOrdenMantenimiento()" class="px-3 py-2 bg-machinery hover:bg-machineryHover text-carbon rounded-lg text-xs font-black flex items-center gap-1.5 transition shadow-sm cursor-pointer">
-              <span>🛠️</span> + Nueva Orden de Trabajo
-            </button>
+
+          <!-- Tabla: Historial de Órdenes de Mantenimiento -->
+          <div class="mt-8 pt-6 border-t border-gray-800">
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
+                <span>📋</span> Órdenes de Trabajo y Mantenimiento de Taller
+              </h4>
+              <button onclick="cargarOrdenesMantenimiento()" class="text-xs text-machinery hover:underline font-bold">
+                🔄 Actualizar Órdenes
+              </button>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-gray-800">
+              <table class="w-full text-left text-xs">
+                <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
+                  <tr>
+                    <th class="py-3 px-4">N° Orden</th>
+                    <th class="py-3 px-4">Equipo</th>
+                    <th class="py-3 px-4">Tipo Servicio</th>
+                    <th class="py-3 px-4">Fecha Prog.</th>
+                    <th class="py-3 px-4 text-right">Horóm. Registro</th>
+                    <th class="py-3 px-4 text-right">Costo Estim. (S/.)</th>
+                    <th class="py-3 px-4">Técnico / Taller</th>
+                    <th class="py-3 px-4 text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-ordenes-mantenimiento-body" class="divide-y divide-gray-800 font-medium">
+                  <tr>
+                    <td colspan="8" class="py-6 text-center text-gray-500">Cargando órdenes de mantenimiento...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <!-- KPIs Resumen Mantenimiento -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
-            <div class="text-[11px] text-gray-400 font-bold uppercase">Operativos al Día</div>
-            <div id="mant-kpi-verde" class="text-2xl font-black text-emerald-400 mt-1">0</div>
-            <div class="text-[10px] text-gray-500">Horómetros dentro de rango</div>
+        <!-- SECCIÓN CONTROL DE COMBUSTIBLE & PAGOS -->
+        <div id="seccion-combustible"
+          class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+            <div>
+              <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+                <span class="w-3 h-3 bg-emerald-400 rounded-sm"></span>
+                Control de Combustible & Conciliación con Área de Pagos
+              </h3>
+              <p class="text-xs text-gray-400">Supervise cargas de diésel reportadas por operadores, coordine montos
+                facturados y registre números de operación bancaria</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <button onclick="cargarModuloCombustible()"
+                class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+                🔄 Refrescar Cargas
+              </button>
+            </div>
           </div>
-          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
-            <div class="text-[11px] text-gray-400 font-bold uppercase">Alerta Próxima (&lt;25h)</div>
-            <div id="mant-kpi-amarillo" class="text-2xl font-black text-amber-400 mt-1">0</div>
-            <div class="text-[10px] text-amber-400/80">Requieren insumos/filtros</div>
-          </div>
-          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
-            <div class="text-[11px] text-gray-400 font-bold uppercase">Servicio Vencido</div>
-            <div id="mant-kpi-rojo" class="text-2xl font-black text-rose-400 mt-1">0</div>
-            <div class="text-[10px] text-rose-400/80">Parada preventiva requerida</div>
-          </div>
-          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
-            <div class="text-[11px] text-gray-400 font-bold uppercase">Órdenes Registradas</div>
-            <div id="mant-kpi-ordenes" class="text-2xl font-black text-machinery mt-1">0</div>
-            <div class="text-[10px] text-gray-500">Historial de taller</div>
-          </div>
-        </div>
 
-        <!-- Tabla: Intervalos y Próximo Servicio de Maquinaria -->
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
-              <span>🚜</span> Intervalos de Servicio por Máquina (Horas)
-            </h4>
-            <span class="text-xs text-gray-400">Haga clic en ⚙️ para cambiar cada cuántas horas se realiza mantenimiento</span>
+          <!-- KPIs Resumen de Pagos de Combustible -->
+          <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+              <div class="text-[11px] text-gray-400 font-bold uppercase">Galones Totales</div>
+              <div id="comb-kpi-galones" class="text-2xl font-black text-machinery mt-1">0.0 Gal</div>
+              <div class="text-[10px] text-gray-500">Consumo acumulado</div>
+            </div>
+            <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+              <div class="text-[11px] text-gray-400 font-bold uppercase">Pendiente de Pago</div>
+              <div id="comb-kpi-pendiente" class="text-2xl font-black text-amber-400 mt-1">S/ 0.00</div>
+              <div class="text-[10px] text-amber-400/80">Por conciliar con tesorería</div>
+            </div>
+            <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+              <div class="text-[11px] text-gray-400 font-bold uppercase">Total Pagado</div>
+              <div id="comb-kpi-pagado" class="text-2xl font-black text-emerald-400 mt-1">S/ 0.00</div>
+              <div class="text-[10px] text-emerald-400/80">Con operación bancaria</div>
+            </div>
+            <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+              <div class="text-[11px] text-gray-400 font-bold uppercase">Inversión Total Combustible</div>
+              <div id="comb-kpi-total" class="text-2xl font-black text-white mt-1">S/ 0.00</div>
+              <div class="text-[10px] text-gray-500">Monto global</div>
+            </div>
           </div>
-          <div class="overflow-x-auto rounded-lg border border-gray-800">
-            <table class="w-full text-left text-xs">
-              <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
-                <tr>
-                  <th class="py-3 px-4">Código / Equipo</th>
-                  <th class="py-3 px-4">Tipo</th>
-                  <th class="py-3 px-4 text-right">Horómetro Actual</th>
-                  <th class="py-3 px-4 text-center">Intervalo Configurado</th>
-                  <th class="py-3 px-4 text-right">Próximo Mantenimiento</th>
-                  <th class="py-3 px-4 text-right">Horas Restantes</th>
-                  <th class="py-3 px-4 text-center">Semáforo</th>
-                  <th class="py-3 px-4 text-center">Acciones</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-mantenimiento-equipos-body" class="divide-y divide-gray-800 font-medium">
-                <tr>
-                  <td colspan="8" class="py-6 text-center text-gray-500">Cargando flota para mantenimiento...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
 
-        <!-- Tabla: Historial de Órdenes de Mantenimiento -->
-        <div class="mt-8 pt-6 border-t border-gray-800">
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
-              <span>📋</span> Órdenes de Trabajo y Mantenimiento de Taller
-            </h4>
-            <button onclick="cargarOrdenesMantenimiento()" class="text-xs text-machinery hover:underline font-bold">
-              🔄 Actualizar Órdenes
-            </button>
-          </div>
-          <div class="overflow-x-auto rounded-lg border border-gray-800">
-            <table class="w-full text-left text-xs">
-              <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
-                <tr>
-                  <th class="py-3 px-4">N° Orden</th>
-                  <th class="py-3 px-4">Equipo</th>
-                  <th class="py-3 px-4">Tipo Servicio</th>
-                  <th class="py-3 px-4">Fecha Prog.</th>
-                  <th class="py-3 px-4 text-right">Horóm. Registro</th>
-                  <th class="py-3 px-4 text-right">Costo Estim. (S/.)</th>
-                  <th class="py-3 px-4">Técnico / Taller</th>
-                  <th class="py-3 px-4 text-center">Estado</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-ordenes-mantenimiento-body" class="divide-y divide-gray-800 font-medium">
-                <tr>
-                  <td colspan="8" class="py-6 text-center text-gray-500">Cargando órdenes de mantenimiento...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- SECCIÓN CONTROL DE COMBUSTIBLE & PAGOS -->
-      <div id="seccion-combustible" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+          <!-- Tabla: Registro de Cargas de Combustible -->
           <div>
-            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
-              <span class="w-3 h-3 bg-emerald-400 rounded-sm"></span>
-              Control de Combustible & Conciliación con Área de Pagos
-            </h3>
-            <p class="text-xs text-gray-400">Supervise cargas de diésel reportadas por operadores, coordine montos facturados y registre números de operación bancaria</p>
-          </div>
-          <div class="flex items-center gap-2">
-            <button onclick="cargarModuloCombustible()" class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
-              🔄 Refrescar Cargas
-            </button>
-          </div>
-        </div>
-
-        <!-- KPIs Resumen de Pagos de Combustible -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
-            <div class="text-[11px] text-gray-400 font-bold uppercase">Galones Totales</div>
-            <div id="comb-kpi-galones" class="text-2xl font-black text-machinery mt-1">0.0 Gal</div>
-            <div class="text-[10px] text-gray-500">Consumo acumulado</div>
-          </div>
-          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
-            <div class="text-[11px] text-gray-400 font-bold uppercase">Pendiente de Pago</div>
-            <div id="comb-kpi-pendiente" class="text-2xl font-black text-amber-400 mt-1">S/ 0.00</div>
-            <div class="text-[10px] text-amber-400/80">Por conciliar con tesorería</div>
-          </div>
-          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
-            <div class="text-[11px] text-gray-400 font-bold uppercase">Total Pagado</div>
-            <div id="comb-kpi-pagado" class="text-2xl font-black text-emerald-400 mt-1">S/ 0.00</div>
-            <div class="text-[10px] text-emerald-400/80">Con operación bancaria</div>
-          </div>
-          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
-            <div class="text-[11px] text-gray-400 font-bold uppercase">Inversión Total Combustible</div>
-            <div id="comb-kpi-total" class="text-2xl font-black text-white mt-1">S/ 0.00</div>
-            <div class="text-[10px] text-gray-500">Monto global</div>
+            <div class="flex items-center justify-between mb-3">
+              <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
+                <span>⛽</span> Bitácora de Cargas y Conciliación Financiera
+              </h4>
+              <span class="text-xs text-gray-400">Coordinación directa de pagos con área de administración</span>
+            </div>
+            <div class="overflow-x-auto rounded-lg border border-gray-800">
+              <table class="w-full text-left text-xs">
+                <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
+                  <tr>
+                    <th class="py-3 px-4">Fecha / Hora</th>
+                    <th class="py-3 px-4">Equipo / Placa</th>
+                    <th class="py-3 px-4">Operador</th>
+                    <th class="py-3 px-4 text-right">Galones</th>
+                    <th class="py-3 px-4 text-center">Voucher</th>
+                    <th class="py-3 px-4 text-right">Precio/Gal (S/.)</th>
+                    <th class="py-3 px-4 text-right">Total S/.</th>
+                    <th class="py-3 px-4 text-center">Estado Pago</th>
+                    <th class="py-3 px-4">N° Operación</th>
+                    <th class="py-3 px-4 text-center">Acción</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-combustible-cargas-body" class="divide-y divide-gray-800 font-medium">
+                  <tr>
+                    <td colspan="10" class="py-6 text-center text-gray-500">Cargando registros de combustible...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        <!-- Tabla: Registro de Cargas de Combustible -->
-        <div>
-          <div class="flex items-center justify-between mb-3">
-            <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
-              <span>⛽</span> Bitácora de Cargas y Conciliación Financiera
-            </h4>
-            <span class="text-xs text-gray-400">Coordinación directa de pagos con área de administración</span>
-          </div>
-          <div class="overflow-x-auto rounded-lg border border-gray-800">
-            <table class="w-full text-left text-xs">
-              <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
-                <tr>
-                  <th class="py-3 px-4">Fecha / Hora</th>
-                  <th class="py-3 px-4">Equipo / Placa</th>
-                  <th class="py-3 px-4">Operador</th>
-                  <th class="py-3 px-4 text-right">Galones</th>
-                  <th class="py-3 px-4 text-center">Voucher</th>
-                  <th class="py-3 px-4 text-right">Precio/Gal (S/.)</th>
-                  <th class="py-3 px-4 text-right">Total S/.</th>
-                  <th class="py-3 px-4 text-center">Estado Pago</th>
-                  <th class="py-3 px-4">N° Operación</th>
-                  <th class="py-3 px-4 text-center">Acción</th>
-                </tr>
-              </thead>
-              <tbody id="tabla-combustible-cargas-body" class="divide-y divide-gray-800 font-medium">
-                <tr>
-                  <td colspan="10" class="py-6 text-center text-gray-500">Cargando registros de combustible...</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
       </div>
-
-    </div>
   </main>
 
   <!-- MODAL: REGISTRAR PERSONAL -->
-  <div id="modal-personal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div id="modal-personal"
+    class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-lg p-6 shadow-2xl relative">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
         <div>
           <h3 id="modal-personal-titulo" class="text-base font-black text-white uppercase flex items-center gap-2">
             <span class="text-xl">🚜</span> Registrar Operador de Maquinaria
           </h3>
-          <p id="modal-personal-subtitulo" class="text-[11px] text-gray-400 mt-0.5">Habilita al operador para asignación a equipos y acceso a la App Móvil con su DNI</p>
+          <p id="modal-personal-subtitulo" class="text-[11px] text-gray-400 mt-0.5">Habilita al operador para asignación
+            a equipos y acceso a la App Móvil con su DNI</p>
         </div>
-        <button onclick="cerrarModalPersonal()" class="text-gray-400 hover:text-white text-xl font-bold cursor-pointer">&times;</button>
+        <button onclick="cerrarModalPersonal()"
+          class="text-gray-400 hover:text-white text-xl font-bold cursor-pointer">&times;</button>
       </div>
 
       <form onsubmit="registrarPersonalSubmit(event)" class="space-y-3.5 text-xs">
@@ -1041,21 +1217,29 @@
           <div>
             <div class="flex items-center justify-between mb-1">
               <label class="block font-bold text-gray-400 uppercase">DNI (8 dígitos) *</label>
-              <button type="button" onclick="consultarReniecManual()" id="btn-reniec-consulta" class="text-[10px] font-black text-machinery hover:underline flex items-center gap-1 cursor-pointer" title="Consultar en la base de datos nacional RENIEC">
+              <button type="button" onclick="consultarReniecManual()" id="btn-reniec-consulta"
+                class="text-[10px] font-black text-machinery hover:underline flex items-center gap-1 cursor-pointer"
+                title="Consultar en la base de datos nacional RENIEC">
                 🔍 Consultar RENIEC
               </button>
             </div>
             <div class="relative">
-              <input type="text" id="personal-dni-input" name="dni" required maxlength="8" placeholder="Ej: 00000000" oninput="alCambiarDni(this.value)" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+              <input type="text" id="personal-dni-input" name="dni" required maxlength="8" placeholder="Ej: 00000000"
+                oninput="alCambiarDni(this.value)"
+                class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-mono font-bold focus:border-machinery focus:outline-none">
               <div id="reniec-spinner" class="absolute right-3 top-2.5 hidden">
-                <svg class="animate-spin h-4 w-4 text-machinery" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path></svg>
+                <svg class="animate-spin h-4 w-4 text-machinery" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                </svg>
               </div>
             </div>
             <span id="reniec-status-badge" class="text-[10px] font-bold block mt-1"></span>
           </div>
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Rol / Cargo *</label>
-            <select id="select-personal-rol" name="rol" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+            <select id="select-personal-rol" name="rol" required
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
               <option value="operador">Operador de Maquinaria</option>
               <option value="jefe_mantenimiento">Jefe de Área / Mantenimiento</option>
               <option value="gerencia">Gerencia / Dirección</option>
@@ -1067,36 +1251,44 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Nombres *</label>
-            <input type="text" id="personal-nombres-input" name="nombres" required placeholder="Juan Carlos" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+            <input type="text" id="personal-nombres-input" name="nombres" required placeholder="Juan Carlos"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Apellidos *</label>
-            <input type="text" id="personal-apellidos-input" name="apellidos" required placeholder="Mamani Condori" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+            <input type="text" id="personal-apellidos-input" name="apellidos" required placeholder="Mamani Condori"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Teléfono Móvil</label>
-            <input type="text" name="telefono" placeholder="+51 987 654 321" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+            <input type="text" name="telefono" placeholder="+51 987 654 321"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Clave de Acceso Personal *</label>
-            <input type="text" name="pin_acceso" maxlength="12" value="1234" required placeholder="Clave personal" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-machinery font-mono font-bold text-center focus:border-machinery focus:outline-none">
-            <span class="text-[10px] text-gray-500 mt-1 block">El colaborador usará su <strong>DNI y esta Clave</strong> para ingresar (podrá cambiarla).</span>
+            <input type="text" name="pin_acceso" maxlength="12" value="1234" required placeholder="Clave personal"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-machinery font-mono font-bold text-center focus:border-machinery focus:outline-none">
+            <span class="text-[10px] text-gray-500 mt-1 block">El colaborador usará su <strong>DNI y esta Clave</strong>
+              para ingresar (podrá cambiarla).</span>
           </div>
         </div>
 
         <div class="border-t border-gray-800 pt-3">
-          <span class="text-[11px] font-bold text-machinery uppercase tracking-wider block mb-2">Datos de Licencia de Conducir (Brevete)</span>
+          <span class="text-[11px] font-bold text-machinery uppercase tracking-wider block mb-2">Datos de Licencia de
+            Conducir (Brevete)</span>
           <div class="grid grid-cols-3 gap-2">
             <div>
               <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">N° Brevete</label>
-              <input type="text" name="brevete_numero" placeholder="Q45892147" class="w-full bg-carbon border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold">
+              <input type="text" name="brevete_numero" placeholder="Q45892147"
+                class="w-full bg-carbon border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold">
             </div>
             <div>
               <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría</label>
-              <select name="brevete_categoria" class="w-full bg-carbon border border-gray-700 rounded-lg px-2 py-2 text-white font-bold">
+              <select name="brevete_categoria"
+                class="w-full bg-carbon border border-gray-700 rounded-lg px-2 py-2 text-white font-bold">
                 <option value="A-IIIc">A-IIIc (Pesada)</option>
                 <option value="A-IIIb">A-IIIb (Camión)</option>
                 <option value="A-IIb">A-IIb (Cisterna)</option>
@@ -1105,7 +1297,8 @@
             </div>
             <div>
               <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Vencimiento</label>
-              <input type="date" name="brevete_vencimiento" class="w-full bg-carbon border border-gray-700 rounded-lg px-2 py-2 text-white font-bold">
+              <input type="date" name="brevete_vencimiento"
+                class="w-full bg-carbon border border-gray-700 rounded-lg px-2 py-2 text-white font-bold">
             </div>
           </div>
         </div>
@@ -1114,14 +1307,18 @@
         <div class="border-t border-gray-800 pt-3">
           <div class="flex items-center justify-between mb-1.5">
             <div>
-              <span class="text-[11px] font-bold text-machinery uppercase tracking-wider block">¿Cuenta con Certificado / Homologación?</span>
-              <span class="text-[10px] text-gray-400 block">Cursos de maquinaria, homologación 3G/4G o acreditaciones</span>
+              <span class="text-[11px] font-bold text-machinery uppercase tracking-wider block">¿Cuenta con Certificado
+                / Homologación?</span>
+              <span class="text-[10px] text-gray-400 block">Cursos de maquinaria, homologación 3G/4G o
+                acreditaciones</span>
             </div>
             <div class="flex items-center gap-1 bg-carbon p-1 rounded-lg border border-gray-700 shrink-0">
-              <button type="button" id="btn-cert-no" onclick="seleccionarCertificado(false)" class="px-3 py-1 rounded text-xs font-black transition bg-gray-700 text-white">
+              <button type="button" id="btn-cert-no" onclick="seleccionarCertificado(false)"
+                class="px-3 py-1 rounded text-xs font-black transition bg-gray-700 text-white">
                 NO
               </button>
-              <button type="button" id="btn-cert-si" onclick="seleccionarCertificado(true)" class="px-3 py-1 rounded text-xs font-black transition text-gray-400 hover:text-white">
+              <button type="button" id="btn-cert-si" onclick="seleccionarCertificado(true)"
+                class="px-3 py-1 rounded text-xs font-black transition text-gray-400 hover:text-white">
                 SÍ
               </button>
               <input type="hidden" name="tiene_certificacion" id="input-tiene-certificacion" value="0">
@@ -1129,44 +1326,61 @@
           </div>
 
           <!-- Campos desplegables si es SÍ -->
-          <div id="seccion-campos-certificado" class="hidden space-y-3 bg-carbon/70 p-3.5 rounded-xl border border-emerald-900/50 mt-2">
+          <div id="seccion-campos-certificado"
+            class="hidden space-y-3 bg-carbon/70 p-3.5 rounded-xl border border-emerald-900/50 mt-2">
             <div class="grid grid-cols-2 gap-3">
               <div>
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nombre / Entidad del Certificado</label>
-                <input type="text" name="certificado_nombre" id="input-cert-nombre" placeholder="Ej: Operador Excavadora TECSUP / Rigger" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Nombre / Entidad del
+                  Certificado</label>
+                <input type="text" name="certificado_nombre" id="input-cert-nombre"
+                  placeholder="Ej: Operador Excavadora TECSUP / Rigger"
+                  class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Vencimiento del Certificado</label>
-                <input type="date" name="certificado_vencimiento" id="input-cert-venc" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+                <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Vencimiento del
+                  Certificado</label>
+                <input type="date" name="certificado_vencimiento" id="input-cert-venc"
+                  class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
               </div>
             </div>
 
             <div>
-              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Subir Certificado Digital (PDF o Imagen)</label>
-              <label class="w-full flex items-center justify-center gap-2.5 bg-graphite border-2 border-dashed border-gray-700 hover:border-machinery rounded-xl py-3 px-3 cursor-pointer transition">
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Subir Certificado Digital (PDF o
+                Imagen)</label>
+              <label
+                class="w-full flex items-center justify-center gap-2.5 bg-graphite border-2 border-dashed border-gray-700 hover:border-machinery rounded-xl py-3 px-3 cursor-pointer transition">
                 <span class="text-xl">📎</span>
-                <span class="text-xs font-bold text-gray-300" id="label-archivo-cert">Seleccionar PDF, JPG o PNG...</span>
-                <input type="file" id="input-archivo-certificado" accept=".pdf,image/*" class="hidden" onchange="subirArchivoCertificado(this)">
+                <span class="text-xs font-bold text-gray-300" id="label-archivo-cert">Seleccionar PDF, JPG o
+                  PNG...</span>
+                <input type="file" id="input-archivo-certificado" accept=".pdf,image/*" class="hidden"
+                  onchange="subirArchivoCertificado(this)">
               </label>
               <input type="hidden" name="certificado_archivo_url" id="input-cert-url" value="">
-              <div id="preview-cert-box" class="hidden mt-1.5 p-2 bg-emerald-950/60 border border-emerald-800 rounded-lg flex items-center justify-between text-[11px]">
+              <div id="preview-cert-box"
+                class="hidden mt-1.5 p-2 bg-emerald-950/60 border border-emerald-800 rounded-lg flex items-center justify-between text-[11px]">
                 <span id="preview-cert-nombre" class="font-bold text-emerald-300 truncate max-w-[220px]"></span>
-                <a id="preview-cert-href" href="#" target="_blank" class="px-2 py-0.5 bg-emerald-900 text-white rounded font-bold hover:bg-emerald-800 transition">Ver Digital ↗</a>
+                <a id="preview-cert-href" href="#" target="_blank"
+                  class="px-2 py-0.5 bg-emerald-900 text-white rounded font-bold hover:bg-emerald-800 transition">Ver
+                  Digital ↗</a>
               </div>
             </div>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
-          <button type="button" onclick="cerrarModalPersonal()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Guardar Colaborador</button>
+          <button type="button" onclick="cerrarModalPersonal()"
+            class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+          <button type="submit"
+            class="px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Guardar
+            Colaborador</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: REASIGNAR EQUIPO A FRENTE Y OPERADOR -->
-  <div id="modal-asignar-equipo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div id="modal-asignar-equipo"
+    class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
         <div>
@@ -1183,45 +1397,54 @@
 
         <div>
           <label class="block font-bold text-gray-400 uppercase mb-1">Frente de Obra / Proyecto Asignado</label>
-          <select id="select-asignar-frente" name="proyecto_id" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+          <select id="select-asignar-frente" name="proyecto_id"
+            class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
             <!-- Dinámico -->
           </select>
         </div>
 
         <div>
           <label class="block font-bold text-gray-400 uppercase mb-1">Personal / Operador a Cargo Asignado</label>
-          <select id="select-asignar-operador" name="operador_id" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+          <select id="select-asignar-operador" name="operador_id"
+            class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
             <!-- Dinámico -->
           </select>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
-          <button type="button" onclick="cerrarModalAsignar()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Guardar Asignación</button>
+          <button type="button" onclick="cerrarModalAsignar()"
+            class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+          <button type="submit"
+            class="px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Guardar
+            Asignación</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: NUEVO FRENTE DE OBRA / PROYECTO -->
-  <div id="modal-proyecto" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div id="modal-proyecto"
+    class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
         <h3 class="text-base font-black text-white uppercase flex items-center gap-2">
           <span>🏗️</span> Nuevo Frente de Obra / Proyecto
         </h3>
-        <button onclick="cerrarModalNuevoProyecto()" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+        <button onclick="cerrarModalNuevoProyecto()"
+          class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
 
       <form onsubmit="registrarProyectoSubmit(event)" class="space-y-3.5 text-xs">
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Código del Frente *</label>
-            <input type="text" name="codigo" required placeholder="Ej: FRT-CANTERA" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold uppercase focus:border-machinery focus:outline-none">
+            <input type="text" name="codigo" required placeholder="Ej: FRT-CANTERA"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold uppercase focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Estado</label>
-            <select name="estado" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+            <select name="estado"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
               <option value="activo">Activo</option>
               <option value="pausado">Pausado</option>
               <option value="cerrado">Cerrado</option>
@@ -1231,29 +1454,36 @@
 
         <div>
           <label class="block font-bold text-gray-400 uppercase mb-1">Nombre Descriptivo del Frente *</label>
-          <input type="text" name="nombre" required placeholder="Ej: Frente Cantera Sur - Chancado Km 48" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+          <input type="text" name="nombre" required placeholder="Ej: Frente Cantera Sur - Chancado Km 48"
+            class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
         </div>
 
         <div>
           <label class="block font-bold text-gray-400 uppercase mb-1">Ubicación / Sector Geográfico *</label>
-          <input type="text" name="ubicacion" required placeholder="Ej: Moquegua - Quebrada Honda Km 48" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+          <input type="text" name="ubicacion" required placeholder="Ej: Moquegua - Quebrada Honda Km 48"
+            class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
         </div>
 
         <div>
           <label class="block font-bold text-gray-400 uppercase mb-1">Fecha de Apertura / Inicio</label>
-          <input type="date" name="fecha_inicio" id="input-fecha-inicio-frente" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+          <input type="date" name="fecha_inicio" id="input-fecha-inicio-frente" required
+            class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-800">
-          <button type="button" onclick="cerrarModalNuevoProyecto()" class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
-          <button type="submit" class="px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Crear Frente de Obra</button>
+          <button type="button" onclick="cerrarModalNuevoProyecto()"
+            class="px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+          <button type="submit"
+            class="px-5 py-2.5 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Crear
+            Frente de Obra</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: REGISTRAR NUEVA MAQUINARIA / EQUIPO -->
-  <div id="modal-nuevo-equipo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto">
+  <div id="modal-nuevo-equipo"
+    class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto">
     <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative my-8">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
         <div>
@@ -1262,7 +1492,8 @@
           </h3>
           <p class="text-xs text-gray-400 mt-0.5">Ingresa los datos técnicos, control de uso y documentación</p>
         </div>
-        <button onclick="cerrarModalNuevoEquipo()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+        <button onclick="cerrarModalNuevoEquipo()"
+          class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
       </div>
 
       <form onsubmit="registrarEquipoSubmit(event)" class="space-y-4 text-xs">
@@ -1274,30 +1505,36 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label class="block font-bold text-gray-300 uppercase mb-1">Nombre del Equipo *</label>
-              <input type="text" name="nombre" required placeholder="Ej: Excavadora Oruga CAT 336D" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <input type="text" name="nombre" required placeholder="Ej: Excavadora Oruga CAT 336D"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
             </div>
             <div>
               <label class="block font-bold text-gray-300 uppercase mb-1">Código Interno *</label>
-              <input type="text" name="codigo_interno" required placeholder="Ej: EX-05 o VOL-02" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold uppercase focus:border-machinery focus:outline-none">
+              <input type="text" name="codigo_interno" required placeholder="Ej: EX-05 o VOL-02"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold uppercase focus:border-machinery focus:outline-none">
             </div>
           </div>
 
           <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">Marca *</label>
-              <input type="text" name="marca" required placeholder="Caterpillar" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <input type="text" name="marca" required placeholder="Caterpillar"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
             </div>
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">Modelo *</label>
-              <input type="text" name="modelo" required placeholder="336D2L" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <input type="text" name="modelo" required placeholder="336D2L"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
             </div>
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">N° Serie / Chasis</label>
-              <input type="text" name="serie_chasis" placeholder="CAT0336D09124" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-mono focus:border-machinery focus:outline-none">
+              <input type="text" name="serie_chasis" placeholder="CAT0336D09124"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-mono focus:border-machinery focus:outline-none">
             </div>
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">Placa de Rodaje</label>
-              <input type="text" name="placa" placeholder="B7X-892 (opcional)" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white uppercase font-bold focus:border-machinery focus:outline-none">
+              <input type="text" name="placa" placeholder="B7X-892 (opcional)"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white uppercase font-bold focus:border-machinery focus:outline-none">
             </div>
           </div>
         </div>
@@ -1310,7 +1547,8 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label class="block font-bold text-gray-300 uppercase mb-1">Control por KM o Horómetro *</label>
-              <select name="tipo_control" id="nuevo-tipo-control" onchange="toggleCamposControl('nuevo')" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <select name="tipo_control" id="nuevo-tipo-control" onchange="toggleCamposControl('nuevo')"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
                 <option value="HOROMETRO" selected>⏱️ Horómetro (Maquinaria Pesada)</option>
                 <option value="KILOMETRAJE">🚗 Kilometraje (Camionetas / Camiones / Livianos)</option>
                 <option value="AMBOS">🔄 Dual (Horómetro + Kilometraje)</option>
@@ -1318,7 +1556,8 @@
             </div>
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">Tipo de Unidad *</label>
-              <select name="tipo" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <select name="tipo"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
                 <option value="pesada">Maquinaria Pesada</option>
                 <option value="camion">Camión / Volquete</option>
                 <option value="liviano">Liviano / Supervisión</option>
@@ -1329,15 +1568,18 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div id="nuevo-campo-horometro">
               <label class="block font-bold text-gray-400 uppercase mb-1">Registro Horómetro (h) *</label>
-              <input type="number" step="0.1" name="horometro_actual" required value="0.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none">
+              <input type="number" step="0.1" name="horometro_actual" required value="0.0"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none">
             </div>
             <div id="nuevo-campo-horometro-prox">
               <label class="block font-bold text-gray-400 uppercase mb-1">Próx. Servicio (h) *</label>
-              <input type="number" step="0.1" name="horometro_proximo_servicio" required value="250.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+              <input type="number" step="0.1" name="horometro_proximo_servicio" required value="250.0"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
             </div>
             <div id="nuevo-campo-km">
               <label class="block font-bold text-gray-400 uppercase mb-1">Registro Kilometraje (Km)</label>
-              <input type="number" step="0.1" name="odometro_actual" value="0.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none">
+              <input type="number" step="0.1" name="odometro_actual" value="0.0"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none">
             </div>
           </div>
         </div>
@@ -1354,11 +1596,13 @@
               </div>
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">N° de Póliza</label>
-                <input type="text" name="poliza_seguro" placeholder="Ej: POL-RIMAC-2026-99" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+                <input type="text" name="poliza_seguro" placeholder="Ej: POL-RIMAC-2026-99"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
               </div>
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento Póliza</label>
-                <input type="date" name="poliza_vencimiento" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+                <input type="date" name="poliza_vencimiento"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
               </div>
             </div>
 
@@ -1368,35 +1612,43 @@
               </div>
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">N° de SOAT</label>
-                <input type="text" name="soat_numero" placeholder="Ej: SOAT-POSITIVA-8812" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+                <input type="text" name="soat_numero" placeholder="Ej: SOAT-POSITIVA-8812"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
               </div>
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento SOAT</label>
-                <input type="date" name="soat_vencimiento" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+                <input type="date" name="soat_vencimiento"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
               </div>
             </div>
           </div>
         </div>
 
         <div class="flex items-center justify-end gap-3 pt-3 border-t border-gray-800">
-          <button type="button" onclick="cerrarModalNuevoEquipo()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
-          <button type="submit" class="px-5 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Registrar Maquinaria</button>
+          <button type="button" onclick="cerrarModalNuevoEquipo()"
+            class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+          <button type="submit"
+            class="px-5 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Registrar
+            Maquinaria</button>
         </div>
       </form>
     </div>
   </div>
 
   <!-- MODAL: EDITAR MAQUINARIA / EQUIPO -->
-  <div id="modal-editar-equipo" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto">
+  <div id="modal-editar-equipo"
+    class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 hidden items-center justify-center p-4 overflow-y-auto">
     <div class="bg-graphite border border-gray-700 rounded-2xl w-full max-w-2xl p-6 shadow-2xl relative my-8">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3 mb-4">
         <div>
           <h3 class="text-base font-black text-white uppercase flex items-center gap-2">
             <span>✏️</span> Editar Información de Maquinaria / Equipo
           </h3>
-          <p class="text-xs text-gray-400 mt-0.5">Modifica especificaciones técnicas, horas, kilometraje y documentos</p>
+          <p class="text-xs text-gray-400 mt-0.5">Modifica especificaciones técnicas, horas, kilometraje y documentos
+          </p>
         </div>
-        <button onclick="cerrarModalEditarEquipo()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+        <button onclick="cerrarModalEditarEquipo()"
+          class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
       </div>
 
       <form id="form-editar-equipo" onsubmit="actualizarEquipoSubmit(event)" class="space-y-4 text-xs">
@@ -1410,30 +1662,36 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label class="block font-bold text-gray-300 uppercase mb-1">Nombre del Equipo *</label>
-              <input type="text" name="nombre" required placeholder="Ej: Excavadora Oruga CAT 336D" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <input type="text" name="nombre" required placeholder="Ej: Excavadora Oruga CAT 336D"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
             </div>
             <div>
               <label class="block font-bold text-gray-300 uppercase mb-1">Código Interno *</label>
-              <input type="text" name="codigo_interno" required class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold uppercase focus:border-machinery focus:outline-none">
+              <input type="text" name="codigo_interno" required
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold uppercase focus:border-machinery focus:outline-none">
             </div>
           </div>
 
           <div class="grid grid-cols-2 md:grid-cols-4 gap-2.5">
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">Marca *</label>
-              <input type="text" name="marca" required class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <input type="text" name="marca" required
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
             </div>
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">Modelo *</label>
-              <input type="text" name="modelo" required class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <input type="text" name="modelo" required
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none">
             </div>
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">N° Serie / Chasis</label>
-              <input type="text" name="serie_chasis" placeholder="CAT0336D09124" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-mono focus:border-machinery focus:outline-none">
+              <input type="text" name="serie_chasis" placeholder="CAT0336D09124"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-mono focus:border-machinery focus:outline-none">
             </div>
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">Placa de Rodaje</label>
-              <input type="text" name="placa" placeholder="B7X-892" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white uppercase font-bold focus:border-machinery focus:outline-none">
+              <input type="text" name="placa" placeholder="B7X-892"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white uppercase font-bold focus:border-machinery focus:outline-none">
             </div>
           </div>
         </div>
@@ -1446,7 +1704,8 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div>
               <label class="block font-bold text-gray-300 uppercase mb-1">Control por KM o Horómetro *</label>
-              <select name="tipo_control" id="editar-tipo-control" onchange="toggleCamposControl('editar')" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <select name="tipo_control" id="editar-tipo-control" onchange="toggleCamposControl('editar')"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
                 <option value="HOROMETRO">⏱️ Horómetro (Maquinaria Pesada)</option>
                 <option value="KILOMETRAJE">🚗 Kilometraje (Camionetas / Camiones / Livianos)</option>
                 <option value="AMBOS">🔄 Dual (Horómetro + Kilometraje)</option>
@@ -1454,7 +1713,8 @@
             </div>
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">Tipo de Unidad *</label>
-              <select name="tipo" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <select name="tipo"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
                 <option value="pesada">Maquinaria Pesada</option>
                 <option value="camion">Camión / Volquete</option>
                 <option value="liviano">Liviano / Supervisión</option>
@@ -1462,7 +1722,8 @@
             </div>
             <div>
               <label class="block font-bold text-gray-400 uppercase mb-1">Estado Operativo *</label>
-              <select name="estado_operativo" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <select name="estado_operativo"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
                 <option value="operativo">🟢 Operativo</option>
                 <option value="mantenimiento">🟡 En Mantenimiento</option>
                 <option value="fuera_servicio">🔴 Fuera de Servicio</option>
@@ -1473,17 +1734,24 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div id="editar-campo-horometro">
               <label class="block font-bold text-gray-400 uppercase mb-1">Registro Horómetro Actual (h) *</label>
-              <input type="number" step="0.1" name="horometro_actual" id="editar-input-horometro-actual" oninput="validarEdicionHorometroLive()" required class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none transition-all">
-              <div id="editar-aviso-horometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al valor registrado (<span id="editar-valor-ant-h"></span> h)</div>
+              <input type="number" step="0.1" name="horometro_actual" id="editar-input-horometro-actual"
+                oninput="validarEdicionHorometroLive()" required
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none transition-all">
+              <div id="editar-aviso-horometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al
+                valor registrado (<span id="editar-valor-ant-h"></span> h)</div>
             </div>
             <div id="editar-campo-horometro-prox">
               <label class="block font-bold text-gray-400 uppercase mb-1">Próx. Servicio (h) *</label>
-              <input type="number" step="0.1" name="horometro_proximo_servicio" required class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+              <input type="number" step="0.1" name="horometro_proximo_servicio" required
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
             </div>
             <div id="editar-campo-km">
               <label class="block font-bold text-gray-400 uppercase mb-1">Registro Kilometraje (Km)</label>
-              <input type="number" step="0.1" name="odometro_actual" id="editar-input-odometro-actual" oninput="validarEdicionOdometroLive()" value="0.0" class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none transition-all">
-              <div id="editar-aviso-odometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al valor registrado (<span id="editar-valor-ant-km"></span> km)</div>
+              <input type="number" step="0.1" name="odometro_actual" id="editar-input-odometro-actual"
+                oninput="validarEdicionOdometroLive()" value="0.0"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none transition-all">
+              <div id="editar-aviso-odometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al
+                valor registrado (<span id="editar-valor-ant-km"></span> km)</div>
             </div>
           </div>
         </div>
@@ -1500,11 +1768,13 @@
               </div>
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">N° de Póliza</label>
-                <input type="text" name="poliza_seguro" placeholder="Ej: POL-RIMAC-2026-99" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+                <input type="text" name="poliza_seguro" placeholder="Ej: POL-RIMAC-2026-99"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
               </div>
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento Póliza</label>
-                <input type="date" name="poliza_vencimiento" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+                <input type="date" name="poliza_vencimiento"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
               </div>
             </div>
 
@@ -1514,23 +1784,29 @@
               </div>
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">N° de SOAT</label>
-                <input type="text" name="soat_numero" placeholder="Ej: SOAT-POSITIVA-8812" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+                <input type="text" name="soat_numero" placeholder="Ej: SOAT-POSITIVA-8812"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
               </div>
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento SOAT</label>
-                <input type="date" name="soat_vencimiento" class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+                <input type="date" name="soat_vencimiento"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
               </div>
             </div>
           </div>
         </div>
 
         <div class="flex items-center justify-between pt-3 border-t border-gray-800">
-          <button type="button" onclick="eliminarEquipoDesdeModal()" class="px-3.5 py-2 bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg font-bold text-xs flex items-center gap-1.5 transition">
+          <button type="button" onclick="eliminarEquipoDesdeModal()"
+            class="px-3.5 py-2 bg-rose-950/70 hover:bg-rose-900 text-rose-300 border border-rose-800 rounded-lg font-bold text-xs flex items-center gap-1.5 transition">
             🗑️ Eliminar Equipo
           </button>
           <div class="flex items-center gap-3">
-            <button type="button" onclick="cerrarModalEditarEquipo()" class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
-            <button type="submit" class="px-5 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Guardar Cambios</button>
+            <button type="button" onclick="cerrarModalEditarEquipo()"
+              class="px-4 py-2 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg font-bold">Cancelar</button>
+            <button type="submit"
+              class="px-5 py-2 bg-machinery hover:bg-machineryHover text-carbon font-black uppercase rounded-lg shadow-md">Guardar
+              Cambios</button>
           </div>
         </div>
       </form>
@@ -1538,13 +1814,16 @@
   </div>
 
   <!-- MODAL: VISUALIZADOR DE FOTO DE EVIDENCIA -->
-  <div id="modal-foto-preview" class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+  <div id="modal-foto-preview"
+    class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden items-center justify-center p-4">
     <div class="bg-graphite border border-gray-700 rounded-2xl max-w-lg w-full p-4 relative space-y-3">
       <div class="flex items-center justify-between border-b border-gray-800 pb-2">
         <h3 class="text-sm font-black text-white uppercase flex items-center gap-2" id="foto-preview-titulo">
           📸 Evidencia Fotográfica
         </h3>
-        <button onclick="document.getElementById('modal-foto-preview').classList.add('hidden'); document.getElementById('modal-foto-preview').classList.remove('flex');" class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
+        <button
+          onclick="document.getElementById('modal-foto-preview').classList.add('hidden'); document.getElementById('modal-foto-preview').classList.remove('flex');"
+          class="text-gray-400 hover:text-white text-xl font-bold">&times;</button>
       </div>
       <div class="bg-carbon rounded-xl p-2 flex items-center justify-center min-h-[250px] max-h-[70vh] overflow-hidden">
         <img id="foto-preview-img" src="" alt="Evidencia" class="max-h-[65vh] max-w-full rounded-lg object-contain">
@@ -1553,11 +1832,13 @@
   </div>
 
   <!-- MODAL: REGISTRO DE PRECIO Y TOTAL DE COMBUSTIBLE (JEFE DE FLOTAS) -->
-  <div id="modal-precio-combustible" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div id="modal-precio-combustible"
+    class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-graphite border-2 border-machinery/60 rounded-3xl max-w-md w-full p-6 relative space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
             ⛽
           </div>
           <div>
@@ -1565,7 +1846,8 @@
             <p class="text-[11px] text-gray-400">Control valorizado por Jefe de Flotas</p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalPrecioCombustible()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+        <button type="button" onclick="cerrarModalPrecioCombustible()"
+          class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
       </div>
 
       <!-- Resumen del abastecimiento reportado por el operador -->
@@ -1584,7 +1866,8 @@
         </div>
         <div id="modal-comb-voucher-box" class="pt-2 border-t border-gray-800 flex items-center justify-between hidden">
           <span class="text-gray-400">Comprobante de Vale / Ticket:</span>
-          <button type="button" id="btn-ver-voucher-modal" class="px-2.5 py-1 bg-graphiteLight hover:bg-gray-700 text-gray-200 text-[11px] font-bold rounded-lg border border-gray-700 flex items-center gap-1 transition">
+          <button type="button" id="btn-ver-voucher-modal"
+            class="px-2.5 py-1 bg-graphiteLight hover:bg-gray-700 text-gray-200 text-[11px] font-bold rounded-lg border border-gray-700 flex items-center gap-1 transition">
             <span>📸</span> <span>Ver Voucher</span>
           </button>
         </div>
@@ -1599,11 +1882,15 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-[11px] font-bold text-gray-300 uppercase mb-1">Precio por Galón (S/.) *</label>
-            <input type="number" step="0.01" id="modal-comb-precio-input" oninput="calcularTotalCombustibleModal()" placeholder="Ej: 18.50" required class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-white font-mono font-bold text-lg text-center rounded-xl py-2 px-3 focus:outline-none">
+            <input type="number" step="0.01" id="modal-comb-precio-input" oninput="calcularTotalCombustibleModal()"
+              placeholder="Ej: 18.50" required
+              class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-white font-mono font-bold text-lg text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
           <div>
             <label class="block text-[11px] font-bold text-gray-300 uppercase mb-1">Total Facturado S/. *</label>
-            <input type="number" step="0.01" id="modal-comb-total-input" oninput="calcularPrecioCombustibleModal()" placeholder="Ej: 832.50" required class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-emerald-400 font-mono font-bold text-lg text-center rounded-xl py-2 px-3 focus:outline-none">
+            <input type="number" step="0.01" id="modal-comb-total-input" oninput="calcularPrecioCombustibleModal()"
+              placeholder="Ej: 832.50" required
+              class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-emerald-400 font-mono font-bold text-lg text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
         </div>
 
@@ -1615,29 +1902,38 @@
           <div class="grid grid-cols-2 gap-3">
             <div>
               <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estado del Pago *</label>
-              <select id="modal-comb-estado-pago" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none text-xs">
+              <select id="modal-comb-estado-pago"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none text-xs">
                 <option value="pendiente">🟡 Pendiente de Pago</option>
                 <option value="pagado">🟢 Pagado / Conciliado</option>
               </select>
             </div>
             <div>
               <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">N° Operación / Transf.</label>
-              <input type="text" id="modal-comb-operacion-pago" placeholder="Ej: OP-982314 / BCP" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-mono text-xs focus:border-machinery focus:outline-none">
+              <input type="text" id="modal-comb-operacion-pago" placeholder="Ej: OP-982314 / BCP"
+                class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-mono text-xs focus:border-machinery focus:outline-none">
             </div>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Observaciones / Coordinación de Pago</label>
-            <input type="text" id="modal-comb-obs-pago" placeholder="Ej: Pago coordinado con área contable según Factura F001-239" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white text-xs focus:border-machinery focus:outline-none">
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Observaciones / Coordinación de
+              Pago</label>
+            <input type="text" id="modal-comb-obs-pago"
+              placeholder="Ej: Pago coordinado con área contable según Factura F001-239"
+              class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white text-xs focus:border-machinery focus:outline-none">
           </div>
         </div>
 
-        <div id="modal-comb-error" class="hidden p-2.5 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="modal-comb-error"
+          class="hidden p-2.5 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-2 flex gap-2">
-          <button type="submit" id="btn-guardar-comb-modal" class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-machinery/25 flex items-center justify-center gap-1.5">
+          <button type="submit" id="btn-guardar-comb-modal"
+            class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-machinery/25 flex items-center justify-center gap-1.5">
             <span>💾</span> <span>Guardar Conciliación</span>
           </button>
-          <button type="button" onclick="cerrarModalPrecioCombustible()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
+          <button type="button" onclick="cerrarModalPrecioCombustible()"
+            class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
             Cancelar
           </button>
         </div>
@@ -1646,11 +1942,13 @@
   </div>
 
   <!-- MODAL: CONFIGURAR INTERVALO DE MANTENIMIENTO POR MÁQUINA (ENCARGADO DE FLOTAS) -->
-  <div id="modal-config-mantenimiento" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div id="modal-config-mantenimiento"
+    class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-graphite border-2 border-amber-500/60 rounded-3xl max-w-md w-full p-6 relative space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
             ⚙️
           </div>
           <div>
@@ -1658,7 +1956,8 @@
             <p class="text-[11px] text-gray-400">Configuración técnica por máquina (horas)</p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalConfigMantenimiento()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+        <button type="button" onclick="cerrarModalConfigMantenimiento()"
+          class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
       </div>
 
       <div class="bg-carbon/90 rounded-2xl p-3.5 border border-gray-800 space-y-1.5 text-xs">
@@ -1684,20 +1983,25 @@
             ¿Cada cuántas horas se realiza mantenimiento? *
           </label>
           <div class="relative">
-            <input type="number" step="10" min="10" max="2000" id="modal-mant-intervalo" required placeholder="Ej: 250" oninput="recalcularProximoServicioModal()" class="w-full bg-carbon border-2 border-gray-700 focus:border-amber-400 text-white font-mono font-black text-xl text-center rounded-xl py-2.5 px-3 focus:outline-none">
+            <input type="number" step="10" min="10" max="2000" id="modal-mant-intervalo" required placeholder="Ej: 250"
+              oninput="recalcularProximoServicioModal()"
+              class="w-full bg-carbon border-2 border-gray-700 focus:border-amber-400 text-white font-mono font-black text-xl text-center rounded-xl py-2.5 px-3 focus:outline-none">
             <span class="absolute right-4 top-3 text-gray-400 font-bold">Horas</span>
           </div>
-          <span class="text-[10px] text-gray-400 mt-1 block">Estándar en maquinaria pesada: 250h (preventivo básico) o 500h (mayor).</span>
+          <span class="text-[10px] text-gray-400 mt-1 block">Estándar en maquinaria pesada: 250h (preventivo básico) o
+            500h (mayor).</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Horóm. Próx. Servicio *</label>
-            <input type="number" step="0.1" id="modal-mant-proximo" required class="w-full bg-carbon border border-gray-700 focus:border-machinery text-amber-400 font-mono font-bold text-sm text-center rounded-xl py-2 px-3 focus:outline-none">
+            <input type="number" step="0.1" id="modal-mant-proximo" required
+              class="w-full bg-carbon border border-gray-700 focus:border-machinery text-amber-400 font-mono font-bold text-sm text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Estado de Equipo</label>
-            <select id="modal-mant-estado" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold text-xs focus:outline-none">
+            <select id="modal-mant-estado"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold text-xs focus:outline-none">
               <option value="operativo">🟢 Operativo</option>
               <option value="en_mantenimiento">🔧 En Taller / Mant.</option>
               <option value="inactivo">⚪ Inactivo</option>
@@ -1705,13 +2009,17 @@
           </div>
         </div>
 
-        <div id="modal-mant-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="modal-mant-error"
+          class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-2 flex gap-2">
-          <button type="submit" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-amber-500/25 flex items-center justify-center gap-1.5">
+          <button type="submit"
+            class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-amber-500/25 flex items-center justify-center gap-1.5">
             <span>⚙️</span> <span>Guardar Intervalo</span>
           </button>
-          <button type="button" onclick="cerrarModalConfigMantenimiento()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
+          <button type="button" onclick="cerrarModalConfigMantenimiento()"
+            class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
             Cancelar
           </button>
         </div>
@@ -1720,7 +2028,8 @@
   </div>
 
   <!-- MODAL: NUEVA ORDEN DE MANTENIMIENTO -->
-  <div id="modal-nueva-orden-mantenimiento" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div id="modal-nueva-orden-mantenimiento"
+    class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-graphite border border-gray-700 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-2">
@@ -1730,20 +2039,24 @@
             <p class="text-[11px] text-gray-400">Registro de intervención técnica de taller</p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalNuevaOrdenMantenimiento()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+        <button type="button" onclick="cerrarModalNuevaOrdenMantenimiento()"
+          class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
       </div>
 
-      <form id="form-nueva-orden-mantenimiento" onsubmit="guardarNuevaOrdenMantenimientoSubmit(event)" class="space-y-3.5 text-xs">
+      <form id="form-nueva-orden-mantenimiento" onsubmit="guardarNuevaOrdenMantenimientoSubmit(event)"
+        class="space-y-3.5 text-xs">
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Máquina / Equipo *</label>
-            <select id="modal-orden-equipo-id" required class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            <select id="modal-orden-equipo-id" required
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
               <!-- Dinámico -->
             </select>
           </div>
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Tipo de Mantenimiento *</label>
-            <select id="modal-orden-tipo" required class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            <select id="modal-orden-tipo" required
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
               <option value="preventivo">🔧 Preventivo Programado</option>
               <option value="correctivo">⚠️ Correctivo Urgente</option>
               <option value="predictivo">🔍 Inspección Predictiva</option>
@@ -1754,37 +2067,48 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Fecha Programada *</label>
-            <input type="date" id="modal-orden-fecha" required class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            <input type="date" id="modal-orden-fecha" required
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Horómetro Actual *</label>
-            <input type="number" step="0.1" id="modal-orden-horometro" required placeholder="Ej: 1250.5" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            <input type="number" step="0.1" id="modal-orden-horometro" required placeholder="Ej: 1250.5"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Técnico / Taller Asignado</label>
-            <input type="text" id="modal-orden-tecnico" placeholder="Ej: Taller Central / Mecánico Raúl" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            <input type="text" id="modal-orden-tecnico" placeholder="Ej: Taller Central / Mecánico Raúl"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Costo Estimado S/.</label>
-            <input type="number" step="0.01" id="modal-orden-costo" placeholder="Ej: 1450.00" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-emerald-400 font-mono font-bold focus:border-machinery focus:outline-none">
+            <input type="number" step="0.01" id="modal-orden-costo" placeholder="Ej: 1450.00"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-emerald-400 font-mono font-bold focus:border-machinery focus:outline-none">
           </div>
         </div>
 
         <div>
-          <label class="block font-bold text-gray-300 uppercase mb-1">Descripción de Trabajos / Repuestos a cambiar</label>
-          <textarea id="modal-orden-descripcion" rows="2" placeholder="Cambio de aceite motor 15W40, filtros de aire primario/secundario y engrase general..." class="w-full bg-carbon border border-gray-700 rounded-xl p-2.5 text-white focus:border-machinery focus:outline-none"></textarea>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Descripción de Trabajos / Repuestos a
+            cambiar</label>
+          <textarea id="modal-orden-descripcion" rows="2"
+            placeholder="Cambio de aceite motor 15W40, filtros de aire primario/secundario y engrase general..."
+            class="w-full bg-carbon border border-gray-700 rounded-xl p-2.5 text-white focus:border-machinery focus:outline-none"></textarea>
         </div>
 
-        <div id="modal-orden-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="modal-orden-error"
+          class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-2 flex gap-2">
-          <button type="submit" class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg flex items-center justify-center gap-1.5">
+          <button type="submit"
+            class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg flex items-center justify-center gap-1.5">
             <span>💾</span> <span>Crear Orden de Trabajo</span>
           </button>
-          <button type="button" onclick="cerrarModalNuevaOrdenMantenimiento()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
+          <button type="button" onclick="cerrarModalNuevaOrdenMantenimiento()"
+            class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
             Cancelar
           </button>
         </div>
@@ -1793,7 +2117,8 @@
   </div>
 
   <!-- MODAL: EDITAR OPERADOR O PERSONAL -->
-  <div id="modal-editar-personal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div id="modal-editar-personal"
+    class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-graphite border border-gray-700 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-2">
@@ -1803,7 +2128,8 @@
             <p class="text-[11px] text-gray-400">Actualizar datos de contacto, brevete y credenciales</p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalEditarPersonal()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+        <button type="button" onclick="cerrarModalEditarPersonal()"
+          class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
       </div>
 
       <form id="form-editar-personal" onsubmit="guardarEditarPersonalSubmit(event)" class="space-y-3.5 text-xs">
@@ -1812,11 +2138,13 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">DNI (8 dígitos) *</label>
-            <input type="text" id="edit-personal-dni" required maxlength="8" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            <input type="text" id="edit-personal-dni" required maxlength="8"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Rol / Cargo *</label>
-            <select id="edit-personal-rol" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            <select id="edit-personal-rol" required
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
               <option value="operador">Operador de Maquinaria</option>
               <option value="jefe_mantenimiento">Jefe de Área / Mantenimiento</option>
               <option value="gerencia">Gerencia de Operaciones</option>
@@ -1828,33 +2156,39 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Nombres *</label>
-            <input type="text" id="edit-personal-nombres" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            <input type="text" id="edit-personal-nombres" required
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Apellidos *</label>
-            <input type="text" id="edit-personal-apellidos" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            <input type="text" id="edit-personal-apellidos" required
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Teléfono</label>
-            <input type="text" id="edit-personal-telefono" placeholder="Ej: 987654321" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-mono focus:border-machinery focus:outline-none">
+            <input type="text" id="edit-personal-telefono" placeholder="Ej: 987654321"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-mono focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">PIN Acceso (4 dígitos) *</label>
-            <input type="text" id="edit-personal-pin" maxlength="4" required class="w-full bg-carbon border border-machinery/60 rounded-lg px-3 py-2 text-machinery font-mono font-black text-center tracking-widest focus:border-machinery focus:outline-none">
+            <input type="text" id="edit-personal-pin" maxlength="4" required
+              class="w-full bg-carbon border border-machinery/60 rounded-lg px-3 py-2 text-machinery font-mono font-black text-center tracking-widest focus:border-machinery focus:outline-none">
           </div>
         </div>
 
         <div class="grid grid-cols-3 gap-2 bg-carbon/70 p-3 rounded-xl border border-gray-800">
           <div>
             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">N° Brevete</label>
-            <input type="text" id="edit-personal-brevete-num" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-machinery focus:outline-none">
+            <input type="text" id="edit-personal-brevete-num"
+              class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría</label>
-            <select id="edit-personal-brevete-cat" class="w-full bg-graphite border border-gray-700 rounded-lg px-2 py-1.5 text-white font-bold text-xs focus:border-machinery focus:outline-none">
+            <select id="edit-personal-brevete-cat"
+              class="w-full bg-graphite border border-gray-700 rounded-lg px-2 py-1.5 text-white font-bold text-xs focus:border-machinery focus:outline-none">
               <option value="">Ninguna</option>
               <option value="A-I">A-I</option>
               <option value="A-IIa">A-IIa</option>
@@ -1867,31 +2201,38 @@
           </div>
           <div>
             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Vencimiento Brevete</label>
-            <input type="date" id="edit-personal-brevete-venc" class="w-full bg-graphite border border-gray-700 rounded-lg px-2 py-1.5 text-white font-mono text-xs focus:border-machinery focus:outline-none">
+            <input type="date" id="edit-personal-brevete-venc"
+              class="w-full bg-graphite border border-gray-700 rounded-lg px-2 py-1.5 text-white font-mono text-xs focus:border-machinery focus:outline-none">
           </div>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">¿Tiene Certificación Técnica?</label>
-            <select id="edit-personal-cert" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+            <select id="edit-personal-cert"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
               <option value="0">No cuenta con certificado</option>
               <option value="1">Sí, cuenta con certificación</option>
             </select>
           </div>
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Nombre Certificado</label>
-            <input type="text" id="edit-personal-cert-nombre" placeholder="Ej: Operador Excavadora TECSUP" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-machinery focus:outline-none">
+            <input type="text" id="edit-personal-cert-nombre" placeholder="Ej: Operador Excavadora TECSUP"
+              class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-machinery focus:outline-none">
           </div>
         </div>
 
-        <div id="modal-edit-personal-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="modal-edit-personal-error"
+          class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-2 flex gap-2">
-          <button type="submit" class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg flex items-center justify-center gap-1.5">
+          <button type="submit"
+            class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg flex items-center justify-center gap-1.5">
             <span>💾</span> <span>Guardar Cambios</span>
           </button>
-          <button type="button" onclick="cerrarModalEditarPersonal()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
+          <button type="button" onclick="cerrarModalEditarPersonal()"
+            class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
             Cancelar
           </button>
         </div>
@@ -1900,7 +2241,8 @@
   </div>
 
   <!-- MODAL: CONFIGURACIÓN DE NOTIFICACIONES Y WHATSAPP -->
-  <div id="modal-config-notificaciones" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+  <div id="modal-config-notificaciones"
+    class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
     <div class="bg-graphite border border-gray-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl relative text-left">
       <div class="flex items-center justify-between pb-4 border-b border-gray-800 mb-4">
         <div>
@@ -1909,7 +2251,8 @@
           </h3>
           <p class="text-xs text-gray-400 mt-0.5">Alertas automáticas ante mantenimientos, fallas e incongruencias</p>
         </div>
-        <button type="button" onclick="cerrarModalConfigNotificaciones()" class="text-gray-400 hover:text-white text-xl font-bold cursor-pointer">&times;</button>
+        <button type="button" onclick="cerrarModalConfigNotificaciones()"
+          class="text-gray-400 hover:text-white text-xl font-bold cursor-pointer">&times;</button>
       </div>
 
       <form onsubmit="guardarConfigNotificacionesSubmit(event)" class="space-y-4 text-xs">
@@ -1918,23 +2261,30 @@
             Teléfono Móvil WhatsApp del Jefe de Área / Mantenimiento *
           </label>
           <div class="flex items-center gap-2">
-            <input type="text" id="config-whatsapp-telefono" name="whatsapp_jefe_telefono" required placeholder="+51 987 654 321" class="flex-1 bg-carbon border border-gray-700 rounded-xl px-3 py-2.5 text-white font-mono font-bold focus:border-machinery focus:outline-none">
-            <button type="button" onclick="probarWhatsAppTest()" class="px-3.5 py-2.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 font-bold rounded-xl transition text-xs shrink-0 cursor-pointer flex items-center gap-1" title="Enviar WhatsApp de prueba">
+            <input type="text" id="config-whatsapp-telefono" name="whatsapp_jefe_telefono" required
+              placeholder="+51 987 654 321"
+              class="flex-1 bg-carbon border border-gray-700 rounded-xl px-3 py-2.5 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            <button type="button" onclick="probarWhatsAppTest()"
+              class="px-3.5 py-2.5 bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-700 text-emerald-300 font-bold rounded-xl transition text-xs shrink-0 cursor-pointer flex items-center gap-1"
+              title="Enviar WhatsApp de prueba">
               <span>🧪</span> Probar
             </button>
           </div>
-          <span class="text-[10px] text-gray-400 mt-1 block">A este número se despacharán las alertas con datos del equipo, operador e incongruencias.</span>
+          <span class="text-[10px] text-gray-400 mt-1 block">A este número se despacharán las alertas con datos del
+            equipo, operador e incongruencias.</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3 pt-2 border-t border-gray-800">
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Margen Horas Preventivo</label>
-            <input type="number" id="config-alerta-horas" name="alerta_horas_preventivo" min="5" max="100" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            <input type="number" id="config-alerta-horas" name="alerta_horas_preventivo" min="5" max="100"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
             <span class="text-[10px] text-gray-500 block mt-0.5">Avisar cuando falten menos de N horas.</span>
           </div>
           <div>
             <label class="block font-bold text-gray-400 uppercase mb-1">Margen Días Documentos</label>
-            <input type="number" id="config-alerta-dias" name="alerta_dias_documentos" min="1" max="60" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            <input type="number" id="config-alerta-dias" name="alerta_dias_documentos" min="1" max="60"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
             <span class="text-[10px] text-gray-500 block mt-0.5">Avisar N días antes (SOAT, Rev. Técnica).</span>
           </div>
         </div>
@@ -1942,31 +2292,44 @@
         <!-- Sección Avanzada: Gateway API (Opcional) -->
         <div class="pt-3 border-t border-gray-800 space-y-2.5">
           <div class="flex items-center justify-between">
-            <span class="text-[11px] font-bold text-machinery uppercase tracking-wider">Gateway Automático (Opcional)</span>
+            <span class="text-[11px] font-bold text-machinery uppercase tracking-wider">Gateway Automático
+              (Opcional)</span>
             <label class="inline-flex items-center cursor-pointer">
               <input type="checkbox" id="config-whatsapp-auto" name="whatsapp_auto_envio" class="sr-only peer">
-              <div class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-machinery"></div>
+              <div
+                class="w-8 h-4 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-3 after:w-3 after:transition-all peer-checked:bg-machinery">
+              </div>
               <span class="ml-2 text-[10px] text-gray-300 font-bold">Envío Desatendido API</span>
             </label>
           </div>
           <div>
-            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-0.5">API Gateway URL (Evolution / UltraMsg / Twilio / Webhook)</label>
-            <input type="url" id="config-whatsapp-url" name="whatsapp_api_url" placeholder="https://api.ultramsg.com/instance... o http://servidor:8080/message" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono text-[11px] focus:border-machinery focus:outline-none">
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-0.5">API Gateway URL (Evolution /
+              UltraMsg / Twilio / Webhook)</label>
+            <input type="url" id="config-whatsapp-url" name="whatsapp_api_url"
+              placeholder="https://api.ultramsg.com/instance... o http://servidor:8080/message"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono text-[11px] focus:border-machinery focus:outline-none">
           </div>
           <div>
             <label class="block text-[10px] font-bold text-gray-400 uppercase mb-0.5">API Token / Clave Secreta</label>
-            <input type="password" id="config-whatsapp-token" name="whatsapp_api_token" placeholder="Bearer Token o API Key" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono text-[11px] focus:border-machinery focus:outline-none">
+            <input type="password" id="config-whatsapp-token" name="whatsapp_api_token"
+              placeholder="Bearer Token o API Key"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono text-[11px] focus:border-machinery focus:outline-none">
           </div>
-          <span class="text-[10px] text-gray-500 block italic">Si no configuras un API Gateway externo, el sistema opera con **Enlaces Directos de 1 Clic** a WhatsApp Web y WhatsApp Móvil de inmediato.</span>
+          <span class="text-[10px] text-gray-500 block italic">Si no configuras un API Gateway externo, el sistema opera
+            con **Enlaces Directos de 1 Clic** a WhatsApp Web y WhatsApp Móvil de inmediato.</span>
         </div>
 
-        <div id="modal-config-notif-error" class="hidden p-2.5 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="modal-config-notif-error"
+          class="hidden p-2.5 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-3 border-t border-gray-800 flex gap-2">
-          <button type="submit" class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg flex items-center justify-center gap-1.5 cursor-pointer">
+          <button type="submit"
+            class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg flex items-center justify-center gap-1.5 cursor-pointer">
             <span>💾</span> <span>Guardar Ajustes</span>
           </button>
-          <button type="button" onclick="cerrarModalConfigNotificaciones()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700 cursor-pointer">
+          <button type="button" onclick="cerrarModalConfigNotificaciones()"
+            class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700 cursor-pointer">
             Cerrar
           </button>
         </div>
@@ -2154,7 +2517,7 @@
       setInterval(() => {
         try {
           actualizarMapaGPS();
-        } catch (e) {}
+        } catch (e) { }
       }, 20000);
     });
 
@@ -2589,7 +2952,7 @@
       let badgeTexto = fechaStr || 'S/F';
       if (fechaStr) {
         const hoy = new Date();
-        hoy.setHours(0,0,0,0);
+        hoy.setHours(0, 0, 0, 0);
         const venc = new Date(fechaStr + 'T00:00:00');
         const diffDias = Math.round((venc - hoy) / (1000 * 60 * 60 * 24));
         if (diffDias < 0) {
@@ -2760,7 +3123,7 @@
 
       document.getElementById('asignar-equipo-id').value = eq.id;
       document.getElementById('asignar-equipo-titulo').textContent = `${eq.codigo_interno} | ${eq.marca} ${eq.modelo}`;
-      
+
       const selectFrente = document.getElementById('select-asignar-frente');
       if (selectFrente) selectFrente.value = eq.proyecto_actual_id || '';
 
@@ -3103,16 +3466,16 @@
             <td class="py-3.5 px-4 text-xs font-semibold text-gray-300">${t.proyecto_nombre}</td>
             <td class="py-3.5 px-4 text-center font-mono text-xs">
               ${(t.horometro_inicio !== null && t.horometro_inicio !== undefined && (t.horometro_inicio > 0 || !t.kilometraje_inicio))
-                ? `<span class="text-machinery font-bold">${Number(t.horometro_inicio).toFixed(1)}h</span> <span class="text-gray-500">→</span> <span class="${t.horometro_fin ? 'text-white font-bold' : 'text-gray-500'}">${t.horometro_fin ? Number(t.horometro_fin).toFixed(1) + 'h' : '...'}</span>`
-                : '<span class="text-gray-600">-</span>'}
+              ? `<span class="text-machinery font-bold">${Number(t.horometro_inicio).toFixed(1)}h</span> <span class="text-gray-500">→</span> <span class="${t.horometro_fin ? 'text-white font-bold' : 'text-gray-500'}">${t.horometro_fin ? Number(t.horometro_fin).toFixed(1) + 'h' : '...'}</span>`
+              : '<span class="text-gray-600">-</span>'}
             </td>
             <td class="py-3.5 px-4 text-center font-mono font-black ${t.horas_trabajadas ? 'text-machinery' : 'text-gray-500'}">
               ${t.horas_trabajadas ? Number(t.horas_trabajadas).toFixed(1) + ' h' : '-'}
             </td>
             <td class="py-3.5 px-4 text-center font-mono text-xs">
               ${t.kilometraje_inicio > 0 || (t.kilometraje_fin && t.kilometraje_fin > 0)
-                ? `<span class="text-cyan-400 font-bold">${(t.kilometraje_inicio || 0).toFixed(0)}km</span> <span class="text-gray-500">→</span> <span class="text-white font-bold">${t.kilometraje_fin ? t.kilometraje_fin.toFixed(0) + 'km' : '...'}</span>`
-                : '<span class="text-gray-600">-</span>'}
+              ? `<span class="text-cyan-400 font-bold">${(t.kilometraje_inicio || 0).toFixed(0)}km</span> <span class="text-gray-500">→</span> <span class="text-white font-bold">${t.kilometraje_fin ? t.kilometraje_fin.toFixed(0) + 'km' : '...'}</span>`
+              : '<span class="text-gray-600">-</span>'}
             </td>
             <td class="py-3.5 px-4 text-center font-mono font-black ${t.km_recorridos ? 'text-cyan-400' : 'text-gray-600'}">
               ${t.km_recorridos ? t.km_recorridos.toFixed(1) + ' Km' : '-'}
@@ -4123,8 +4486,8 @@
               const semaforoBadge = pm.semaforo === 'rojo'
                 ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-950/80 text-rose-400 border border-rose-800">🔴 VENCIDO</span>'
                 : pm.semaforo === 'amarillo'
-                ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950/80 text-amber-400 border border-amber-800 animate-pulse">🟡 PRÓXIMO</span>'
-                : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">🟢 AL DÍA</span>';
+                  ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950/80 text-amber-400 border border-amber-800 animate-pulse">🟡 PRÓXIMO</span>'
+                  : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">🟢 AL DÍA</span>';
 
               const tr = document.createElement('tr');
               tr.className = 'hover:bg-graphiteLight/50 transition';
@@ -4178,8 +4541,8 @@
               const estadoGral = (doc.soat_estado === 'vencido' || doc.revision_estado === 'vencido')
                 ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-950 text-rose-400 border border-rose-800">VENCIDO</span>'
                 : (doc.soat_estado === 'por_vencer' || doc.revision_estado === 'por_vencer')
-                ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950 text-amber-400 border border-amber-800">POR VENCER</span>'
-                : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">AL DÍA</span>';
+                  ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950 text-amber-400 border border-amber-800">POR VENCER</span>'
+                  : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">AL DÍA</span>';
 
               const tr = document.createElement('tr');
               tr.className = 'hover:bg-graphiteLight/50 transition';
@@ -4627,7 +4990,7 @@
           const fechaStr = c.fecha_hora ? c.fecha_hora.substring(0, 16).replace('T', ' ') : '-';
           const precioStr = c.precio_por_galon ? `S/ ${Number(c.precio_por_galon).toFixed(2)}` : '<span class="text-amber-400 font-bold">Por definir</span>';
           const costoStr = c.costo_total ? `S/ ${Number(c.costo_total).toFixed(2)}` : '<span class="text-gray-500 font-mono">S/ 0.00</span>';
-          
+
           let estadoBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950/80 text-amber-400 border border-amber-800">🟡 PENDIENTE</span>';
           if (c.estado_pago === 'pagado') {
             estadoBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950/80 text-emerald-400 border border-emerald-800">🟢 PAGADO</span>';
@@ -4800,7 +5163,7 @@
       document.getElementById('modal-mant-equipo-id').value = eq.id;
       document.getElementById('modal-mant-codigo').textContent = eq.codigo_interno;
       document.getElementById('modal-mant-nombre').textContent = eq.nombre || `${eq.marca || ''} ${eq.modelo || ''}`;
-      
+
       const actual = Number(eq.horometro_actual) || 0;
       document.getElementById('modal-mant-actual').textContent = `${actual.toFixed(1)} h`;
 
@@ -4903,8 +5266,8 @@
           const estadoBadge = ord.estado === 'finalizado'
             ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">FINALIZADO</span>'
             : ord.estado === 'en_proceso'
-            ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">EN TALLER</span>'
-            : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-800 text-gray-300 border border-gray-700">PROGRAMADO</span>';
+              ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">EN TALLER</span>'
+              : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-800 text-gray-300 border border-gray-700">PROGRAMADO</span>';
 
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-graphiteLight/50 transition';
@@ -5083,4 +5446,5 @@
     }
   </script>
 </body>
+
 </html>
