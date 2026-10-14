@@ -98,26 +98,35 @@ Responde ÚNICAMENTE en formato JSON plano:
                 )
 
                 response = None
-                for modelo in ["gemini-3.8-flash", "gemini-2.0-flash", "gemini-1.5-flash"]:
+                modelo_usado = None
+                modelos_candidatos = [
+                    "gemini-3.5-flash",
+                    "gemini-3.8-flash",
+                    "gemini-3.7-flash",
+                    "gemini-3.1-flash-lite"
+                ]
+
+                for modelo in modelos_candidatos:
                     try:
                         response = client.models.generate_content(
                             model=modelo,
                             contents=[part, prompt],
                             config=config
                         )
-                        if response:
+                        if response and response.text:
+                            modelo_usado = modelo
                             break
                     except Exception as model_err:
                         logger.warning(f"Intento con modelo {modelo} no exitoso: {model_err}")
 
-                if not response:
+                if not response or not response.text:
                     raise RuntimeError("Ningún modelo de Gemini respondió satisfactoriamente")
 
                 texto_resp = response.text.strip()
                 data = json.loads(texto_resp)
 
-                es_tablero_valido = bool(data.get("es_tablero_valido", True))
-                es_legible = bool(data.get("es_legible", True))
+                es_tablero_valido = bool(data.get("es_tablero_valido", False))
+                es_legible = bool(data.get("es_legible", False))
                 lectura_detectada = data.get("lectura_detectada")
                 if lectura_detectada is not None:
                     try:
@@ -137,7 +146,7 @@ Responde ÚNICAMENTE en formato JSON plano:
                     return {
                         "exito": True,
                         "modo": "IA_GEMINI_MULTIMODAL",
-                        "motor": "gemini-3.8-flash",
+                        "motor": modelo_usado or "gemini-3.5-flash",
                         "es_tablero_valido": False,
                         "es_legible": False,
                         "lectura_detectada": None,
@@ -211,7 +220,7 @@ Responde ÚNICAMENTE en formato JSON plano:
             "exito": True,
             "modo": "ASISTIDO_OFFLINE",
             "motor": "vision_asistida",
-            "es_tablero_valido": True,
+            "es_tablero_valido": None,
             "es_legible": False,
             "lectura_detectada": None,
             "unidad": unidad,
@@ -222,5 +231,5 @@ Responde ÚNICAMENTE en formato JSON plano:
             "diferencia": None,
             "alerta_discrepancia": False,
             "observacion": msg_detalle,
-            "mensaje": f"📸 Foto sellada y guardada para auditoría manual."
+            "mensaje": f"📸 Foto sellada y guardada para auditoría manual (modo sin conexión)."
         }

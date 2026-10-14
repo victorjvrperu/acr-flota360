@@ -1868,6 +1868,18 @@
         statusTitle.textContent = 'Foto Rechazada: No es un Tablero';
         statusDesc.textContent = ia.observacion || 'La IA determinó que la imagen no corresponde al tablero, velocímetro u odómetro del vehículo. Vuelve a tomar la foto enfocando el medidor.';
         if (btnAplicar) btnAplicar.classList.add('hidden');
+        if (valSugeridoSpan) valSugeridoSpan.textContent = 'Rechazada por IA';
+        return;
+      }
+
+      if (ia.es_tablero_valido === null) {
+        // Modo sin conexión IA
+        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-slate-900 border border-gray-700 text-gray-300';
+        if (statusIcon) statusIcon.textContent = '🛡️';
+        statusTitle.textContent = 'Foto Sellada (Modo Sin Conexión IA)';
+        statusDesc.textContent = ia.observacion || 'La foto se guardó con geolocalización y marca de agua oficial para auditoría manual.';
+        if (btnAplicar) btnAplicar.classList.add('hidden');
+        if (valSugeridoSpan) valSugeridoSpan.textContent = 'Manual';
         return;
       }
 
