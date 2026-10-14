@@ -254,6 +254,7 @@ class TurnoCheckOutUpdate(BaseModel):
     # Percances / Incidencias
     hubo_incidencia: Optional[bool] = False
     incidencia_descripcion: Optional[str] = None
+    descripcion_incidencia: Optional[str] = None
     foto_incidencia: Optional[str] = None
 
 

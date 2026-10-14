@@ -1440,6 +1440,68 @@
     </div>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- MODAL: ESTADO DE SINCRONIZACIÓN Y SUBIDA OFFLINE            -->
+  <!-- ============================================================ -->
+  <div id="modal-estado-sincronizacion" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border-2 border-gray-700 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center">
+      
+      <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+        <div class="flex items-center gap-2 text-left">
+          <div class="w-9 h-9 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+            🔄
+          </div>
+          <div>
+            <h4 class="text-sm font-black text-white uppercase tracking-tight">Estado de Sincronización</h4>
+            <span class="text-[10px] text-gray-400 font-bold block">Motor Offline-First ACR</span>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalSincronizacion()" class="w-7 h-7 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white rounded-full flex items-center justify-center text-sm font-bold">
+          ✕
+        </button>
+      </div>
+
+      <!-- Resumen de elementos pendientes -->
+      <div class="bg-carbon/90 rounded-2xl p-3 border border-gray-800 space-y-2 text-left text-xs">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Estado de Red:</span>
+          <span id="sync-modal-red-status" class="font-bold text-emerald-400">🟢 En Línea</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Turnos / Cierres en cola:</span>
+          <span id="sync-modal-turnos-count" class="font-bold text-white">0</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Fotos de Tablero en cola:</span>
+          <span id="sync-modal-fotos-count" class="font-bold text-white">0</span>
+        </div>
+        <div class="flex justify-between items-center pt-1 border-t border-gray-800">
+          <span class="text-gray-400">Total ítems pendientes:</span>
+          <span id="sync-modal-total-count" class="font-black text-amber-400 text-sm">0</span>
+        </div>
+      </div>
+
+      <!-- Alerta de Conexión / Red Privada -->
+      <div id="sync-modal-alerta-box" class="hidden p-3 bg-amber-950/50 border border-amber-700/60 rounded-xl text-left text-[11px] text-amber-200 space-y-1.5 leading-snug">
+        <div class="font-bold flex items-center gap-1.5 text-amber-300">
+          <span>⚠️</span> <span id="sync-modal-alerta-titulo">Servidor No Alcanzable</span>
+        </div>
+        <p id="sync-modal-alerta-mensaje">
+          Tus datos están guardados de forma segura en este teléfono. Si estás usando datos móviles (4G/5G), conéctate a la red Wi-Fi de la obra para enviar la información al servidor local (192.168.1.92).
+        </p>
+      </div>
+
+      <div class="space-y-2 pt-1">
+        <button type="button" id="btn-sync-modal-forzar" onclick="forzarSincronizacionDesdeModal()" class="btn-industrial w-full bg-machinery hover:bg-machineryActive text-carbon text-xs uppercase font-black flex items-center justify-center gap-2">
+          <span>🔄</span> <span>REINTENTAR SUBIDA AHORA</span>
+        </button>
+        <button type="button" onclick="cerrarModalSincronizacion()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs uppercase rounded-xl transition border border-gray-700">
+          Cerrar
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts: IndexedDB y Offline Sync -->
   <script src="/static/js/offline-sync.js"></script>
 
@@ -1589,6 +1651,83 @@
         }
         if (guiaAnd) guiaAnd.classList.remove('hidden');
         if (guiaIos) guiaIos.classList.add('hidden');
+      }
+    }
+
+    // ============================================================
+    // MODAL DE ESTADO DE SINCRONIZACIÓN Y SUBIDA MANUAL
+    // ============================================================
+    async function abrirModalSincronizacion() {
+      const modal = document.getElementById('modal-estado-sincronizacion');
+      if (!modal) return;
+
+      const conteo = window.heavyDB ? await window.heavyDB.contarPendientes() : { total: 0, turnos: 0, fotosIA: 0 };
+      const redStatus = document.getElementById('sync-modal-red-status');
+      const turnosCount = document.getElementById('sync-modal-turnos-count');
+      const fotosCount = document.getElementById('sync-modal-fotos-count');
+      const totalCount = document.getElementById('sync-modal-total-count');
+      const alertaBox = document.getElementById('sync-modal-alerta-box');
+      const alertaTitulo = document.getElementById('sync-modal-alerta-titulo');
+      const alertaMsg = document.getElementById('sync-modal-alerta-mensaje');
+
+      if (redStatus) {
+        redStatus.textContent = navigator.onLine ? '🟢 En Línea' : '🔴 Sin Señal de Internet';
+        redStatus.className = navigator.onLine ? 'font-bold text-emerald-400' : 'font-bold text-rose-400';
+      }
+      if (turnosCount) turnosCount.textContent = conteo.turnos || 0;
+      if (fotosCount) fotosCount.textContent = conteo.fotosIA || 0;
+      if (totalCount) totalCount.textContent = conteo.total || 0;
+
+      if (alertaBox) {
+        if (window.heavyDB && window.heavyDB.ultimoErrorSync) {
+          alertaBox.classList.remove('hidden');
+          alertaBox.className = 'p-3 bg-amber-950/50 border border-amber-700/60 rounded-xl text-left text-[11px] text-amber-200 space-y-1.5 leading-snug';
+          if (alertaTitulo) alertaTitulo.textContent = 'Servidor Inalcanzable';
+          if (alertaMsg) {
+            alertaMsg.textContent = `Aviso: ${window.heavyDB.ultimoErrorSync}. Tus datos están 100% seguros en este teléfono. Si estás usando tus datos móviles (4G/5G), conéctate a la red Wi-Fi de la obra para sincronizar con el servidor local.`;
+          }
+        } else if (conteo.total === 0) {
+          alertaBox.classList.remove('hidden');
+          alertaBox.className = 'p-3 bg-emerald-950/40 border border-emerald-700/60 rounded-xl text-left text-[11px] text-emerald-200 leading-snug';
+          if (alertaTitulo) alertaTitulo.textContent = 'Todo Sincronizado';
+          if (alertaMsg) alertaMsg.textContent = '✅ Todos los registros y fotografías ya fueron recibidos por el servidor.';
+        } else {
+          alertaBox.classList.remove('hidden');
+          alertaBox.className = 'p-3 bg-cyan-950/40 border border-cyan-700/60 rounded-xl text-left text-[11px] text-cyan-200 leading-snug';
+          if (alertaTitulo) alertaTitulo.textContent = 'Registros Pendientes';
+          if (alertaMsg) alertaMsg.textContent = 'Hay datos listos para subir. Presiona el botón inferior para sincronizar ahora.';
+        }
+      }
+
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalSincronizacion() {
+      const modal = document.getElementById('modal-estado-sincronizacion');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    async function forzarSincronizacionDesdeModal() {
+      const btn = document.getElementById('btn-sync-modal-forzar');
+      if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳</span> <span>Conectando al servidor...</span>';
+      }
+
+      const res = window.heavyDB ? await window.heavyDB.sincronizarBatch(true) : { success: false };
+      await abrirModalSincronizacion();
+
+      if (btn) {
+        btn.disabled = false;
+        btn.innerHTML = '<span>🔄</span> <span>REINTENTAR SUBIDA AHORA</span>';
+      }
+
+      if (res && res.success) {
+        alert('🎉 ¡Sincronización exitosa! Los registros se subieron al servidor central.');
+        cerrarModalSincronizacion();
       }
     }
 
@@ -2984,6 +3123,9 @@
       };
 
       await window.heavyDB.guardarItem('turnos', turnoData);
+      if (window.heavyDB) {
+        await window.heavyDB.limpiarFotosIAPendientes();
+      }
 
       turnoEnCurso = {
         uuid_local: uuid,
@@ -3271,7 +3413,15 @@
         foto_incidencia: fotosEstado.fin_incidente
       };
 
-      await window.heavyDB.guardarItem('turnos', turnoUpdate);
+      // Recuperar datos previos de check-in si estuvieran en cola para no perderlos
+      let turnoGuardar = turnoUpdate;
+      if (window.heavyDB) {
+        const turnoExistente = await window.heavyDB.obtenerItem('turnos', turnoUuid);
+        if (turnoExistente) {
+          turnoGuardar = Object.assign({}, turnoExistente, turnoUpdate);
+        }
+        await window.heavyDB.guardarItem('turnos', turnoGuardar);
+      }
 
       // Llenar datos en pantalla de agradecimiento
       document.getElementById('checkout-resumen-eq').textContent = turnoEnCurso ? turnoEnCurso.equipo_nombre : 'Equipo';

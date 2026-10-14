@@ -9,6 +9,9 @@ class HeavyTrackDB {
   constructor() {
     this.db = null;
     this.isOnline = navigator.onLine;
+    this.isSyncing = false;
+    this.ultimoErrorSync = null;
+    this.ultimoSyncExitoso = null;
     // Callbacks registrados por la UI para recibir resultados IA al reconectar
     this._onIAResultadoCallbacks = {};
   }
@@ -48,11 +51,7 @@ class HeavyTrackDB {
 
   /**
    * Registra un callback que será invocado cuando se procese una foto
-   * pendiente IA y vuelva un resultado. La UI lo usa para auto-rellenar
-   * el campo de horómetro cuando el operador aún está en el formulario.
-   *
-   * @param {string} tipo - 'inicio' | 'fin'
-   * @param {Function} callback - fn(resultado) donde resultado es el JSON del backend
+   * pendiente IA y vuelva un resultado.
    */
   onIAResultado(tipo, callback) {
     this._onIAResultadoCallbacks[tipo] = callback;
@@ -66,11 +65,12 @@ class HeavyTrackDB {
     const item = {
       uuid_local: this.generarUUID(),
       _timestamp_local: new Date().toISOString(),
-      tipo: params.tipo,                         // 'inicio' | 'fin'
-      imagen_base64: params.imagen_base64,       // dataURL completo
+      tipo: params.tipo,
+      imagen_base64: params.imagen_base64,
       lectura_ingresada: params.lectura_ingresada ?? null,
       tipo_control: params.tipo_control || 'HOROMETRO',
       equipo_codigo: params.equipo_codigo || 'EQ-MAQ',
+      intentos: 0
     };
     await this.guardarItem('fotos_pendientes_ia', item);
     console.log(`[IA-Queue] Foto de tablero (${item.tipo}) encolada offline. UUID: ${item.uuid_local}`);
@@ -78,10 +78,23 @@ class HeavyTrackDB {
   }
 
   /**
-   * Procesa todas las fotos pendientes de análisis IA contra el backend
-   * (que a su vez llama a Gemini). Se invoca automáticamente al recuperar
-   * la conexión. Dispara callbacks registrados para que la UI actualice
-   * el campo de horómetro si el operador sigue en el formulario.
+   * Limpia fotos de IA pendientes ya sea porque el turno ya se envió
+   * o porque el operador completó el paso.
+   */
+  async limpiarFotosIAPendientes() {
+    try {
+      const items = await this.obtenerTodos('fotos_pendientes_ia');
+      for (const item of items) {
+        await this.eliminarItem('fotos_pendientes_ia', item.uuid_local);
+      }
+      console.log(`[IA-Queue] Cola de fotos IA limpiada (${items.length} eliminadas)`);
+    } catch (e) {
+      console.warn('[IA-Queue] Error al limpiar fotos IA:', e);
+    }
+  }
+
+  /**
+   * Procesa fotos pendientes con Gemini usando timeout para evitar bloqueos.
    */
   async procesarFotosPendientesIA() {
     if (!navigator.onLine) return { procesadas: 0, motivo: 'offline' };
@@ -94,6 +107,9 @@ class HeavyTrackDB {
 
     for (const foto of pendientes) {
       try {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+
         const resp = await fetch('/api/v1/heavy/ia/analizar-tablero', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -102,11 +118,20 @@ class HeavyTrackDB {
             lectura_ingresada: foto.lectura_ingresada,
             tipo_control: foto.tipo_control,
             equipo_codigo: foto.equipo_codigo,
-          })
+          }),
+          signal: controller.signal
         });
+        clearTimeout(timeoutId);
 
         if (!resp.ok) {
           console.warn(`[IA-Queue] Error HTTP ${resp.status} al procesar foto ${foto.uuid_local}`);
+          // Si falló 2 veces, descartarla para no bloquear indefinidamente la cola
+          foto.intentos = (foto.intentos || 0) + 1;
+          if (foto.intentos >= 2) {
+            await this.eliminarItem('fotos_pendientes_ia', foto.uuid_local);
+          } else {
+            await this.guardarItem('fotos_pendientes_ia', foto);
+          }
           continue;
         }
 
@@ -117,13 +142,11 @@ class HeavyTrackDB {
 
         console.log(`[IA-Queue] ✅ Foto (${foto.tipo}) procesada:`, resultado);
 
-        // Notificar a la UI si hay un callback registrado para este tipo
         const cb = this._onIAResultadoCallbacks[foto.tipo];
         if (typeof cb === 'function') {
           try { cb(resultado); } catch (e) { console.warn('[IA-Queue] Error en callback UI:', e); }
         }
 
-        // Emitir evento global para que cualquier parte de la app pueda reaccionar
         window.dispatchEvent(new CustomEvent('ia-resultado-offline', {
           detail: resultado
         }));
@@ -132,7 +155,13 @@ class HeavyTrackDB {
         procesadas++;
 
       } catch (err) {
-        console.warn(`[IA-Queue] Error procesando foto ${foto.uuid_local}:`, err);
+        console.warn(`[IA-Queue] Error procesando foto ${foto.uuid_local}:`, err.message || err);
+        foto.intentos = (foto.intentos || 0) + 1;
+        if (foto.intentos >= 2) {
+          await this.eliminarItem('fotos_pendientes_ia', foto.uuid_local);
+        } else {
+          await this.guardarItem('fotos_pendientes_ia', foto);
+        }
       }
     }
 
@@ -167,6 +196,16 @@ class HeavyTrackDB {
     });
   }
 
+  async obtenerItem(storeName, key) {
+    return new Promise((resolve) => {
+      const tx = this.db.transaction(storeName, 'readonly');
+      const store = tx.objectStore(storeName);
+      const req = store.get(key);
+      req.onsuccess = () => resolve(req.result || null);
+      req.onerror = () => resolve(null);
+    });
+  }
+
   async obtenerTodos(storeName) {
     return new Promise((resolve, reject) => {
       const tx = this.db.transaction(storeName, 'readonly');
@@ -195,49 +234,84 @@ class HeavyTrackDB {
     const fotosIA = await this.obtenerTodos('fotos_pendientes_ia');
     return {
       total: turnos.length + combustibles.length + incidentes.length + fotosIA.length,
+      turnos: turnos.length,
+      combustibles: combustibles.length,
+      incidentes: incidentes.length,
       fotosIA: fotosIA.length
     };
   }
 
-  // Sincronización en lote con el backend FastAPI (/api/sync/batch)
-  async sincronizarBatch() {
-    if (!navigator.onLine) {
+  // Sincronización en lote con el backend FastAPI (/api/sync/batch) con Timeout Seguro
+  async sincronizarBatch(forzar = false) {
+    if (!navigator.onLine && !forzar) {
       console.warn('[Sync] Dispositivo sin señal. Sincronización postergada.');
       return { success: false, motivo: 'offline' };
     }
 
-    const turnos = await this.obtenerTodos('turnos');
-    const combustibles = await this.obtenerTodos('combustibles');
-    const incidentes = await this.obtenerTodos('incidentes');
-
-    const totalPendientes = turnos.length + combustibles.length + incidentes.length;
-    if (totalPendientes === 0) {
-      return { success: true, total: 0 };
+    if (this.isSyncing) {
+      console.log('[Sync] Sincronización ya en curso...');
+      return { success: false, motivo: 'en_curso' };
     }
 
-    const payload = {
-      device_id: 'pwa-' + (navigator.userAgent.substring(0, 30)),
-      turnos: turnos.filter(t => (t.horometro_inicio !== undefined && t.horometro_inicio !== null) || (t.kilometraje_inicio !== undefined && t.kilometraje_inicio !== null)),
-      turnos_checkout: turnos.filter(t => (t.horometro_fin !== undefined && t.horometro_fin !== null) || (t.kilometraje_fin !== undefined && t.kilometraje_fin !== null)),
-      combustibles: combustibles,
-      incidentes: incidentes
-    };
+    this.isSyncing = true;
+    actualizarBannerConectividad();
 
     try {
+      const turnos = await this.obtenerTodos('turnos');
+      const combustibles = await this.obtenerTodos('combustibles');
+      const incidentes = await this.obtenerTodos('incidentes');
+
+      const totalPendientes = turnos.length + combustibles.length + incidentes.length;
+      if (totalPendientes === 0) {
+        // También procesar fotos IA si hubiese alguna pendiente
+        await this.procesarFotosPendientesIA();
+        this.ultimoErrorSync = null;
+        return { success: true, total: 0 };
+      }
+
+      // Filtrar Check-Ins (los que tienen equipo_id e inicio)
+      const turnosCheckIn = turnos.filter(t => t.equipo_id && (
+        (t.horometro_inicio !== undefined && t.horometro_inicio !== null) ||
+        (t.kilometraje_inicio !== undefined && t.kilometraje_inicio !== null)
+      ));
+
+      // Filtrar Check-Outs (los que tienen datos de cierre)
+      const turnosCheckOut = turnos.filter(t => (
+        (t.horometro_fin !== undefined && t.horometro_fin !== null) ||
+        (t.kilometraje_fin !== undefined && t.kilometraje_fin !== null)
+      ));
+
+      const payload = {
+        device_id: 'pwa-' + (navigator.userAgent.substring(0, 30)),
+        turnos: turnosCheckIn,
+        turnos_checkout: turnosCheckOut,
+        combustibles: combustibles,
+        incidentes: incidentes
+      };
+
+      console.log(`[Sync] Enviando lote al servidor (${turnosCheckIn.length} checkin, ${turnosCheckOut.length} checkout, ${combustibles.length} comb)...`);
+
+      // Control de Timeout (12 segundos) para que nunca se quede colgado si el servidor es inalcanzable
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000);
+
       const response = await fetch('/api/sync/batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        signal: controller.signal
       });
+      clearTimeout(timeoutId);
 
       if (!response.ok) {
-        throw new Error(`Error en servidor: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`Servidor HTTP ${response.status}: ${errorText.substring(0, 100)}`);
       }
 
       const resData = await response.json();
       console.log('[Sync] Respuesta de servidor exitosa:', resData);
 
-      // Limpiar ítems procesados exitosamente del almacenamiento local
+      // Limpiar turnos ya procesados
       for (const item of turnos) {
         await this.eliminarItem('turnos', item.uuid_local);
       }
@@ -248,10 +322,23 @@ class HeavyTrackDB {
         await this.eliminarItem('incidentes', item.uuid_local);
       }
 
+      // Procesar fotos IA si hubiera
+      await this.procesarFotosPendientesIA();
+
+      this.ultimoErrorSync = null;
+      this.ultimoSyncExitoso = new Date();
       return { success: true, resData };
+
     } catch (err) {
-      console.error('[Sync] Error al enviar lote:', err);
-      return { success: false, error: err.message };
+      const msg = err.name === 'AbortError' 
+        ? 'Tiempo de espera agotado (Servidor central inalcanzable desde esta red)'
+        : (err.message || 'Error de conexión');
+      console.error('[Sync] Error al sincronizar lote:', msg);
+      this.ultimoErrorSync = msg;
+      return { success: false, error: msg };
+    } finally {
+      this.isSyncing = false;
+      actualizarBannerConectividad();
     }
   }
 
@@ -259,7 +346,11 @@ class HeavyTrackDB {
   async refrescarCatalogos() {
     if (!navigator.onLine) return;
     try {
-      const res = await fetch('/api/sync/catalogos');
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 6000);
+      const res = await fetch('/api/sync/catalogos', { signal: controller.signal });
+      clearTimeout(timeoutId);
+
       if (res.ok) {
         const data = await res.json();
         const tx = this.db.transaction('catalogos', 'readwrite');
@@ -270,7 +361,7 @@ class HeavyTrackDB {
         console.log('[Sync] Catálogos cacheados localmente para modo offline');
       }
     } catch (e) {
-      console.warn('[Sync] No se pudo actualizar catálogos:', e);
+      console.warn('[Sync] No se pudo actualizar catálogos:', e.message || e);
     }
   }
 
@@ -293,30 +384,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   await window.heavyDB.refrescarCatalogos();
   actualizarBannerConectividad();
 
-  // Escuchadores de estado de red
+  // Escuchadores de estado de red del navegador
   window.addEventListener('online', async () => {
+    console.log('[Red] Evento online detectado. Intentando sincronización en lote...');
     actualizarBannerConectividad();
-    console.log('[Red] Conexión recuperada. Disparando sincronización en lote...');
     await window.heavyDB.sincronizarBatch();
-    // Procesar fotos de tablero que quedaron pendientes de análisis IA
-    const iaRes = await window.heavyDB.procesarFotosPendientesIA();
-    if (iaRes.procesadas > 0) {
-      console.log(`[Red] ${iaRes.procesadas} foto(s) de tablero analizadas con Gemini Vision.`);
-    }
-    actualizarBannerConectividad();
   });
 
   window.addEventListener('offline', () => {
+    console.log('[Red] Evento offline detectado.');
     actualizarBannerConectividad();
   });
 
-  // Intentar sincronizar cada 45 segundos si hay señal
+  // Intentar sincronizar cada 40 segundos si hay señal
   setInterval(async () => {
-    if (navigator.onLine) {
+    if (navigator.onLine && !window.heavyDB.isSyncing) {
       await window.heavyDB.sincronizarBatch();
-      actualizarBannerConectividad();
     }
-  }, 45000);
+  }, 40000);
 });
 
 // Función de interfaz persistente para el estado de conectividad
@@ -326,19 +411,36 @@ async function actualizarBannerConectividad() {
 
   const conteo = await window.heavyDB.contarPendientes();
   const pendientes = typeof conteo === 'object' ? conteo.total : conteo;
-  const fotosIA = typeof conteo === 'object' ? conteo.fotosIA : 0;
+  const isSyncing = window.heavyDB.isSyncing;
+  const ultimoError = window.heavyDB.ultimoErrorSync;
 
-  if (navigator.onLine) {
-    if (pendientes > 0) {
-      banner.className = 'network-badge badge-syncing';
-      banner.innerHTML = `<span class="pulse-dot bg-amber"></span> 🟠 En línea (${pendientes} subiendo...)`;
+  // Hacer el banner interactivo al tacto
+  banner.style.cursor = 'pointer';
+  banner.setAttribute('title', 'Toca para ver el estado de sincronización o forzar subida');
+  banner.onclick = () => {
+    if (typeof window.abrirModalSincronizacion === 'function') {
+      window.abrirModalSincronizacion();
     } else {
-      banner.className = 'network-badge badge-online';
-      banner.innerHTML = `<span class="pulse-dot bg-emerald"></span> 🟢 En línea (Sincronizado)`;
+      window.heavyDB.sincronizarBatch(true);
+    }
+  };
+
+  if (!navigator.onLine) {
+    banner.className = 'network-badge badge-offline cursor-pointer active:scale-95 transition';
+    banner.innerHTML = `<span class="pulse-dot bg-rose"></span> <span class="hidden sm:inline">🔴 Sin señal</span><span class="sm:hidden">🔴</span> (${pendientes} pendientes)`;
+  } else if (isSyncing) {
+    banner.className = 'network-badge badge-syncing cursor-pointer active:scale-95 transition';
+    banner.innerHTML = `<span class="pulse-dot bg-amber animate-pulse"></span> <span class="hidden sm:inline">🟡 Subiendo</span><span class="sm:hidden">🟡</span> (${pendientes}...)`;
+  } else if (pendientes > 0) {
+    if (ultimoError) {
+      banner.className = 'network-badge badge-syncing cursor-pointer active:scale-95 transition';
+      banner.innerHTML = `<span class="pulse-dot bg-amber"></span> <span class="hidden sm:inline">🟠 En línea</span><span class="sm:hidden">🟠</span> (${pendientes} pendientes - Servidor)`;
+    } else {
+      banner.className = 'network-badge badge-syncing cursor-pointer active:scale-95 transition';
+      banner.innerHTML = `<span class="pulse-dot bg-amber"></span> <span class="hidden sm:inline">🟠 En línea</span><span class="sm:hidden">🟠</span> (${pendientes} pendientes)`;
     }
   } else {
-    const extraIA = fotosIA > 0 ? ` · 📸 ${fotosIA} foto(s) IA en cola` : '';
-    banner.className = 'network-badge badge-offline';
-    banner.innerHTML = `<span class="pulse-dot bg-rose"></span> 🔴 Sin señal (${pendientes} pendientes${extraIA})`;
+    banner.className = 'network-badge badge-online cursor-pointer active:scale-95 transition';
+    banner.innerHTML = `<span class="pulse-dot bg-emerald"></span> <span class="hidden sm:inline">🟢 En línea (Sincronizado)</span><span class="sm:hidden">🟢 OK</span>`;
   }
 }
