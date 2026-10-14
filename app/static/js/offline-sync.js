@@ -484,12 +484,37 @@ class HeavyTrackDB {
         const tx = this.db.transaction('catalogos', 'readonly');
         const store = tx.objectStore('catalogos');
         const req = store.get(tipo);
-        req.onsuccess = () => resolve(req.result ? req.result.data : []);
-        req.onerror = () => resolve([]);
+        req.onsuccess = () => resolve(req.result ? req.result.data : null);
+        req.onerror = () => resolve(null);
       } catch (e) {
-        resolve([]);
+        resolve(null);
       }
     });
+  }
+
+  async guardarOperadorActivo(operador) {
+    await this.asegurarDB();
+    try {
+      const tx = this.db.transaction('catalogos', 'readwrite');
+      const store = tx.objectStore('catalogos');
+      store.put({ tipo: 'operador_activo_persistente', data: operador });
+    } catch (e) {
+      console.warn('[DB] Error guardando operador activo:', e);
+    }
+  }
+
+  async obtenerOperadorActivo() {
+    const data = await this.obtenerCatalogoLocal('operador_activo_persistente');
+    return data || null;
+  }
+
+  async borrarOperadorActivo() {
+    await this.asegurarDB();
+    try {
+      const tx = this.db.transaction('catalogos', 'readwrite');
+      const store = tx.objectStore('catalogos');
+      store.delete('operador_activo_persistente');
+    } catch (e) {}
   }
 }
 

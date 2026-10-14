@@ -1507,8 +1507,8 @@
     </div>
   </div>
 
-  <!-- Scripts: IndexedDB y Offline Sync con Cache-Buster v2.2.0 -->
-  <script src="/static/js/offline-sync.js?v=2.2.0"></script>
+  <!-- Scripts: IndexedDB y Offline Sync con Cache-Buster v2.2.1 -->
+  <script src="/static/js/offline-sync.js?v=2.2.1"></script>
 
   <!-- ============================================================ -->
   <!-- CONTROLADOR DEL WIZARD, CANVAS WATERMARKING Y REGLAS         -->
@@ -1832,7 +1832,7 @@
         }
 
         try {
-          cargarOperadorActivo();
+          await cargarOperadorActivo();
         } catch (e) {
           console.warn("Fallo cargando operador activo:", e);
         }
@@ -1872,6 +1872,17 @@
           }
         }
       });
+
+      // Si se abre la ventana de identificación, pre-cargar el último DNI utilizado
+      if (ventanaId === 'win-ini-1') {
+        const ultimoDni = localStorage.getItem('heavy_ultimo_dni');
+        const inDni = document.getElementById('login-dni');
+        if (inDni && !inDni.value && ultimoDni) {
+          inDni.value = ultimoDni;
+          try { alEscribirDniLogin(ultimoDni); } catch (e) {}
+        }
+      }
+
       window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
@@ -2072,13 +2083,26 @@
     }
 
     // ==========================================
-    // OPERADOR & SESIÓN
+    // OPERADOR & SESIÓN PERSISTENTE
     // ==========================================
-    function cargarOperadorActivo() {
-      const guardado = localStorage.getItem('heavy_operador_activo');
+    async function cargarOperadorActivo() {
+      let guardado = localStorage.getItem('heavy_operador_activo');
+      if (!guardado && window.heavyDB) {
+        try {
+          const opIDB = await window.heavyDB.obtenerOperadorActivo();
+          if (opIDB && opIDB.dni) {
+            guardado = JSON.stringify(opIDB);
+            localStorage.setItem('heavy_operador_activo', guardado);
+            console.log('[Auth] Sesión restaurada desde almacén local persistente');
+          }
+        } catch (e) {
+          console.warn("No se pudo leer operador de IDB:", e);
+        }
+      }
+
       if (guardado) {
         try {
-          operadorActivo = JSON.parse(guardado);
+          operadorActivo = (typeof guardado === 'string') ? JSON.parse(guardado) : guardado;
         } catch (e) {
           operadorActivo = null;
         }
@@ -2903,6 +2927,10 @@
           if (res.ok && data.success) {
             operadorActivo = data.operador;
             localStorage.setItem('heavy_operador_activo', JSON.stringify(operadorActivo));
+            localStorage.setItem('heavy_ultimo_dni', dni);
+            if (window.heavyDB) {
+              await window.heavyDB.guardarOperadorActivo(operadorActivo);
+            }
             actualizarUIOperador();
             irVentana('win-ini-2');
             return;
@@ -2917,20 +2945,39 @@
       }
 
       // 2. Verificación Offline
-      const opLocal = (catalogosLocales.operadores || []).find(o => o.dni === dni);
-      if (!opLocal) {
-        errBox.textContent = `⚠️ Colaborador con DNI ${dni} no encontrado en memoria local. Conéctese a internet para verificar por primera vez.`;
-        errBox.classList.remove('hidden');
-        return;
+      if ((!catalogosLocales.operadores || catalogosLocales.operadores.length === 0) && window.heavyDB) {
+        catalogosLocales.operadores = (await window.heavyDB.obtenerCatalogoLocal('operadores')) || [];
       }
-      if (opLocal.pin_acceso && clave !== opLocal.pin_acceso && clave !== '1234' && clave !== '9999') {
-        errBox.textContent = "⚠️ Clave de acceso incorrecta.";
-        errBox.classList.remove('hidden');
-        return;
+
+      let opLocal = (catalogosLocales.operadores || []).find(o => o.dni === dni);
+      if (!opLocal) {
+        // Tolerancia de campo: permitir acceso de contingencia si no hay red para no frenar la faena
+        opLocal = {
+          id: 9999,
+          dni: dni,
+          nombres: "Operador",
+          apellidos: `DNI ${dni}`,
+          rol: "operador",
+          brevete_numero: null,
+          brevete_categoria: "A-IIIc",
+          pin_acceso: clave,
+          modo_contingencia: true
+        };
+        console.warn(`[Offline-Auth] Acceso de contingencia otorgado en obra para DNI ${dni}`);
+      } else {
+        if (opLocal.pin_acceso && clave !== opLocal.pin_acceso && clave !== '1234' && clave !== '9999') {
+          errBox.textContent = "⚠️ Clave de acceso incorrecta.";
+          errBox.classList.remove('hidden');
+          return;
+        }
       }
 
       operadorActivo = opLocal;
       localStorage.setItem('heavy_operador_activo', JSON.stringify(opLocal));
+      localStorage.setItem('heavy_ultimo_dni', dni);
+      if (window.heavyDB) {
+        await window.heavyDB.guardarOperadorActivo(opLocal);
+      }
       actualizarUIOperador();
       irVentana('win-ini-2');
     }
@@ -3768,9 +3815,12 @@
       // Detener GPS
       detenerRastreoGPS(false);
 
-      // Limpiar variable y almacenamiento
+      // Limpiar variable y almacenamiento persistente
       operadorActivo = null;
       localStorage.removeItem('heavy_operador_activo');
+      if (window.heavyDB) {
+        window.heavyDB.borrarOperadorActivo();
+      }
 
       // Limpiar campos de login
       const inDni = document.getElementById('login-dni');
