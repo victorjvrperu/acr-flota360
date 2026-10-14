@@ -74,6 +74,14 @@
           <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2v2m0 16v2m10-10h-2M4 12H2"/></svg>
           <span>Control de Horómetros</span>
         </button>
+        <button type="button" onclick="mostrarSeccion('mantenimiento')" data-tab="mantenimiento" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-amber-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          <span>Mantenimiento</span>
+        </button>
+        <button type="button" onclick="mostrarSeccion('combustible')" data-tab="combustible" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
+          <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+          <span>Combustible & Pagos</span>
+        </button>
         <button type="button" onclick="mostrarSeccion('personal')" data-tab="personal" class="nav-tab-btn w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-graphiteLight hover:text-white transition font-medium text-left cursor-pointer">
           <svg class="w-5 h-5 text-machinery shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
           <span>Operadores & Personal</span>
@@ -233,6 +241,109 @@
               <div><span class="block text-alertGreen" id="semaforo-cnt-verde">0</span> Operativos</div>
               <div><span class="block text-alertYellow" id="semaforo-cnt-amarillo">0</span> &lt;25h Próx</div>
               <div><span class="block text-alertRed" id="semaforo-cnt-rojo">0</span> Vencido</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILA DE GRÁFICOS ANALÍTICOS: HORAS TRABAJADAS Y CONSUMO DE COMBUSTIBLE -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Gráfico: Horas Trabajadas por Máquina -->
+          <div class="bg-graphite border border-gray-800 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-base font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                  <span>⏱️</span> Horas Trabajadas por Máquina
+                </h3>
+                <p class="text-xs text-gray-400">Total acumulado de horómetros reportados en bitácora</p>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded bg-amber-500/10 text-amber-400 font-bold">HORAS MÁQUINA</span>
+            </div>
+            <div class="h-64">
+              <canvas id="chartHorasMaquinas"></canvas>
+            </div>
+          </div>
+
+          <!-- Gráfico: Consumo de Combustible por Máquina -->
+          <div class="bg-graphite border border-gray-800 rounded-xl p-6">
+            <div class="flex items-center justify-between mb-4">
+              <div>
+                <h3 class="text-base font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                  <span>⛽</span> Consumo de Combustible por Máquina
+                </h3>
+                <p class="text-xs text-gray-400">Volumen en galones y costo en Soles (S/.) por equipo</p>
+              </div>
+              <span class="text-xs px-2.5 py-1 rounded bg-emerald-500/10 text-emerald-400 font-bold">GALONES / SOLES</span>
+            </div>
+            <div class="h-64">
+              <canvas id="chartCombustibleMaquinas"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- FILA DE DETALLE INDUSTRIAL: PRÓXIMOS MANTENIMIENTOS Y VENCIMIENTO DE DOCUMENTOS -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Widget: Máquinas Próximas a Mantenimiento -->
+          <div class="bg-graphite border border-gray-800 rounded-xl p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3 border-b border-gray-800 pb-3">
+              <div>
+                <h3 class="text-base font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                  <span>🔧</span> Máquinas Próximas a su Mantenimiento
+                </h3>
+                <p class="text-xs text-gray-400">Semáforo de servicio según horómetro actual e intervalo configurado</p>
+              </div>
+              <button onclick="mostrarSeccion('mantenimiento')" class="text-xs text-machinery hover:underline font-bold cursor-pointer">
+                Gestionar Módulos &rarr;
+              </button>
+            </div>
+            <div class="overflow-x-auto max-h-72">
+              <table class="w-full text-left text-xs">
+                <thead class="text-[11px] text-gray-400 uppercase bg-carbon/60 sticky top-0">
+                  <tr>
+                    <th class="py-2.5 px-3">Máquina</th>
+                    <th class="py-2.5 px-3 text-right">Horóm. Actual</th>
+                    <th class="py-2.5 px-3 text-right">Próx. Servicio</th>
+                    <th class="py-2.5 px-3 text-right">Faltan</th>
+                    <th class="py-2.5 px-3 text-center">Estado</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-proximos-mantenimientos-body" class="divide-y divide-gray-800/80 font-medium">
+                  <tr>
+                    <td colspan="5" class="py-4 text-center text-gray-500">Cargando próximos mantenimientos...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Widget: Renovación de SOAT y Revisión Técnica -->
+          <div class="bg-graphite border border-gray-800 rounded-xl p-6 flex flex-col justify-between">
+            <div class="flex items-center justify-between mb-3 border-b border-gray-800 pb-3">
+              <div>
+                <h3 class="text-base font-bold text-white uppercase tracking-wide flex items-center gap-2">
+                  <span>📄</span> Renovación de SOAT y Revisión Técnica
+                </h3>
+                <p class="text-xs text-gray-400">Control legal preventivo de vigencia y días restantes para vencer</p>
+              </div>
+              <span class="text-[11px] px-2 py-0.5 rounded bg-blue-950/80 text-blue-300 font-bold border border-blue-800">
+                Alerta Legal
+              </span>
+            </div>
+            <div class="overflow-x-auto max-h-72">
+              <table class="w-full text-left text-xs">
+                <thead class="text-[11px] text-gray-400 uppercase bg-carbon/60 sticky top-0">
+                  <tr>
+                    <th class="py-2.5 px-3">Equipo / Placa</th>
+                    <th class="py-2.5 px-3">SOAT</th>
+                    <th class="py-2.5 px-3">Revisión Técnica</th>
+                    <th class="py-2.5 px-3 text-center">Condición</th>
+                  </tr>
+                </thead>
+                <tbody id="tabla-alertas-documentos-body" class="divide-y divide-gray-800/80 font-medium">
+                  <tr>
+                    <td colspan="4" class="py-4 text-center text-gray-500">Cargando estado de documentos...</td>
+                  </tr>
+                </tbody>
+              </table>
             </div>
           </div>
         </div>
@@ -687,6 +798,185 @@
               <!-- Dinámico -->
             </tbody>
           </table>
+        </div>
+      <!-- SECCIÓN MANTENIMIENTO PREVENTIVO & ÓRDENES -->
+      <div id="seccion-mantenimiento" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+          <div>
+            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+              <span class="w-3 h-3 bg-amber-400 rounded-sm"></span>
+              Gestión de Mantenimiento Preventivo & Correctivo
+            </h3>
+            <p class="text-xs text-gray-400">Configure los intervalos de servicio (horas) por cada máquina y supervise órdenes de trabajo</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="abrirModalNuevaOrdenMantenimiento()" class="px-3 py-2 bg-machinery hover:bg-machineryHover text-carbon rounded-lg text-xs font-black flex items-center gap-1.5 transition shadow-sm cursor-pointer">
+              <span>🛠️</span> + Nueva Orden de Trabajo
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs Resumen Mantenimiento -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Operativos al Día</div>
+            <div id="mant-kpi-verde" class="text-2xl font-black text-emerald-400 mt-1">0</div>
+            <div class="text-[10px] text-gray-500">Horómetros dentro de rango</div>
+          </div>
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Alerta Próxima (&lt;25h)</div>
+            <div id="mant-kpi-amarillo" class="text-2xl font-black text-amber-400 mt-1">0</div>
+            <div class="text-[10px] text-amber-400/80">Requieren insumos/filtros</div>
+          </div>
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Servicio Vencido</div>
+            <div id="mant-kpi-rojo" class="text-2xl font-black text-rose-400 mt-1">0</div>
+            <div class="text-[10px] text-rose-400/80">Parada preventiva requerida</div>
+          </div>
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Órdenes Registradas</div>
+            <div id="mant-kpi-ordenes" class="text-2xl font-black text-machinery mt-1">0</div>
+            <div class="text-[10px] text-gray-500">Historial de taller</div>
+          </div>
+        </div>
+
+        <!-- Tabla: Intervalos y Próximo Servicio de Maquinaria -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
+              <span>🚜</span> Intervalos de Servicio por Máquina (Horas)
+            </h4>
+            <span class="text-xs text-gray-400">Haga clic en ⚙️ para cambiar cada cuántas horas se realiza mantenimiento</span>
+          </div>
+          <div class="overflow-x-auto rounded-lg border border-gray-800">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
+                <tr>
+                  <th class="py-3 px-4">Código / Equipo</th>
+                  <th class="py-3 px-4">Tipo</th>
+                  <th class="py-3 px-4 text-right">Horómetro Actual</th>
+                  <th class="py-3 px-4 text-center">Intervalo Configurado</th>
+                  <th class="py-3 px-4 text-right">Próximo Mantenimiento</th>
+                  <th class="py-3 px-4 text-right">Horas Restantes</th>
+                  <th class="py-3 px-4 text-center">Semáforo</th>
+                  <th class="py-3 px-4 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-mantenimiento-equipos-body" class="divide-y divide-gray-800 font-medium">
+                <tr>
+                  <td colspan="8" class="py-6 text-center text-gray-500">Cargando flota para mantenimiento...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Tabla: Historial de Órdenes de Mantenimiento -->
+        <div class="mt-8 pt-6 border-t border-gray-800">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
+              <span>📋</span> Órdenes de Trabajo y Mantenimiento de Taller
+            </h4>
+            <button onclick="cargarOrdenesMantenimiento()" class="text-xs text-machinery hover:underline font-bold">
+              🔄 Actualizar Órdenes
+            </button>
+          </div>
+          <div class="overflow-x-auto rounded-lg border border-gray-800">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
+                <tr>
+                  <th class="py-3 px-4">N° Orden</th>
+                  <th class="py-3 px-4">Equipo</th>
+                  <th class="py-3 px-4">Tipo Servicio</th>
+                  <th class="py-3 px-4">Fecha Prog.</th>
+                  <th class="py-3 px-4 text-right">Horóm. Registro</th>
+                  <th class="py-3 px-4 text-right">Costo Estim. (S/.)</th>
+                  <th class="py-3 px-4">Técnico / Taller</th>
+                  <th class="py-3 px-4 text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-ordenes-mantenimiento-body" class="divide-y divide-gray-800 font-medium">
+                <tr>
+                  <td colspan="8" class="py-6 text-center text-gray-500">Cargando órdenes de mantenimiento...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECCIÓN CONTROL DE COMBUSTIBLE & PAGOS -->
+      <div id="seccion-combustible" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-800 pb-4">
+          <div>
+            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+              <span class="w-3 h-3 bg-emerald-400 rounded-sm"></span>
+              Control de Combustible & Conciliación con Área de Pagos
+            </h3>
+            <p class="text-xs text-gray-400">Supervise cargas de diésel reportadas por operadores, coordine montos facturados y registre números de operación bancaria</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="cargarModuloCombustible()" class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 rounded-lg text-xs font-bold flex items-center gap-1.5 transition">
+              🔄 Refrescar Cargas
+            </button>
+          </div>
+        </div>
+
+        <!-- KPIs Resumen de Pagos de Combustible -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Galones Totales</div>
+            <div id="comb-kpi-galones" class="text-2xl font-black text-machinery mt-1">0.0 Gal</div>
+            <div class="text-[10px] text-gray-500">Consumo acumulado</div>
+          </div>
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Pendiente de Pago</div>
+            <div id="comb-kpi-pendiente" class="text-2xl font-black text-amber-400 mt-1">S/ 0.00</div>
+            <div class="text-[10px] text-amber-400/80">Por conciliar con tesorería</div>
+          </div>
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Total Pagado</div>
+            <div id="comb-kpi-pagado" class="text-2xl font-black text-emerald-400 mt-1">S/ 0.00</div>
+            <div class="text-[10px] text-emerald-400/80">Con operación bancaria</div>
+          </div>
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Inversión Total Combustible</div>
+            <div id="comb-kpi-total" class="text-2xl font-black text-white mt-1">S/ 0.00</div>
+            <div class="text-[10px] text-gray-500">Monto global</div>
+          </div>
+        </div>
+
+        <!-- Tabla: Registro de Cargas de Combustible -->
+        <div>
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
+              <span>⛽</span> Bitácora de Cargas y Conciliación Financiera
+            </h4>
+            <span class="text-xs text-gray-400">Coordinación directa de pagos con área de administración</span>
+          </div>
+          <div class="overflow-x-auto rounded-lg border border-gray-800">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
+                <tr>
+                  <th class="py-3 px-4">Fecha / Hora</th>
+                  <th class="py-3 px-4">Equipo / Placa</th>
+                  <th class="py-3 px-4">Operador</th>
+                  <th class="py-3 px-4 text-right">Galones</th>
+                  <th class="py-3 px-4 text-center">Voucher</th>
+                  <th class="py-3 px-4 text-right">Precio/Gal (S/.)</th>
+                  <th class="py-3 px-4 text-right">Total S/.</th>
+                  <th class="py-3 px-4 text-center">Estado Pago</th>
+                  <th class="py-3 px-4">N° Operación</th>
+                  <th class="py-3 px-4 text-center">Acción</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-combustible-cargas-body" class="divide-y divide-gray-800 font-medium">
+                <tr>
+                  <td colspan="10" class="py-6 text-center text-gray-500">Cargando registros de combustible...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -1263,6 +1553,7 @@
       <!-- Formulario para que el Jefe de Flotas ingrese el precio y total -->
       <form id="form-precio-combustible" onsubmit="guardarPrecioCombustible(event)" class="space-y-4">
         <input type="hidden" id="modal-comb-turno-id">
+        <input type="hidden" id="modal-comb-registro-id">
         <input type="hidden" id="modal-comb-galones-val">
 
         <div class="grid grid-cols-2 gap-3">
@@ -1276,13 +1567,291 @@
           </div>
         </div>
 
+        <!-- Conciliación con área que paga el combustible -->
+        <div class="bg-carbon/80 p-3 rounded-xl border border-gray-800 space-y-3">
+          <div class="text-[11px] font-black text-amber-400 uppercase flex items-center gap-1.5">
+            <span>💳</span> Coordinación con Área de Pagos / Tesorería
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Estado del Pago *</label>
+              <select id="modal-comb-estado-pago" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-bold focus:border-machinery focus:outline-none text-xs">
+                <option value="pendiente">🟡 Pendiente de Pago</option>
+                <option value="pagado">🟢 Pagado / Conciliado</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">N° Operación / Transf.</label>
+              <input type="text" id="modal-comb-operacion-pago" placeholder="Ej: OP-982314 / BCP" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white font-mono text-xs focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Observaciones / Coordinación de Pago</label>
+            <input type="text" id="modal-comb-obs-pago" placeholder="Ej: Pago coordinado con área contable según Factura F001-239" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-2 text-white text-xs focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
         <div id="modal-comb-error" class="hidden p-2.5 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
 
         <div class="pt-2 flex gap-2">
           <button type="submit" id="btn-guardar-comb-modal" class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-machinery/25 flex items-center justify-center gap-1.5">
-            <span>💾</span> <span>Guardar Valorización</span>
+            <span>💾</span> <span>Guardar Conciliación</span>
           </button>
           <button type="button" onclick="cerrarModalPrecioCombustible()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIGURAR INTERVALO DE MANTENIMIENTO POR MÁQUINA (ENCARGADO DE FLOTAS) -->
+  <div id="modal-config-mantenimiento" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border-2 border-amber-500/60 rounded-3xl max-w-md w-full p-6 relative space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+            ⚙️
+          </div>
+          <div>
+            <h3 class="text-base font-black text-white uppercase">Intervalo de Mantenimiento</h3>
+            <p class="text-[11px] text-gray-400">Configuración técnica por máquina (horas)</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalConfigMantenimiento()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <div class="bg-carbon/90 rounded-2xl p-3.5 border border-gray-800 space-y-1.5 text-xs">
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Máquina:</span>
+          <span id="modal-mant-codigo" class="font-mono font-bold text-machinery">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Nombre / Modelo:</span>
+          <span id="modal-mant-nombre" class="font-bold text-white">-</span>
+        </div>
+        <div class="flex justify-between items-center">
+          <span class="text-gray-400">Horómetro Actual Registrado:</span>
+          <span id="modal-mant-actual" class="font-mono font-black text-amber-400 text-sm">0.0 h</span>
+        </div>
+      </div>
+
+      <form id="form-config-mantenimiento" onsubmit="guardarConfigMantenimientoSubmit(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="modal-mant-equipo-id">
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">
+            ¿Cada cuántas horas se realiza mantenimiento? *
+          </label>
+          <div class="relative">
+            <input type="number" step="10" min="10" max="2000" id="modal-mant-intervalo" required placeholder="Ej: 250" oninput="recalcularProximoServicioModal()" class="w-full bg-carbon border-2 border-gray-700 focus:border-amber-400 text-white font-mono font-black text-xl text-center rounded-xl py-2.5 px-3 focus:outline-none">
+            <span class="absolute right-4 top-3 text-gray-400 font-bold">Horas</span>
+          </div>
+          <span class="text-[10px] text-gray-400 mt-1 block">Estándar en maquinaria pesada: 250h (preventivo básico) o 500h (mayor).</span>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Horóm. Próx. Servicio *</label>
+            <input type="number" step="0.1" id="modal-mant-proximo" required class="w-full bg-carbon border border-gray-700 focus:border-machinery text-amber-400 font-mono font-bold text-sm text-center rounded-xl py-2 px-3 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Estado de Equipo</label>
+            <select id="modal-mant-estado" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold text-xs focus:outline-none">
+              <option value="operativo">🟢 Operativo</option>
+              <option value="en_mantenimiento">🔧 En Taller / Mant.</option>
+              <option value="inactivo">⚪ Inactivo</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="modal-mant-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="submit" class="flex-1 py-3 bg-amber-500 hover:bg-amber-400 text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-amber-500/25 flex items-center justify-center gap-1.5">
+            <span>⚙️</span> <span>Guardar Intervalo</span>
+          </button>
+          <button type="button" onclick="cerrarModalConfigMantenimiento()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: NUEVA ORDEN DE MANTENIMIENTO -->
+  <div id="modal-nueva-orden-mantenimiento" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-gray-700 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">🛠️</span>
+          <div>
+            <h3 class="text-base font-black text-white uppercase">Nueva Orden de Trabajo / Mantenimiento</h3>
+            <p class="text-[11px] text-gray-400">Registro de intervención técnica de taller</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalNuevaOrdenMantenimiento()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-nueva-orden-mantenimiento" onsubmit="guardarNuevaOrdenMantenimientoSubmit(event)" class="space-y-3.5 text-xs">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Máquina / Equipo *</label>
+            <select id="modal-orden-equipo-id" required class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <!-- Dinámico -->
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Tipo de Mantenimiento *</label>
+            <select id="modal-orden-tipo" required class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <option value="preventivo">🔧 Preventivo Programado</option>
+              <option value="correctivo">⚠️ Correctivo Urgente</option>
+              <option value="predictivo">🔍 Inspección Predictiva</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Fecha Programada *</label>
+            <input type="date" id="modal-orden-fecha" required class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Horómetro Actual *</label>
+            <input type="number" step="0.1" id="modal-orden-horometro" required placeholder="Ej: 1250.5" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Técnico / Taller Asignado</label>
+            <input type="text" id="modal-orden-tecnico" placeholder="Ej: Taller Central / Mecánico Raúl" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Costo Estimado S/.</label>
+            <input type="number" step="0.01" id="modal-orden-costo" placeholder="Ej: 1450.00" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-emerald-400 font-mono font-bold focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Descripción de Trabajos / Repuestos a cambiar</label>
+          <textarea id="modal-orden-descripcion" rows="2" placeholder="Cambio de aceite motor 15W40, filtros de aire primario/secundario y engrase general..." class="w-full bg-carbon border border-gray-700 rounded-xl p-2.5 text-white focus:border-machinery focus:outline-none"></textarea>
+        </div>
+
+        <div id="modal-orden-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="submit" class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg flex items-center justify-center gap-1.5">
+            <span>💾</span> <span>Crear Orden de Trabajo</span>
+          </button>
+          <button type="button" onclick="cerrarModalNuevaOrdenMantenimiento()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR OPERADOR O PERSONAL -->
+  <div id="modal-editar-personal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-gray-700 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-2">
+          <span class="text-xl">✏️</span>
+          <div>
+            <h3 class="text-base font-black text-white uppercase">Editar Operador / Personal</h3>
+            <p class="text-[11px] text-gray-400">Actualizar datos de contacto, brevete y credenciales</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalEditarPersonal()" class="text-gray-400 hover:text-white text-2xl font-bold">&times;</button>
+      </div>
+
+      <form id="form-editar-personal" onsubmit="guardarEditarPersonalSubmit(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="edit-personal-id">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">DNI (8 dígitos) *</label>
+            <input type="text" id="edit-personal-dni" required maxlength="8" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Rol / Cargo *</label>
+            <select id="edit-personal-rol" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <option value="operador">Operador de Maquinaria</option>
+              <option value="jefe_mantenimiento">Jefe de Área / Mantenimiento</option>
+              <option value="gerencia">Gerencia de Operaciones</option>
+              <option value="sistemas_admin">Sistemas / Administrador</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Nombres *</label>
+            <input type="text" id="edit-personal-nombres" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Apellidos *</label>
+            <input type="text" id="edit-personal-apellidos" required class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Teléfono</label>
+            <input type="text" id="edit-personal-telefono" placeholder="Ej: 987654321" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-mono focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">PIN Acceso (4 dígitos) *</label>
+            <input type="text" id="edit-personal-pin" maxlength="4" required class="w-full bg-carbon border border-machinery/60 rounded-lg px-3 py-2 text-machinery font-mono font-black text-center tracking-widest focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-2 bg-carbon/70 p-3 rounded-xl border border-gray-800">
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">N° Brevete</label>
+            <input type="text" id="edit-personal-brevete-num" class="w-full bg-graphite border border-gray-700 rounded-lg px-2.5 py-1.5 text-white font-mono text-xs focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Categoría</label>
+            <select id="edit-personal-brevete-cat" class="w-full bg-graphite border border-gray-700 rounded-lg px-2 py-1.5 text-white font-bold text-xs focus:border-machinery focus:outline-none">
+              <option value="">Ninguna</option>
+              <option value="A-I">A-I</option>
+              <option value="A-IIa">A-IIa</option>
+              <option value="A-IIb">A-IIb</option>
+              <option value="A-IIIa">A-IIIa</option>
+              <option value="A-IIIb">A-IIIb</option>
+              <option value="A-IIIc">A-IIIc</option>
+              <option value="Especial">Especial Maq.</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] font-bold text-gray-400 uppercase mb-1">Vencimiento Brevete</label>
+            <input type="date" id="edit-personal-brevete-venc" class="w-full bg-graphite border border-gray-700 rounded-lg px-2 py-1.5 text-white font-mono text-xs focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">¿Tiene Certificación Técnica?</label>
+            <select id="edit-personal-cert" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <option value="0">No cuenta con certificado</option>
+              <option value="1">Sí, cuenta con certificación</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-400 uppercase mb-1">Nombre Certificado</label>
+            <input type="text" id="edit-personal-cert-nombre" placeholder="Ej: Operador Excavadora TECSUP" class="w-full bg-carbon border border-gray-700 rounded-lg px-3 py-2 text-white focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <div id="modal-edit-personal-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="submit" class="flex-1 py-3 bg-machinery hover:bg-machineryActive text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg flex items-center justify-center gap-1.5">
+            <span>💾</span> <span>Guardar Cambios</span>
+          </button>
+          <button type="button" onclick="cerrarModalEditarPersonal()" class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700">
             Cancelar
           </button>
         </div>
@@ -1325,6 +1894,16 @@
           id: 'seccion-turnos',
           titulo: 'BITÁCORA DE OPERACIONES',
           subtitulo: 'Historial en vivo de turnos reportados desde celulares de campo con evidencia'
+        },
+        'mantenimiento': {
+          id: 'seccion-mantenimiento',
+          titulo: 'MANTENIMIENTO PREVENTIVO & ÓRDENES',
+          subtitulo: 'Configuración técnica de intervalos de servicio por máquina (horas) y supervisión de taller'
+        },
+        'combustible': {
+          id: 'seccion-combustible',
+          titulo: 'CONTROL DE COMBUSTIBLE & PAGOS',
+          subtitulo: 'Conciliación financiera de pagos con área administrativa y control de galones'
         },
         'personal': {
           id: 'seccion-personal',
@@ -1381,6 +1960,8 @@
         setTimeout(() => {
           if (window.chartProyectosInstance) window.chartProyectosInstance.resize();
           if (window.chartSemaforoInstance) window.chartSemaforoInstance.resize();
+          if (window.chartHorasMaquinasInstance) window.chartHorasMaquinasInstance.resize();
+          if (window.chartCombustibleMaquinasInstance) window.chartCombustibleMaquinasInstance.resize();
           if (mapaFlotaInstance) {
             mapaFlotaInstance.invalidateSize();
             actualizarMapaGPS();
@@ -1390,6 +1971,14 @@
 
       if (tabKey === 'horometros') {
         cargarControlHorometros();
+      }
+
+      if (tabKey === 'mantenimiento') {
+        cargarModuloMantenimiento();
+      }
+
+      if (tabKey === 'combustible') {
+        cargarModuloCombustible();
       }
 
       // 7. Sincronizar URL hash
@@ -2858,9 +3447,11 @@
           }
         }
 
+        const btnEditar = `<button onclick="abrirModalEditarPersonal(${p.id})" class="px-2.5 py-1 bg-graphiteLight hover:bg-machinery hover:text-carbon text-gray-200 text-xs rounded border border-gray-700 transition cursor-pointer font-bold flex items-center gap-1" title="Editar Operador o Personal">✏️ Editar</button>`;
+
         const accionBtn = (p.dni === 'admin')
-          ? '<span class="px-2 py-0.5 text-[10px] font-bold bg-gray-800 text-gray-400 rounded border border-gray-700" title="Cuenta principal">🔒 Protegido</span>'
-          : `<button onclick="eliminarPersonal(${p.id})" class="px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs rounded border border-rose-800 transition cursor-pointer">Eliminar</button>`;
+          ? `<div class="flex items-center justify-center gap-1.5">${btnEditar}<span class="px-2 py-0.5 text-[10px] font-bold bg-gray-800 text-gray-400 rounded border border-gray-700" title="Cuenta principal">🔒 Protegido</span></div>`
+          : `<div class="flex items-center justify-center gap-1.5">${btnEditar}<button onclick="eliminarPersonal(${p.id})" class="px-2.5 py-1 bg-rose-950/60 hover:bg-rose-900 text-rose-300 text-xs rounded border border-rose-800 transition cursor-pointer">Eliminar</button></div>`;
 
         const tr = document.createElement('tr');
         tr.className = 'hover:bg-graphiteLight/50 transition';
@@ -3061,6 +3652,173 @@
             plugins: { legend: { display: false } }
           }
         });
+
+        // 6. Render Gráfico Horas Trabajadas por Máquina
+        const ctxHorasMaq = document.getElementById('chartHorasMaquinas');
+        if (ctxHorasMaq && data.horas_por_maquina) {
+          if (window.chartHorasMaquinasInstance) window.chartHorasMaquinasInstance.destroy();
+          window.chartHorasMaquinasInstance = new Chart(ctxHorasMaq.getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: data.horas_por_maquina.map(m => m.codigo),
+              datasets: [{
+                label: 'Horas Trabajadas',
+                data: data.horas_por_maquina.map(m => m.horas),
+                backgroundColor: '#F59E0B',
+                borderRadius: 6
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: { legend: { display: false } },
+              scales: {
+                x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 10 } } },
+                y: { grid: { color: '#282D35' }, ticks: { color: '#9CA3AF' } }
+              }
+            }
+          });
+        }
+
+        // 7. Render Gráfico Consumo de Combustible por Máquina (Galones y Soles)
+        const ctxCombMaq = document.getElementById('chartCombustibleMaquinas');
+        if (ctxCombMaq && data.consumo_por_maquina) {
+          if (window.chartCombustibleMaquinasInstance) window.chartCombustibleMaquinasInstance.destroy();
+          window.chartCombustibleMaquinasInstance = new Chart(ctxCombMaq.getContext('2d'), {
+            type: 'bar',
+            data: {
+              labels: data.consumo_por_maquina.map(m => m.codigo),
+              datasets: [
+                {
+                  label: 'Galones',
+                  data: data.consumo_por_maquina.map(m => m.galones),
+                  backgroundColor: '#10B981',
+                  borderRadius: 6,
+                  yAxisID: 'y'
+                },
+                {
+                  label: 'Soles (S/.)',
+                  data: data.consumo_por_maquina.map(m => m.soles),
+                  backgroundColor: '#3B82F6',
+                  borderRadius: 6,
+                  yAxisID: 'y1'
+                }
+              ]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: true,
+                  labels: { color: '#D1D5DB', font: { size: 11, weight: 'bold' } }
+                }
+              },
+              scales: {
+                x: { grid: { display: false }, ticks: { color: '#9CA3AF', font: { size: 10 } } },
+                y: {
+                  type: 'linear',
+                  display: true,
+                  position: 'left',
+                  grid: { color: '#282D35' },
+                  ticks: { color: '#10B981', callback: v => `${v} Gal` }
+                },
+                y1: {
+                  type: 'linear',
+                  display: true,
+                  position: 'right',
+                  grid: { drawOnChartArea: false },
+                  ticks: { color: '#60A5FA', callback: v => `S/ ${v}` }
+                }
+              }
+            }
+          });
+        }
+
+        // 8. Render Detalle de Máquinas Próximas a Mantenimiento
+        const tbodyMant = document.getElementById('tabla-proximos-mantenimientos-body');
+        if (tbodyMant && data.proximos_mantenimientos) {
+          tbodyMant.innerHTML = '';
+          if (data.proximos_mantenimientos.length === 0) {
+            tbodyMant.innerHTML = '<tr><td colspan="5" class="py-4 text-center text-gray-500">No hay máquinas registradas en la flota.</td></tr>';
+          } else {
+            data.proximos_mantenimientos.forEach(pm => {
+              const semaforoBadge = pm.semaforo === 'rojo'
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-950/80 text-rose-400 border border-rose-800">🔴 VENCIDO</span>'
+                : pm.semaforo === 'amarillo'
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950/80 text-amber-400 border border-amber-800 animate-pulse">🟡 PRÓXIMO</span>'
+                : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">🟢 AL DÍA</span>';
+
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-graphiteLight/50 transition';
+              tr.innerHTML = `
+                <td class="py-2.5 px-3">
+                  <div class="font-bold text-white">${pm.codigo_interno}</div>
+                  <div class="text-[10px] text-gray-400">${pm.nombre}</div>
+                </td>
+                <td class="py-2.5 px-3 text-right font-mono font-bold text-gray-200">${pm.horometro_actual} h</td>
+                <td class="py-2.5 px-3 text-right font-mono text-gray-300">${pm.proximo_servicio} h</td>
+                <td class="py-2.5 px-3 text-right font-mono font-black ${pm.horas_restantes <= 0 ? 'text-rose-400' : pm.horas_restantes <= 25 ? 'text-amber-400' : 'text-emerald-400'}">
+                  ${pm.horas_restantes <= 0 ? `-${Math.abs(pm.horas_restantes)} h` : `${pm.horas_restantes} h`}
+                </td>
+                <td class="py-2.5 px-3 text-center">${semaforoBadge}</td>
+              `;
+              tbodyMant.appendChild(tr);
+            });
+          }
+        }
+
+        // 9. Render Detalle de Renovación de SOAT y Revisión Técnica
+        const tbodyDoc = document.getElementById('tabla-alertas-documentos-body');
+        if (tbodyDoc && data.alertas_documentos) {
+          tbodyDoc.innerHTML = '';
+          if (data.alertas_documentos.length === 0) {
+            tbodyDoc.innerHTML = '<tr><td colspan="4" class="py-4 text-center text-gray-500">No hay equipos registrados.</td></tr>';
+          } else {
+            data.alertas_documentos.forEach(doc => {
+              let soatBadge = '<span class="text-gray-500 font-mono text-xs">-</span>';
+              if (doc.soat_vencimiento) {
+                if (doc.soat_estado === 'vencido') {
+                  soatBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-950/90 text-rose-300 border border-rose-800">🔴 Venció hace ${Math.abs(doc.soat_dias)}d (${doc.soat_vencimiento})</span>`;
+                } else if (doc.soat_estado === 'por_vencer') {
+                  soatBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950/90 text-amber-300 border border-amber-800">🟡 Vence en ${doc.soat_dias}d (${doc.soat_vencimiento})</span>`;
+                } else {
+                  soatBadge = `<span class="text-emerald-400 font-mono text-[11px] font-bold">🟢 ${doc.soat_vencimiento}</span>`;
+                }
+              }
+
+              let revBadge = '<span class="text-gray-500 font-mono text-xs">-</span>';
+              if (doc.revision_tecnica_vencimiento) {
+                if (doc.revision_estado === 'vencido') {
+                  revBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-950/90 text-rose-300 border border-rose-800">🔴 Venció hace ${Math.abs(doc.revision_dias)}d (${doc.revision_tecnica_vencimiento})</span>`;
+                } else if (doc.revision_estado === 'por_vencer') {
+                  revBadge = `<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950/90 text-amber-300 border border-amber-800">🟡 Vence en ${doc.revision_dias}d (${doc.revision_tecnica_vencimiento})</span>`;
+                } else {
+                  revBadge = `<span class="text-emerald-400 font-mono text-[11px] font-bold">🟢 ${doc.revision_tecnica_vencimiento}</span>`;
+                }
+              }
+
+              const estadoGral = (doc.soat_estado === 'vencido' || doc.revision_estado === 'vencido')
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-950 text-rose-400 border border-rose-800">VENCIDO</span>'
+                : (doc.soat_estado === 'por_vencer' || doc.revision_estado === 'por_vencer')
+                ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950 text-amber-400 border border-amber-800">POR VENCER</span>'
+                : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">AL DÍA</span>';
+
+              const tr = document.createElement('tr');
+              tr.className = 'hover:bg-graphiteLight/50 transition';
+              tr.innerHTML = `
+                <td class="py-2.5 px-3">
+                  <div class="font-bold text-white">${doc.codigo_interno}</div>
+                  <div class="text-[10px] font-mono text-machinery">${doc.placa || '-'}</div>
+                </td>
+                <td class="py-2.5 px-3">${soatBadge}</td>
+                <td class="py-2.5 px-3">${revBadge}</td>
+                <td class="py-2.5 px-3 text-center">${estadoGral}</td>
+              `;
+              tbodyDoc.appendChild(tr);
+            });
+          }
+        }
 
         // Actualizar capas satelitales GPS
         await actualizarMapaGPS();
@@ -3373,8 +4131,12 @@
     async function guardarPrecioCombustible(e) {
       e.preventDefault();
       const turnoId = document.getElementById('modal-comb-turno-id').value;
+      const registroId = document.getElementById('modal-comb-registro-id').value;
       const precio = parseFloat(document.getElementById('modal-comb-precio-input').value) || 0;
       const total = parseFloat(document.getElementById('modal-comb-total-input').value) || 0;
+      const estadoPago = document.getElementById('modal-comb-estado-pago') ? document.getElementById('modal-comb-estado-pago').value : 'pendiente';
+      const numOperacion = document.getElementById('modal-comb-operacion-pago') ? document.getElementById('modal-comb-operacion-pago').value.trim() : null;
+      const obsPago = document.getElementById('modal-comb-obs-pago') ? document.getElementById('modal-comb-obs-pago').value.trim() : null;
       const errBox = document.getElementById('modal-comb-error');
       const btn = document.getElementById('btn-guardar-comb-modal');
 
@@ -3388,12 +4150,333 @@
       btn.innerHTML = '<span>⏳</span> <span>Guardando...</span>';
 
       try {
-        const resp = await fetch(`/api/v1/heavy/turnos/${turnoId}/combustible`, {
-          method: 'PATCH',
+        if (registroId) {
+          // Actualización de pago directo desde el módulo de combustible
+          const resp = await fetch(`/api/v1/heavy/combustible/${registroId}/pago`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              precio_por_galon: precio,
+              costo_total: total,
+              estado_pago: estadoPago,
+              numero_operacion_pago: numOperacion || null,
+              observaciones_pago: obsPago || null
+            })
+          });
+          if (!resp.ok) {
+            const txt = await resp.text();
+            throw new Error(`Error en servidor: ${txt.substring(0, 100)}`);
+          }
+        } else if (turnoId) {
+          // Actualización desde la bitácora de turnos
+          const resp = await fetch(`/api/v1/heavy/turnos/${turnoId}/combustible`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              precio_por_galon: precio,
+              costo_total: total
+            })
+          });
+          if (!resp.ok) {
+            const txt = await resp.text();
+            throw new Error(`Error en servidor: ${txt.substring(0, 100)}`);
+          }
+        }
+
+        cerrarModalPrecioCombustible();
+        await cargarDashboard();
+        if (typeof cargarTablaHorometros === 'function') await cargarTablaHorometros();
+        await cargarModuloCombustible();
+      } catch (err) {
+        errBox.textContent = err.message || 'Error al guardar precio';
+        errBox.classList.remove('hidden');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>💾</span> <span>Guardar Conciliación</span>';
+      }
+    }
+
+    // ==========================================
+    // MÓDULO: CONTROL DE COMBUSTIBLE Y PAGOS
+    // ==========================================
+    let combustibleCache = [];
+
+    async function cargarModuloCombustible() {
+      try {
+        const res = await fetch('/api/v1/heavy/combustible');
+        if (!res.ok) throw new Error('Error al obtener cargas de combustible');
+        combustibleCache = await res.json();
+
+        // Calcular métricas
+        let totalGal = 0;
+        let totalPendiente = 0;
+        let totalPagado = 0;
+        let totalSoles = 0;
+
+        combustibleCache.forEach(c => {
+          const gal = Number(c.galones_cargados) || 0;
+          const sol = Number(c.costo_total) || 0;
+          totalGal += gal;
+          totalSoles += sol;
+          if (c.estado_pago === 'pagado') {
+            totalPagado += sol;
+          } else {
+            totalPendiente += sol;
+          }
+        });
+
+        // Actualizar KPIs
+        const elGal = document.getElementById('comb-kpi-galones');
+        const elPen = document.getElementById('comb-kpi-pendiente');
+        const elPag = document.getElementById('comb-kpi-pagado');
+        const elTot = document.getElementById('comb-kpi-total');
+
+        if (elGal) elGal.textContent = `${totalGal.toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Gal`;
+        if (elPen) elPen.textContent = `S/ ${totalPendiente.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        if (elPag) elPag.textContent = `S/ ${totalPagado.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        if (elTot) elTot.textContent = `S/ ${totalSoles.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        // Renderizar tabla
+        const tbody = document.getElementById('tabla-combustible-cargas-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (combustibleCache.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="10" class="py-8 text-center text-gray-500 font-medium">No se registran cargas de combustible en el sistema.</td></tr>';
+          return;
+        }
+
+        combustibleCache.forEach(c => {
+          const fechaStr = c.fecha_hora ? c.fecha_hora.substring(0, 16).replace('T', ' ') : '-';
+          const precioStr = c.precio_por_galon ? `S/ ${Number(c.precio_por_galon).toFixed(2)}` : '<span class="text-amber-400 font-bold">Por definir</span>';
+          const costoStr = c.costo_total ? `S/ ${Number(c.costo_total).toFixed(2)}` : '<span class="text-gray-500 font-mono">S/ 0.00</span>';
+          
+          let estadoBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950/80 text-amber-400 border border-amber-800">🟡 PENDIENTE</span>';
+          if (c.estado_pago === 'pagado') {
+            estadoBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950/80 text-emerald-400 border border-emerald-800">🟢 PAGADO</span>';
+          }
+
+          let voucherBtn = '<span class="text-gray-500 font-mono">-</span>';
+          if (c.foto_voucher_url) {
+            voucherBtn = `
+              <a href="${c.foto_voucher_url}" target="_blank" class="inline-flex items-center gap-1 px-2 py-1 rounded bg-carbon hover:bg-gray-700 text-machinery border border-gray-700 font-bold text-[10px] transition">
+                <span>🧾</span> <span>Ver</span>
+              </a>
+            `;
+          }
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-graphiteLight/50 transition';
+          tr.innerHTML = `
+            <td class="py-3 px-4 font-mono text-gray-300 font-semibold">${fechaStr}</td>
+            <td class="py-3 px-4 font-bold text-white">
+              <div>${c.equipo_codigo || '-'}</div>
+              <div class="text-[10px] text-gray-400">${c.equipo_placa || ''}</div>
+            </td>
+            <td class="py-3 px-4 text-gray-200">${c.operador_nombre || '-'}</td>
+            <td class="py-3 px-4 text-right font-mono font-bold text-amber-400">${Number(c.galones_cargados || 0).toFixed(1)} Gal</td>
+            <td class="py-3 px-4 text-center">${voucherBtn}</td>
+            <td class="py-3 px-4 text-right font-mono text-gray-300">${precioStr}</td>
+            <td class="py-3 px-4 text-right font-mono font-bold text-emerald-400">${costoStr}</td>
+            <td class="py-3 px-4 text-center">${estadoBadge}</td>
+            <td class="py-3 px-4 font-mono text-xs text-gray-300">${c.numero_operacion_pago || '<span class="text-gray-500">-</span>'}</td>
+            <td class="py-3 px-4 text-center">
+              <button onclick="abrirModalPagoCombustible(${c.id}, '${c.equipo_codigo || ''}', '${fechaStr}', ${c.galones_cargados || 0}, ${c.precio_por_galon || 0}, ${c.costo_total || 0}, '${c.estado_pago || 'pendiente'}', '${c.numero_operacion_pago || ''}', '${c.observaciones_pago || ''}', '${c.foto_voucher_url || ''}')" class="px-2.5 py-1 bg-graphiteLight hover:bg-emerald-600 hover:text-white text-emerald-400 text-xs font-bold rounded border border-gray-700 transition cursor-pointer flex items-center gap-1 mx-auto">
+                <span>💳</span> <span>Gestionar Pago</span>
+              </button>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        console.error("Error cargando módulo combustible:", err);
+      }
+    }
+
+    function abrirModalPagoCombustible(id, equipoStr, fechaStr, galones, precio, total, estado, op, obs, voucherUrl) {
+      document.getElementById('modal-comb-turno-id').value = '';
+      document.getElementById('modal-comb-registro-id').value = id;
+      document.getElementById('modal-comb-equipo').textContent = equipoStr || 'Maquinaria';
+      document.getElementById('modal-comb-fecha').textContent = fechaStr || '-';
+      document.getElementById('modal-comb-galones').textContent = `${Number(galones || 0).toFixed(1)} Gal`;
+      document.getElementById('modal-comb-galones-val').value = galones || 0;
+      document.getElementById('modal-comb-precio-input').value = precio ? Number(precio).toFixed(2) : '';
+      document.getElementById('modal-comb-total-input').value = total ? Number(total).toFixed(2) : '';
+
+      const selEstado = document.getElementById('modal-comb-estado-pago');
+      if (selEstado) selEstado.value = estado || 'pendiente';
+
+      const inOp = document.getElementById('modal-comb-operacion-pago');
+      if (inOp) inOp.value = (op && op !== 'null') ? op : '';
+
+      const inObs = document.getElementById('modal-comb-obs-pago');
+      if (inObs) inObs.value = (obs && obs !== 'null') ? obs : '';
+
+      const boxVoucher = document.getElementById('modal-comb-voucher-box');
+      const btnVoucher = document.getElementById('btn-ver-voucher-modal');
+      if (voucherUrl && voucherUrl !== 'null') {
+        boxVoucher.classList.remove('hidden');
+        btnVoucher.onclick = () => window.open(voucherUrl, '_blank');
+      } else {
+        boxVoucher.classList.add('hidden');
+      }
+
+      const errBox = document.getElementById('modal-comb-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const modal = document.getElementById('modal-precio-combustible');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    // ==========================================
+    // MÓDULO: MANTENIMIENTO PREVENTIVO & ÓRDENES
+    // ==========================================
+    async function cargarModuloMantenimiento() {
+      try {
+        const res = await fetch('/api/v1/heavy/equipos');
+        if (!res.ok) throw new Error('Error al cargar equipos');
+        const equipos = await res.json();
+        equiposCache = equipos;
+
+        let cntVerde = 0;
+        let cntAmarillo = 0;
+        let cntRojo = 0;
+
+        const tbody = document.getElementById('tabla-mantenimiento-equipos-body');
+        if (tbody) tbody.innerHTML = '';
+
+        equipos.forEach(e => {
+          const actual = Number(e.horometro_actual) || 0;
+          const prox = Number(e.horometro_proximo_servicio) || (actual + (e.intervalo_servicio || 250));
+          const intervalo = Number(e.intervalo_servicio) || 250;
+          const restantes = prox - actual;
+
+          let semaforoBadge = '';
+          if (restantes <= 0 || e.estado === 'en_mantenimiento') {
+            cntRojo++;
+            semaforoBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-950/80 text-rose-400 border border-rose-800">🔴 VENCIDO</span>';
+          } else if (restantes <= 25) {
+            cntAmarillo++;
+            semaforoBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-amber-950/80 text-amber-400 border border-amber-800 animate-pulse">🟡 &lt;25h PRÓX</span>';
+          } else {
+            cntVerde++;
+            semaforoBadge = '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950/80 text-emerald-400 border border-emerald-800">🟢 AL DÍA</span>';
+          }
+
+          if (tbody) {
+            const tr = document.createElement('tr');
+            tr.className = 'hover:bg-graphiteLight/50 transition';
+            tr.innerHTML = `
+              <td class="py-3 px-4 font-bold text-white">
+                <div class="font-mono text-machinery">${e.codigo_interno}</div>
+                <div class="text-[11px] text-gray-300 font-sans">${e.nombre || `${e.marca || ''} ${e.modelo || ''}`}</div>
+              </td>
+              <td class="py-3 px-4 text-gray-400 uppercase text-[11px]">${e.tipo_equipo || 'Maquinaria'}</td>
+              <td class="py-3 px-4 text-right font-mono font-bold text-gray-100">${actual.toFixed(1)} h</td>
+              <td class="py-3 px-4 text-center">
+                <span class="px-2.5 py-1 rounded-md bg-carbon border border-gray-700 font-mono font-black text-amber-400">
+                  Cada ${intervalo} h
+                </span>
+              </td>
+              <td class="py-3 px-4 text-right font-mono text-gray-300">${prox.toFixed(1)} h</td>
+              <td class="py-3 px-4 text-right font-mono font-black ${restantes <= 0 ? 'text-rose-400' : restantes <= 25 ? 'text-amber-400' : 'text-emerald-400'}">
+                ${restantes <= 0 ? `-${Math.abs(restantes).toFixed(1)} h` : `${restantes.toFixed(1)} h`}
+              </td>
+              <td class="py-3 px-4 text-center">${semaforoBadge}</td>
+              <td class="py-3 px-4 text-center">
+                <div class="flex items-center justify-center gap-1.5">
+                  <button onclick="abrirModalConfigMantenimiento(${e.id})" class="px-2.5 py-1 bg-graphiteLight hover:bg-amber-500 hover:text-carbon text-amber-400 text-xs font-bold rounded border border-gray-700 transition cursor-pointer flex items-center gap-1" title="Configurar intervalo en horas">
+                    <span>⚙️</span> <span>Intervalo</span>
+                  </button>
+                  <button onclick="abrirModalNuevaOrdenMantenimiento(${e.id})" class="px-2.5 py-1 bg-carbon hover:bg-machinery hover:text-carbon text-gray-200 text-xs font-bold rounded border border-gray-700 transition cursor-pointer flex items-center gap-1" title="Emitir orden de trabajo">
+                    <span>🛠️</span> <span>Orden</span>
+                  </button>
+                </div>
+              </td>
+            `;
+            tbody.appendChild(tr);
+          }
+        });
+
+        // Actualizar KPIs de Mantenimiento
+        const elV = document.getElementById('mant-kpi-verde');
+        const elA = document.getElementById('mant-kpi-amarillo');
+        const elR = document.getElementById('mant-kpi-rojo');
+        if (elV) elV.textContent = cntVerde;
+        if (elA) elA.textContent = cntAmarillo;
+        if (elR) elR.textContent = cntRojo;
+
+        // Cargar Historial de Órdenes
+        await cargarOrdenesMantenimiento();
+
+      } catch (err) {
+        console.error("Error al cargar módulo de mantenimiento:", err);
+      }
+    }
+
+    function abrirModalConfigMantenimiento(equipoId) {
+      const eq = equiposCache.find(e => e.id === equipoId);
+      if (!eq) return;
+
+      document.getElementById('modal-mant-equipo-id').value = eq.id;
+      document.getElementById('modal-mant-codigo').textContent = eq.codigo_interno;
+      document.getElementById('modal-mant-nombre').textContent = eq.nombre || `${eq.marca || ''} ${eq.modelo || ''}`;
+      
+      const actual = Number(eq.horometro_actual) || 0;
+      document.getElementById('modal-mant-actual').textContent = `${actual.toFixed(1)} h`;
+
+      const intervalo = eq.intervalo_servicio || 250;
+      document.getElementById('modal-mant-intervalo').value = intervalo;
+
+      const prox = eq.horometro_proximo_servicio || (actual + intervalo);
+      document.getElementById('modal-mant-proximo').value = prox;
+
+      const selEstado = document.getElementById('modal-mant-estado');
+      if (selEstado) selEstado.value = eq.estado || 'operativo';
+
+      const errBox = document.getElementById('modal-mant-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const modal = document.getElementById('modal-config-mantenimiento');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function recalcularProximoServicioModal() {
+      const actualStr = document.getElementById('modal-mant-actual').textContent.replace(' h', '');
+      const actual = parseFloat(actualStr) || 0;
+      const intervalo = parseFloat(document.getElementById('modal-mant-intervalo').value) || 0;
+      if (intervalo > 0) {
+        document.getElementById('modal-mant-proximo').value = (actual + intervalo).toFixed(1);
+      }
+    }
+
+    function cerrarModalConfigMantenimiento() {
+      const modal = document.getElementById('modal-config-mantenimiento');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function guardarConfigMantenimientoSubmit(e) {
+      e.preventDefault();
+      const equipoId = document.getElementById('modal-mant-equipo-id').value;
+      const intervalo = parseFloat(document.getElementById('modal-mant-intervalo').value) || 250;
+      const proximo = parseFloat(document.getElementById('modal-mant-proximo').value) || 0;
+      const estado = document.getElementById('modal-mant-estado').value;
+      const errBox = document.getElementById('modal-mant-error');
+
+      try {
+        const resp = await fetch(`/api/v1/heavy/equipos/${equipoId}/mantenimiento-config`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            precio_por_galon: precio,
-            costo_total: total
+            intervalo_servicio: intervalo,
+            horometro_proximo_servicio: proximo,
+            estado: estado
           })
         });
 
@@ -3402,14 +4485,223 @@
           throw new Error(`Error en servidor: ${txt.substring(0, 100)}`);
         }
 
-        cerrarModalPrecioCombustible();
-        await cargarTablaHorometros();
+        cerrarModalConfigMantenimiento();
+        await cargarModuloMantenimiento();
+        await cargarDashboard();
+        await cargarFlota();
       } catch (err) {
-        errBox.textContent = err.message || 'Error al guardar precio';
-        errBox.classList.remove('hidden');
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '<span>💾</span> <span>Guardar Valorización</span>';
+        if (errBox) {
+          errBox.textContent = err.message || 'Error al guardar configuración';
+          errBox.classList.remove('hidden');
+        }
+      }
+    }
+
+    // Órdenes de Mantenimiento
+    let ordenesMantenimientoCache = [];
+
+    async function cargarOrdenesMantenimiento() {
+      try {
+        const res = await fetch('/api/v1/heavy/mantenimiento/ordenes');
+        if (!res.ok) throw new Error('Error al cargar órdenes');
+        ordenesMantenimientoCache = await res.json();
+
+        const elOrd = document.getElementById('mant-kpi-ordenes');
+        if (elOrd) elOrd.textContent = ordenesMantenimientoCache.length;
+
+        const tbody = document.getElementById('tabla-ordenes-mantenimiento-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+
+        if (ordenesMantenimientoCache.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="8" class="py-6 text-center text-gray-500 font-medium">No hay órdenes de trabajo registradas. Haga clic en "+ Nueva Orden de Trabajo".</td></tr>';
+          return;
+        }
+
+        ordenesMantenimientoCache.forEach(ord => {
+          const tipoBadge = ord.tipo_mantenimiento === 'correctivo'
+            ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-950 text-rose-400 border border-rose-800">⚠️ CORRECTIVO</span>'
+            : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-950 text-blue-400 border border-blue-800">🔧 PREVENTIVO</span>';
+
+          const estadoBadge = ord.estado === 'finalizado'
+            ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800">FINALIZADO</span>'
+            : ord.estado === 'en_proceso'
+            ? '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800">EN TALLER</span>'
+            : '<span class="px-2 py-0.5 rounded text-[10px] font-bold bg-gray-800 text-gray-300 border border-gray-700">PROGRAMADO</span>';
+
+          const tr = document.createElement('tr');
+          tr.className = 'hover:bg-graphiteLight/50 transition';
+          tr.innerHTML = `
+            <td class="py-3 px-4 font-mono font-bold text-machinery">${ord.codigo_orden}</td>
+            <td class="py-3 px-4 font-bold text-white">${ord.equipo_codigo || `Equipo #${ord.equipo_id}`}</td>
+            <td class="py-3 px-4">${tipoBadge}</td>
+            <td class="py-3 px-4 font-mono text-gray-300">${ord.fecha_programada || '-'}</td>
+            <td class="py-3 px-4 text-right font-mono font-bold text-gray-200">${ord.horometro_registro ? Number(ord.horometro_registro).toFixed(1) + ' h' : '-'}</td>
+            <td class="py-3 px-4 text-right font-mono font-bold text-emerald-400">S/ ${ord.costo_estimado ? Number(ord.costo_estimado).toFixed(2) : '0.00'}</td>
+            <td class="py-3 px-4 text-gray-300">${ord.tecnico_responsable || '-'}</td>
+            <td class="py-3 px-4 text-center">${estadoBadge}</td>
+          `;
+          tbody.appendChild(tr);
+        });
+
+      } catch (err) {
+        console.error("Error al cargar órdenes de mantenimiento:", err);
+      }
+    }
+
+    function abrirModalNuevaOrdenMantenimiento(equipoIdDefecto) {
+      const selectEq = document.getElementById('modal-orden-equipo-id');
+      if (selectEq && equiposCache.length > 0) {
+        selectEq.innerHTML = '';
+        equiposCache.forEach(e => {
+          const opt = document.createElement('option');
+          opt.value = e.id;
+          opt.textContent = `${e.codigo_interno} - ${e.nombre || e.tipo_equipo} (${Number(e.horometro_actual || 0).toFixed(1)}h)`;
+          if (equipoIdDefecto && e.id === equipoIdDefecto) opt.selected = true;
+          selectEq.appendChild(opt);
+        });
+
+        // Autocompletar horómetro actual
+        const eqSel = equiposCache.find(e => e.id === (equipoIdDefecto || equiposCache[0].id));
+        if (eqSel) {
+          document.getElementById('modal-orden-horometro').value = Number(eqSel.horometro_actual || 0).toFixed(1);
+        }
+      }
+
+      document.getElementById('modal-orden-fecha').value = new Date().toISOString().split('T')[0];
+      const errBox = document.getElementById('modal-orden-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const modal = document.getElementById('modal-nueva-orden-mantenimiento');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalNuevaOrdenMantenimiento() {
+      const modal = document.getElementById('modal-nueva-orden-mantenimiento');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function guardarNuevaOrdenMantenimientoSubmit(e) {
+      e.preventDefault();
+      const equipoId = parseInt(document.getElementById('modal-orden-equipo-id').value);
+      const tipo = document.getElementById('modal-orden-tipo').value;
+      const fecha = document.getElementById('modal-orden-fecha').value;
+      const horometro = parseFloat(document.getElementById('modal-orden-horometro').value) || 0;
+      const tecnico = document.getElementById('modal-orden-tecnico').value.trim() || null;
+      const costo = parseFloat(document.getElementById('modal-orden-costo').value) || null;
+      const desc = document.getElementById('modal-orden-descripcion').value.trim() || null;
+      const errBox = document.getElementById('modal-orden-error');
+
+      try {
+        const resp = await fetch('/api/v1/heavy/mantenimiento/ordenes', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            equipo_id: equipoId,
+            tipo_mantenimiento: tipo,
+            fecha_programada: fecha,
+            horometro_registro: horometro,
+            tecnico_responsable: tecnico,
+            costo_estimado: costo,
+            descripcion_trabajo: desc,
+            estado: 'programado'
+          })
+        });
+
+        if (!resp.ok) {
+          const txt = await resp.text();
+          throw new Error(`Error en servidor: ${txt.substring(0, 100)}`);
+        }
+
+        cerrarModalNuevaOrdenMantenimiento();
+        await cargarModuloMantenimiento();
+        await cargarDashboard();
+      } catch (err) {
+        if (errBox) {
+          errBox.textContent = err.message || 'Error al crear orden de trabajo';
+          errBox.classList.remove('hidden');
+        }
+      }
+    }
+
+    // ==========================================
+    // EDICIÓN DE OPERADORES Y PERSONAL
+    // ==========================================
+    function abrirModalEditarPersonal(id) {
+      const p = personalCache.find(x => x.id === id);
+      if (!p) return;
+
+      document.getElementById('edit-personal-id').value = p.id;
+      document.getElementById('edit-personal-dni').value = p.dni || '';
+      document.getElementById('edit-personal-rol').value = p.rol || 'operador';
+      document.getElementById('edit-personal-nombres').value = p.nombres || '';
+      document.getElementById('edit-personal-apellidos').value = p.apellidos || '';
+      document.getElementById('edit-personal-telefono').value = p.telefono || '';
+      document.getElementById('edit-personal-pin').value = p.pin_acceso || '1234';
+      document.getElementById('edit-personal-brevete-num').value = p.brevete_numero || '';
+      document.getElementById('edit-personal-brevete-cat').value = p.brevete_categoria || '';
+      document.getElementById('edit-personal-brevete-venc').value = p.brevete_vencimiento || '';
+      document.getElementById('edit-personal-cert').value = p.tiene_certificacion ? '1' : '0';
+      document.getElementById('edit-personal-cert-nombre').value = p.certificado_nombre || '';
+
+      const errBox = document.getElementById('modal-edit-personal-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const modal = document.getElementById('modal-editar-personal');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalEditarPersonal() {
+      const modal = document.getElementById('modal-editar-personal');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function guardarEditarPersonalSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('edit-personal-id').value;
+      const errBox = document.getElementById('modal-edit-personal-error');
+
+      const payload = {
+        dni: document.getElementById('edit-personal-dni').value.trim(),
+        rol: document.getElementById('edit-personal-rol').value,
+        nombres: document.getElementById('edit-personal-nombres').value.trim(),
+        apellidos: document.getElementById('edit-personal-apellidos').value.trim(),
+        telefono: document.getElementById('edit-personal-telefono').value.trim() || null,
+        pin_acceso: document.getElementById('edit-personal-pin').value.trim(),
+        brevete_numero: document.getElementById('edit-personal-brevete-num').value.trim() || null,
+        brevete_categoria: document.getElementById('edit-personal-brevete-cat').value || null,
+        brevete_vencimiento: document.getElementById('edit-personal-brevete-venc').value || null,
+        tiene_certificacion: document.getElementById('edit-personal-cert').value === '1',
+        certificado_nombre: document.getElementById('edit-personal-cert-nombre').value.trim() || null
+      };
+
+      try {
+        const resp = await fetch(`/api/v1/heavy/personal/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          const txt = await resp.text();
+          throw new Error(`Error en servidor: ${txt.substring(0, 100)}`);
+        }
+
+        cerrarModalEditarPersonal();
+        await cargarPersonal();
+      } catch (err) {
+        if (errBox) {
+          errBox.textContent = err.message || 'Error al actualizar personal';
+          errBox.classList.remove('hidden');
+        }
       }
     }
   </script>

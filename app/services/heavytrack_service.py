@@ -356,10 +356,13 @@ class HeavyTrackService:
         total_equipos = len(equipos)
         equipos_taller = sum(1 for e in equipos if e.estado_operativo == EstadoOperativo.TALLER.value)
         
-        # Alertas < 25h de servicio
+        # Alertas y proximos mantenimientos por máquina
         alertas_servicio = 0
         semaforos = {"verde": 0, "amarillo": 0, "rojo": 0}
         equipos_alertas_txt = []
+        proximos_mantenimientos = []
+        alertas_documentos = []
+
         for e in equipos:
             color, horas_rest = HeavyTrackService.calcular_semaforo_equipo(e)
             semaforos[color] += 1
@@ -368,7 +371,66 @@ class HeavyTrackService:
                 detalle_rest = f"({horas_rest}h)" if horas_rest > 0 else "(Vencido)"
                 equipos_alertas_txt.append(f"{e.codigo_interno} {detalle_rest}")
 
-        # Consumo de combustible del mes actual
+            proximos_mantenimientos.append({
+                "id": e.id,
+                "codigo_interno": e.codigo_interno,
+                "nombre": e.nombre or f"{e.marca} {e.modelo}",
+                "placa": e.placa or "-",
+                "tipo_control": e.tipo_control or "HOROMETRO",
+                "horometro_actual": e.horometro_actual or 0.0,
+                "odometro_actual": e.odometro_actual or 0.0,
+                "horometro_proximo_servicio": e.horometro_proximo_servicio or 250.0,
+                "intervalo_servicio": e.intervalo_servicio or 250.0,
+                "horas_restantes": horas_rest,
+                "semaforo": color,
+                "proyecto_nombre": e.proyecto_actual.nombre if e.proyecto_actual else "En Base / Taller",
+                "operador_nombre": f"{e.operador_asignado.nombres} {e.operador_asignado.apellidos}" if e.operador_asignado else "Sin Asignar"
+            })
+
+            # Control de SOAT y Revisión Técnica
+            soat_dias = None
+            soat_estado = "sin_registrar"
+            if e.soat_vencimiento:
+                dias_soat = (e.soat_vencimiento - hoy).days
+                soat_dias = dias_soat
+                if dias_soat < 0:
+                    soat_estado = "vencido"
+                elif dias_soat <= 30:
+                    soat_estado = "por_vencer"
+                else:
+                    soat_estado = "vigente"
+
+            rev_dias = None
+            rev_estado = "sin_registrar"
+            if getattr(e, "revision_tecnica_vencimiento", None):
+                dias_rev = (e.revision_tecnica_vencimiento - hoy).days
+                rev_dias = dias_rev
+                if dias_rev < 0:
+                    rev_estado = "vencido"
+                elif dias_rev <= 30:
+                    rev_estado = "por_vencer"
+                else:
+                    rev_estado = "vigente"
+
+            alertas_documentos.append({
+                "id": e.id,
+                "codigo_interno": e.codigo_interno,
+                "nombre": e.nombre or f"{e.marca} {e.modelo}",
+                "placa": e.placa or "-",
+                "soat_numero": e.soat_numero or "-",
+                "soat_vencimiento": e.soat_vencimiento.strftime("%Y-%m-%d") if e.soat_vencimiento else None,
+                "soat_dias": soat_dias,
+                "soat_estado": soat_estado,
+                "revision_tecnica_numero": getattr(e, "revision_tecnica_numero", None) or "-",
+                "revision_tecnica_vencimiento": e.revision_tecnica_vencimiento.strftime("%Y-%m-%d") if getattr(e, "revision_tecnica_vencimiento", None) else None,
+                "revision_dias": rev_dias,
+                "revision_estado": rev_estado
+            })
+
+        # Ordenar próximos mantenimientos por urgencia (horas restantes menor primero)
+        proximos_mantenimientos.sort(key=lambda x: (0 if x["semaforo"] == "rojo" else 1 if x["semaforo"] == "amarillo" else 2, x["horas_restantes"]))
+
+        # Consumo de combustible del mes actual y desglose por máquina
         inicio_mes = datetime.utcnow().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
         consumo_mes = db.query(func.coalesce(func.sum(ControlCombustible.galones_cargados), 0.0)).filter(
             ControlCombustible.fecha_hora >= inicio_mes
@@ -377,6 +439,32 @@ class HeavyTrackService:
         gasto_combustible_mes = db.query(func.coalesce(func.sum(ControlCombustible.costo_total), 0.0)).filter(
             ControlCombustible.fecha_hora >= inicio_mes
         ).scalar() or 0.0
+
+        # Horas trabajadas por máquina
+        horas_por_maquina = []
+        consumo_por_maquina = []
+        for e in equipos:
+            horas_eq = db.query(func.coalesce(func.sum(TurnoOperacion.horas_trabajadas), 0.0)).filter(
+                TurnoOperacion.equipo_id == e.id
+            ).scalar() or 0.0
+            horas_por_maquina.append({
+                "codigo": e.codigo_interno,
+                "nombre": e.nombre or e.codigo_interno,
+                "horas": round(float(horas_eq), 1)
+            })
+
+            gal_eq = db.query(func.coalesce(func.sum(ControlCombustible.galones_cargados), 0.0)).filter(
+                ControlCombustible.equipo_id == e.id
+            ).scalar() or 0.0
+            soles_eq = db.query(func.coalesce(func.sum(ControlCombustible.costo_total), 0.0)).filter(
+                ControlCombustible.equipo_id == e.id
+            ).scalar() or 0.0
+            consumo_por_maquina.append({
+                "codigo": e.codigo_interno,
+                "nombre": e.nombre or e.codigo_interno,
+                "galones": round(float(gal_eq), 1),
+                "soles": round(float(soles_eq), 2)
+            })
 
         # Horas trabajadas por proyecto
         proyectos_stats = []
@@ -402,5 +490,9 @@ class HeavyTrackService:
             "galones_combustible_mes": round(float(consumo_mes), 1),
             "costo_combustible_mes": round(float(gasto_combustible_mes), 2),
             "semaforo_flota": semaforos,
-            "horas_por_proyecto": proyectos_stats
+            "horas_por_proyecto": proyectos_stats,
+            "horas_por_maquina": horas_por_maquina,
+            "consumo_por_maquina": consumo_por_maquina,
+            "proximos_mantenimientos": proximos_mantenimientos,
+            "alertas_documentos": alertas_documentos
         }

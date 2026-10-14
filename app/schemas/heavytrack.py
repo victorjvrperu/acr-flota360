@@ -80,6 +80,7 @@ class PersonalCreate(PersonalBase):
 
 
 class PersonalUpdate(BaseModel):
+    dni: Optional[str] = None
     nombres: Optional[str] = None
     apellidos: Optional[str] = None
     telefono: Optional[str] = None
@@ -117,7 +118,7 @@ class PersonalUpdate(BaseModel):
 
 class PersonalResponse(PersonalBase):
     id: int
-    creado_en: datetime
+    creado_en: Optional[datetime] = None
 
     class Config:
         from_attributes = True
@@ -169,6 +170,8 @@ class MaquinariaEquipoBase(BaseModel):
     poliza_vencimiento: Optional[date] = None
     soat_numero: Optional[str] = None
     soat_vencimiento: Optional[date] = None
+    revision_tecnica_numero: Optional[str] = None
+    revision_tecnica_vencimiento: Optional[date] = None
     proyecto_actual_id: Optional[int] = None
     operador_asignado_id: Optional[int] = None
     estado_operativo: EstadoOperativo = EstadoOperativo.OPERATIVO
@@ -182,6 +185,20 @@ class MaquinariaEquipoCreate(MaquinariaEquipoBase):
 class AsignarEquipoRequest(BaseModel):
     proyecto_id: Optional[int] = None
     operador_id: Optional[int] = None
+
+
+class ConfigurarMantenimientoEquipoRequest(BaseModel):
+    intervalo_servicio: float = 250.0  # Frecuencia en horas (ej: cada 250h, 500h)
+    horometro_proximo_servicio: Optional[float] = None
+    horometro_actual: Optional[float] = None
+
+
+class ActualizarPagoCombustibleRequest(BaseModel):
+    precio_por_galon: float = 0.0
+    costo_total: float = 0.0
+    estado_pago: str = "pagado"  # pagado, pendiente
+    numero_operacion_pago: Optional[str] = None
+    observaciones_pago: Optional[str] = None
 
 
 class MaquinariaEquipoResponse(MaquinariaEquipoBase):

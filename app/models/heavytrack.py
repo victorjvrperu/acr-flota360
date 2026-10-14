@@ -139,11 +139,13 @@ class MaquinariaEquipo(Base):
     horometro_proximo_servicio = Column(Float, default=250.0, nullable=False)
     intervalo_servicio = Column(Float, default=250.0, nullable=False)  # ciclos habituales de 250h / 500h
     
-    # Documentos y Seguros (Póliza / SOAT)
+    # Documentos y Seguros (Póliza / SOAT / Revisión Técnica)
     poliza_seguro = Column(String(100), nullable=True)
     poliza_vencimiento = Column(Date, nullable=True)
     soat_numero = Column(String(100), nullable=True)
     soat_vencimiento = Column(Date, nullable=True)
+    revision_tecnica_numero = Column(String(100), nullable=True)
+    revision_tecnica_vencimiento = Column(Date, nullable=True)
     
     proyecto_actual_id = Column(Integer, ForeignKey("proyectos.id", ondelete="SET NULL"), nullable=True)
     operador_asignado_id = Column(Integer, ForeignKey("personal.id", ondelete="SET NULL"), nullable=True)
@@ -255,6 +257,12 @@ class ControlCombustible(Base):
     costo_total = Column(Float, default=0.0, nullable=False)
     fecha_hora = Column(DateTime, default=datetime.utcnow, nullable=False)
     estado_sync = Column(String(30), default=EstadoSync.SINCRONIZADO.value, nullable=False)
+
+    # Control y Liquidación de Pagos con Jefatura / Finanzas
+    estado_pago = Column(String(30), default="pendiente", nullable=False)  # pendiente, pagado, en_revision
+    numero_operacion_pago = Column(String(100), nullable=True)  # Factura, Nro Operación, Voucher
+    fecha_pago = Column(DateTime, nullable=True)
+    observaciones_pago = Column(Text, nullable=True)
 
     # Relaciones
     equipo = relationship("MaquinariaEquipo", back_populates="cargas_combustible")

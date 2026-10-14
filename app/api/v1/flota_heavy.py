@@ -24,7 +24,8 @@ from app.schemas.heavytrack import (
     OrdenMantenimientoCreate, OrdenMantenimientoResponse,
     InventarioRepuestoCreate, InventarioRepuestoResponse,
     ProveedorCreate, ProveedorResponse,
-    TelemetriaGPSRequest, ActualizarCombustibleTurno
+    TelemetriaGPSRequest, ActualizarCombustibleTurno,
+    ConfigurarMantenimientoEquipoRequest, ActualizarPagoCombustibleRequest
 )
 from app.services.heavytrack_service import HeavyTrackService
 
@@ -395,6 +396,193 @@ def actualizar_combustible_turno(
     }
 
 
+@router.put("/equipos/{equipo_id}/mantenimiento-config")
+def configurar_mantenimiento_equipo(
+    equipo_id: int,
+    payload: ConfigurarMantenimientoEquipoRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Permite al Encargado de Flotas definir cada cuántas horas se realiza el mantenimiento (intervalo)
+    y reprogramar el horómetro de próximo servicio de la maquinaria.
+    """
+    equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == equipo_id).first()
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+    if payload.intervalo_servicio is not None and payload.intervalo_servicio > 0:
+        equipo.intervalo_servicio = float(payload.intervalo_servicio)
+
+    if payload.horometro_proximo_servicio is not None:
+        equipo.horometro_proximo_servicio = float(payload.horometro_proximo_servicio)
+    elif payload.intervalo_servicio is not None:
+        equipo.horometro_proximo_servicio = round((equipo.horometro_actual or 0.0) + equipo.intervalo_servicio, 1)
+
+    if payload.horometro_actual is not None and payload.horometro_actual >= 0:
+        equipo.horometro_actual = float(payload.horometro_actual)
+
+    color, horas_restantes = HeavyTrackService.calcular_semaforo_equipo(equipo)
+    if color in ["rojo", "amarillo"]:
+        equipo.estado_operativo = EstadoOperativo.CRITICO.value
+    else:
+        equipo.estado_operativo = EstadoOperativo.OPERATIVO.value
+
+    db.commit()
+    db.refresh(equipo)
+
+    return {
+        "success": True,
+        "mensaje": f"Configuración de mantenimiento actualizada para {equipo.codigo_interno}",
+        "equipo_id": equipo.id,
+        "intervalo_servicio": equipo.intervalo_servicio,
+        "horometro_proximo_servicio": equipo.horometro_proximo_servicio,
+        "horometro_actual": equipo.horometro_actual,
+        "horas_restantes": horas_restantes,
+        "semaforo": color
+    }
+
+
+@router.get("/combustible")
+def listar_registros_combustible(db: Session = Depends(get_db)):
+    """Lista todos los registros de abastecimiento de combustible con estado de pago y costos."""
+    registros = db.query(ControlCombustible).order_by(ControlCombustible.id.desc()).all()
+    resultado = []
+    for r in registros:
+        resultado.append({
+            "id": r.id,
+            "uuid_local": r.uuid_local,
+            "equipo_id": r.equipo_id,
+            "equipo_codigo": r.equipo.codigo_interno if r.equipo else "-",
+            "equipo_nombre": r.equipo.nombre if r.equipo else "-",
+            "placa": r.equipo.placa if r.equipo else "-",
+            "operador_id": r.operador_id,
+            "operador_nombre": f"{r.operador.nombres} {r.operador.apellidos}" if r.operador else "-",
+            "proyecto_id": r.proyecto_id,
+            "proyecto_nombre": r.proyecto.nombre if r.proyecto else "En Base",
+            "horometro_tanqueo": r.horometro_tanqueo,
+            "galones_cargados": r.galones_cargados,
+            "precio_por_galon": r.precio_por_galon or 0.0,
+            "costo_total": r.costo_total or 0.0,
+            "foto_comprobante": r.foto_comprobante,
+            "tipo_combustible": r.tipo_combustible,
+            "fecha_hora": r.fecha_hora.strftime("%Y-%m-%d %H:%M:%S") if r.fecha_hora else "-",
+            "estado_pago": getattr(r, "estado_pago", "pendiente") or "pendiente",
+            "numero_operacion_pago": getattr(r, "numero_operacion_pago", None) or "-",
+            "fecha_pago": r.fecha_pago.strftime("%Y-%m-%d %H:%M:%S") if getattr(r, "fecha_pago", None) else None,
+            "observaciones_pago": getattr(r, "observaciones_pago", None) or ""
+        })
+    return resultado
+
+
+@router.put("/combustible/{combustible_id}/pago")
+def registrar_pago_combustible(
+    combustible_id: int,
+    payload: ActualizarPagoCombustibleRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Permite al Encargado de Flotas (en coordinación con el área de finanzas/pagos) registrar
+    el precio negociado por galón, el monto de pago realizado, nro de operación/factura y observaciones.
+    """
+    comb = db.query(ControlCombustible).filter(ControlCombustible.id == combustible_id).first()
+    if not comb:
+        raise HTTPException(status_code=404, detail="Registro de combustible no encontrado")
+
+    precio = round(float(payload.precio_por_galon or 0.0), 2)
+    galones = float(comb.galones_cargados or 0.0)
+
+    if payload.costo_total is not None and payload.costo_total > 0:
+        total = round(float(payload.costo_total), 2)
+    else:
+        total = round(galones * precio, 2)
+
+    comb.precio_por_galon = precio
+    comb.costo_total = total
+    comb.estado_pago = payload.estado_pago or "pagado"
+    comb.numero_operacion_pago = payload.numero_operacion_pago
+    comb.observaciones_pago = payload.observaciones_pago
+    if comb.estado_pago == "pagado" and not comb.fecha_pago:
+        comb.fecha_pago = datetime.utcnow()
+
+    # Si hay turno asociado, sincronizar valorización
+    if comb.uuid_local and comb.uuid_local.startswith("comb-"):
+        turno_uuid = comb.uuid_local.replace("comb-", "")
+        turno = db.query(TurnoOperacion).filter(TurnoOperacion.uuid_local == turno_uuid).first()
+        if turno:
+            turno.combustible_precio_galon = precio
+            turno.combustible_total_soles = total
+
+    db.commit()
+    db.refresh(comb)
+
+    return {
+        "success": True,
+        "mensaje": f"Pago de combustible registrado exitosamente (Total: S/ {total:.2f})",
+        "combustible_id": comb.id,
+        "galones": comb.galones_cargados,
+        "precio_por_galon": comb.precio_por_galon,
+        "costo_total": comb.costo_total,
+        "estado_pago": comb.estado_pago,
+        "numero_operacion_pago": comb.numero_operacion_pago
+    }
+
+
+@router.get("/mantenimiento/ordenes")
+def listar_ordenes_mantenimiento(db: Session = Depends(get_db)):
+    """Lista las órdenes de mantenimiento preventivo y correctivo."""
+    ordenes = db.query(OrdenMantenimiento).order_by(OrdenMantenimiento.id.desc()).all()
+    res = []
+    for o in ordenes:
+        res.append({
+            "id": o.id,
+            "codigo_ot": o.codigo_ot,
+            "equipo_id": o.equipo_id,
+            "equipo_codigo": o.equipo.codigo_interno if o.equipo else "-",
+            "equipo_nombre": o.equipo.nombre if o.equipo else "-",
+            "tipo": o.tipo,
+            "horometro_al_servicio": o.horometro_al_servicio,
+            "diagnostico": o.diagnostico,
+            "costo_mano_obra": o.costo_mano_obra or 0.0,
+            "costo_repuestos": o.costo_repuestos or 0.0,
+            "costo_total": o.costo_total or 0.0,
+            "estado": o.estado,
+            "fecha_programada": o.fecha_programada.strftime("%Y-%m-%d") if o.fecha_programada else "-",
+            "fecha_cierre": o.fecha_cierre.strftime("%Y-%m-%d") if o.fecha_cierre else None,
+            "creado_en": o.creado_en.strftime("%Y-%m-%d %H:%M") if o.creado_en else "-"
+        })
+    return res
+
+
+@router.post("/mantenimiento/ordenes", status_code=status.HTTP_201_CREATED)
+def crear_orden_mantenimiento(payload: dict, db: Session = Depends(get_db)):
+    """Crea una nueva orden de mantenimiento preventivo o correctivo."""
+    equipo_id = payload.get("equipo_id")
+    equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == equipo_id).first()
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+    count_ots = db.query(OrdenMantenimiento).count() + 1
+    codigo_ot = f"OT-{datetime.utcnow().year}-{count_ots:04d}"
+
+    nueva = OrdenMantenimiento(
+        codigo_ot=codigo_ot,
+        equipo_id=equipo.id,
+        proyecto_id=equipo.proyecto_actual_id,
+        tipo=payload.get("tipo", "preventivo_ficha"),
+        horometro_al_servicio=payload.get("horometro_al_servicio", equipo.horometro_actual or 0.0),
+        diagnostico=payload.get("diagnostico", "Mantenimiento preventivo programado"),
+        costo_mano_obra=float(payload.get("costo_mano_obra", 0.0) or 0.0),
+        costo_repuestos=float(payload.get("costo_repuestos", 0.0) or 0.0),
+        costo_total=float(payload.get("costo_total", 0.0) or 0.0),
+        estado=payload.get("estado", "programado"),
+        fecha_programada=datetime.strptime(payload.get("fecha_programada", date.today().isoformat()), "%Y-%m-%d").date() if payload.get("fecha_programada") else date.today()
+    )
+    db.add(nueva)
+    db.commit()
+    db.refresh(nueva)
+    return {"success": True, "codigo_ot": nueva.codigo_ot, "id": nueva.id}
+
+
 @router.get("/repuestos", response_model=List[InventarioRepuestoResponse])
 def listar_repuestos(db: Session = Depends(get_db)):
     return db.query(InventarioRepuesto).all()
@@ -429,6 +617,31 @@ def registrar_personal(personal_in: PersonalCreate, db: Session = Depends(get_db
     db.commit()
     db.refresh(nuevo)
     return nuevo
+
+
+@router.put("/personal/{personal_id}", response_model=PersonalResponse)
+def actualizar_personal(personal_id: int, personal_in: PersonalUpdate, db: Session = Depends(get_db)):
+    """Actualiza datos del personal u operador (nombres, rol, brevete, pin, certificación, estado)."""
+    colaborador = db.query(Personal).filter(Personal.id == personal_id).first()
+    if not colaborador:
+        raise HTTPException(status_code=404, detail="Colaborador no encontrado.")
+
+    datos = personal_in.model_dump(exclude_unset=True)
+    if "dni" in datos and datos["dni"]:
+        dni_limpio = datos["dni"].strip()
+        duplicado = db.query(Personal).filter(Personal.dni == dni_limpio, Personal.id != personal_id).first()
+        if duplicado:
+            raise HTTPException(status_code=400, detail=f"El DNI {dni_limpio} ya pertenece a otro colaborador.")
+        colaborador.dni = dni_limpio
+        del datos["dni"]
+
+    for k, v in datos.items():
+        if hasattr(colaborador, k):
+            setattr(colaborador, k, v)
+
+    db.commit()
+    db.refresh(colaborador)
+    return colaborador
 
 
 @router.delete("/personal/{personal_id}", status_code=status.HTTP_204_NO_CONTENT)
