@@ -702,9 +702,6 @@
             <button onclick="abrirModalPersonal('staff')" class="px-3.5 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 font-bold text-xs uppercase tracking-wider rounded-lg transition flex items-center gap-1.5 cursor-pointer">
               <span>👔</span> + Registrar Personal
             </button>
-            <button onclick="eliminarTodosLosOperadoresConfirm()" class="px-3 py-2 bg-rose-950/40 hover:bg-rose-900/60 text-rose-300 border border-rose-800/60 font-bold text-xs uppercase tracking-wider rounded-lg transition flex items-center gap-1.5 cursor-pointer" title="Eliminar todos los operadores para reiniciar el padrón">
-              <span>🗑️</span> Vaciar Operadores
-            </button>
           </div>
         </div>
 
@@ -3568,29 +3565,6 @@
         await cargarTablaPersonal();
       } catch (err) {
         alert("Error de conexión al eliminar.");
-      }
-    }
-
-    async function eliminarTodosLosOperadoresConfirm() {
-      const ops = personalCache.filter(p => p.rol === 'operador');
-      if (ops.length === 0) {
-        alert("No hay operadores registrados actualmente.");
-        return;
-      }
-      if (!confirm(`⚠️ ¿ATENCIÓN: Desea eliminar a TODOS los (${ops.length}) operadores registrados para comenzar a llenar de cero?\n\nLos administradores y el personal staff permanecerán intactos.`)) {
-        return;
-      }
-      try {
-        const res = await fetch('/api/v1/heavy/personal/operadores/todos', { method: 'DELETE' });
-        const data = await res.json();
-        if (res.ok && data.success) {
-          alert(`✅ Operación completada: ${data.mensaje}`);
-          await cargarTablaPersonal();
-        } else {
-          alert(`⚠️ Error: ${data.detail || 'No se pudo eliminar los operadores'}`);
-        }
-      } catch (err) {
-        alert("Error de conexión: " + err.message);
       }
     }
 
