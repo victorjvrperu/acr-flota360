@@ -19,7 +19,7 @@ from app.models.heavytrack import (
 from app.schemas.heavytrack import (
     MaquinariaEquipoCreate, MaquinariaEquipoResponse,
     ProyectoCreate, ProyectoResponse,
-    PersonalCreate, PersonalResponse,
+    PersonalCreate, PersonalUpdate, PersonalResponse,
     VerificarAccesoRequest, CambiarClaveRequest,
     OrdenMantenimientoCreate, OrdenMantenimientoResponse,
     InventarioRepuestoCreate, InventarioRepuestoResponse,

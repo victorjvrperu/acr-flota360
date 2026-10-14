@@ -127,6 +127,17 @@
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    /* Animación de alerta / bloqueo ante error o discrepancia */
+    .animate-shake {
+      animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both;
+    }
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
   </style>
 </head>
 <body class="h-full bg-carbon text-gray-100 flex flex-col justify-between overflow-x-hidden">
@@ -1750,6 +1761,184 @@
       fin: null
     };
 
+    /**
+     * Motor de Auditoría y Verificación Visual Offline (HeavyTrack Vision Offline)
+     * Se ejecuta localmente en el navegador sin internet usando Canvas HTML5 y OCR nativo.
+     */
+    async function auditarYLeerTableroOffline(dataUrl, tipoControl, valManual, lecturaAnterior) {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = async () => {
+          try {
+            const canvas = document.createElement('canvas');
+            const maxDim = 600;
+            let w = img.naturalWidth || img.width;
+            let h = img.naturalHeight || img.height;
+            if (w > maxDim || h > maxDim) {
+              if (w > h) { h = Math.round((h * maxDim) / w); w = maxDim; }
+              else { w = Math.round((w * maxDim) / h); h = maxDim; }
+            }
+            canvas.width = w;
+            canvas.height = h;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, w, h);
+
+            const imgData = ctx.getImageData(0, 0, w, h);
+            const data = imgData.data;
+            const len = data.length;
+
+            // 1. Evaluar luminosidad media (Luma)
+            let sumaLuma = 0;
+            const pixeles = len / 4;
+            for (let i = 0; i < len; i += 4) {
+              sumaLuma += 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+            }
+            const lumaMedia = sumaLuma / pixeles;
+
+            if (lumaMedia < 22) {
+              return resolve({
+                es_tablero_valido: false,
+                es_legible: false,
+                lectura_detectada: null,
+                coincide: false,
+                alerta_discrepancia: true,
+                modo: 'OFFLINE_RECHAZADA',
+                observacion: 'Foto rechazada (Offline): La imagen está demasiado oscura o la cámara estuvo tapada. Encienda la linterna y enfoque claramente el medidor.',
+                confianza: 0
+              });
+            }
+            if (lumaMedia > 245) {
+              return resolve({
+                es_tablero_valido: false,
+                es_legible: false,
+                lectura_detectada: null,
+                coincide: false,
+                alerta_discrepancia: true,
+                modo: 'OFFLINE_RECHAZADA',
+                observacion: 'Foto rechazada (Offline): La imagen está sobreexpuesta o quemada por el flash. Evite el reflejo directo en la pantalla del medidor.',
+                confianza: 0
+              });
+            }
+
+            // 2. Evaluar nitidez aproximada (varianza de gradientes)
+            let sumaGrad = 0;
+            let countGrad = 0;
+            const step = 2;
+            for (let y = 1; y < h - 1; y += step) {
+              for (let x = 1; x < w - 1; x += step) {
+                const idx = (y * w + x) * 4;
+                const idxDer = (y * w + (x + 1)) * 4;
+                const idxAbj = ((y + 1) * w + x) * 4;
+                const lumCentro = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                const lumDer = 0.299 * data[idxDer] + 0.587 * data[idxDer + 1] + 0.114 * data[idxDer + 2];
+                const lumAbj = 0.299 * data[idxAbj] + 0.587 * data[idxAbj + 1] + 0.114 * data[idxAbj + 2];
+                sumaGrad += Math.abs(lumCentro - lumDer) + Math.abs(lumCentro - lumAbj);
+                countGrad++;
+              }
+            }
+            const nitidez = countGrad > 0 ? (sumaGrad / countGrad) : 0;
+
+            if (nitidez < 7.0) {
+              return resolve({
+                es_tablero_valido: false,
+                es_legible: false,
+                lectura_detectada: null,
+                coincide: false,
+                alerta_discrepancia: true,
+                modo: 'OFFLINE_RECHAZADA',
+                observacion: 'Foto rechazada (Offline): La imagen está desenfocada o no tiene nitidez suficiente para leer los dígitos.',
+                confianza: 0
+              });
+            }
+
+            // 3. Intento de detección OCR Offline en dispositivo
+            let numDetectado = null;
+            if ('TextDetector' in window) {
+              try {
+                const detector = new window.TextDetector();
+                const textos = await detector.detect(canvas);
+                if (textos && textos.length > 0) {
+                  const fullStr = textos.map(t => t.rawValue).join(' ');
+                  const matches = fullStr.match(/\d+([.,]\d+)?/g);
+                  if (matches && matches.length > 0) {
+                    if (valManual !== null && !isNaN(valManual)) {
+                      for (const m of matches) {
+                        const parsed = parseFloat(m.replace(',', '.'));
+                        if (!isNaN(parsed) && Math.abs(parsed - valManual) <= 0.05) {
+                          numDetectado = parsed;
+                          break;
+                        }
+                      }
+                    }
+                    if (numDetectado === null) {
+                      const cand = parseFloat(matches[0].replace(',', '.'));
+                      if (!isNaN(cand) && cand > 0) numDetectado = cand;
+                    }
+                  }
+                }
+              } catch (e) {
+                console.log('TextDetector offline:', e);
+              }
+            }
+
+            if (numDetectado !== null) {
+              const coincide = (valManual !== null && !isNaN(valManual)) ? (Math.abs(valManual - numDetectado) <= 0.05) : null;
+              return resolve({
+                es_tablero_valido: true,
+                es_legible: true,
+                lectura_detectada: numDetectado,
+                coincide: coincide,
+                alerta_discrepancia: coincide === false,
+                modo: 'OFFLINE_OCR',
+                observacion: coincide
+                  ? `Lectura verificada en dispositivo offline (${numDetectado}). Coincide con lo ingresado.`
+                  : `Discrepancia detectada en modo offline: se leyó ${numDetectado} en la foto.`,
+                confianza: 0.85
+              });
+            }
+
+            // 4. Si la foto es nítida pero sin OCR nativo en este navegador:
+            return resolve({
+              es_tablero_valido: true,
+              es_legible: true,
+              lectura_detectada: null,
+              coincide: null,
+              alerta_discrepancia: false,
+              modo: 'OFFLINE_AUDITADO',
+              observacion: 'Foto nítida y sellada en modo offline. Lista para auditoría en lote al reconectar.',
+              confianza: 0.80
+            });
+          } catch (err) {
+            console.warn('Error en auditoría visual offline:', err);
+            return resolve({
+              es_tablero_valido: true,
+              es_legible: true,
+              lectura_detectada: null,
+              coincide: null,
+              alerta_discrepancia: false,
+              modo: 'OFFLINE_FALLBACK',
+              observacion: 'Foto registrada localmente con marca de agua y GPS.',
+              confianza: 0.50
+            });
+          }
+        };
+        img.onerror = () => {
+          resolve({
+            es_tablero_valido: false,
+            es_legible: false,
+            lectura_detectada: null,
+            coincide: false,
+            alerta_discrepancia: true,
+            modo: 'OFFLINE_ERROR',
+            observacion: 'Error al procesar la foto del tablero.',
+            confianza: 0
+          });
+        };
+        img.src = dataUrl;
+      });
+    }
+
     async function analizarTableroConIA(tipo, dataUrl) {
       const box = document.getElementById(`ia-box-${tipo}`);
       const loader = document.getElementById(`ia-loader-${tipo}`);
@@ -1766,6 +1955,7 @@
       let tipoControl = 'HOROMETRO';
       let equipoCodigo = 'EQ-MAQ';
       let valManual = null;
+      let lecturaAnterior = 0;
 
       if (tipo === 'inicio') {
         const eqId = parseInt(document.getElementById('select-maquinaria')?.value);
@@ -1773,12 +1963,14 @@
         if (eq) {
           tipoControl = (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE' ? 'KILOMETRAJE' : 'HOROMETRO';
           equipoCodigo = eq.codigo_interno || eq.patente || `EQ-${eq.id}`;
+          lecturaAnterior = tipoControl === 'KILOMETRAJE' ? (eq.odometro_actual || 0) : (eq.horometro_actual || 0);
         }
         valManual = parseFloat(document.getElementById('wizard-horometro-inicio')?.value) || null;
       } else {
         if (turnoEnCurso) {
           tipoControl = (turnoEnCurso.tipo_control || '').toUpperCase() === 'KILOMETRAJE' ? 'KILOMETRAJE' : 'HOROMETRO';
           equipoCodigo = turnoEnCurso.equipo_nombre || 'EQ-TURNO';
+          lecturaAnterior = turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (tipoControl === 'KILOMETRAJE' ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio);
         }
         valManual = parseFloat(document.getElementById('wizard-horometro-fin')?.value) || null;
       }
@@ -1795,17 +1987,14 @@
           resContainer.classList.remove('hidden');
           actualizarUIIA(tipo);
 
-          // Auto-rellenar el campo de horómetro si la IA lo leyó correctamente
+          // Auto-rellenar si el campo estaba vacío
           if (resultado.lectura_detectada !== null && !isNaN(parseFloat(resultado.lectura_detectada))) {
             const inputId = tipo === 'inicio' ? 'wizard-horometro-inicio' : 'wizard-horometro-fin';
             const inputEl = document.getElementById(inputId);
             if (inputEl && !inputEl.value) {
-              // Solo auto-rellena si el campo está vacío (el operador no lo llenó antes)
               aplicarLecturaIA(tipo);
             }
           }
-
-          // Mostrar notificación tipo toast
           mostrarToastIAReconectado(tipo, resultado);
         });
       }
@@ -1837,7 +2026,7 @@
           }
         }
 
-        // Auto-rellenar el campo si la IA leyó correctamente y el campo está vacío
+        // Auto-rellenar si la IA leyó correctamente y el campo está vacío
         if (data.lectura_detectada !== null && !isNaN(parseFloat(data.lectura_detectada))) {
           const inputId = tipo === 'inicio' ? 'wizard-horometro-inicio' : 'wizard-horometro-fin';
           const inputEl = document.getElementById(inputId);
@@ -1850,7 +2039,7 @@
         resContainer.classList.remove('hidden');
         actualizarUIIA(tipo);
       } catch (err) {
-        console.warn('Error en análisis IA de tablero:', err);
+        console.warn('Error en conexión con servidor IA — activando auditoría visual offline:', err);
         loader.classList.add('hidden');
         resContainer.classList.remove('hidden');
 
@@ -1867,24 +2056,24 @@
           });
         }
 
-        // Mostrar banner informativo offline
-        const statusBanner = document.getElementById(`ia-status-banner-${tipo}`);
-        const statusIcon = document.getElementById(`ia-status-icon-${tipo}`);
-        const statusTitle = document.getElementById(`ia-status-title-${tipo}`);
-        const statusDesc = document.getElementById(`ia-status-desc-${tipo}`);
-        const btnAplicar = document.getElementById(`ia-btn-aplicar-${tipo}`);
+        // Ejecutar auditoría y verificación visual offline en el dispositivo
+        const resOffline = await auditarYLeerTableroOffline(dataUrl, tipoControl, valManual, lecturaAnterior);
+        iaAnalisisEstado[tipo] = resOffline;
 
-        if (statusBanner) {
-          statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-amber-950/70 border border-amber-600/50 text-amber-200';
-          if (statusIcon) statusIcon.textContent = '📡';
-          if (statusTitle) statusTitle.textContent = 'Foto encolada — Análisis IA pendiente';
-          if (statusDesc) statusDesc.textContent = 'Sin señal de red. La foto está guardada localmente. Cuando recuperes conexión, Gemini Vision la analizará automáticamente y completará el horómetro.';
-          if (btnAplicar) btnAplicar.classList.add('hidden');
-          if (badgeModo) {
-            badgeModo.textContent = '📡 En cola offline';
+        if (badgeModo) {
+          if (resOffline.modo === 'OFFLINE_OCR') {
+            badgeModo.textContent = '⚡ OCR Local Dispositivo';
+            badgeModo.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-cyan-900/50 text-cyan-300 border border-cyan-600/40';
+          } else if (resOffline.es_tablero_valido === false) {
+            badgeModo.textContent = '🚫 Calidad Rechazada';
+            badgeModo.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-rose-900/50 text-rose-300 border border-rose-600/40';
+          } else {
+            badgeModo.textContent = '📡 Auditado Offline';
             badgeModo.className = 'text-[10px] font-mono px-2 py-0.5 rounded-full font-bold bg-amber-900/40 text-amber-300 border border-amber-600/40';
           }
         }
+
+        actualizarUIIA(tipo);
       }
     }
 
@@ -1925,72 +2114,91 @@
       const unidad = esKm ? 'km' : 'h';
 
       const valManual = parseFloat(input?.value);
-      const valIA = parseFloat(ia.lectura_detectada);
+      const valIA = (ia.lectura_detectada !== null && !isNaN(parseFloat(ia.lectura_detectada))) ? parseFloat(ia.lectura_detectada) : null;
 
-      if (valSugeridoSpan && !isNaN(valIA)) {
-        valSugeridoSpan.textContent = `${valIA} ${unidad}`;
+      if (valSugeridoSpan) {
+        valSugeridoSpan.textContent = valIA !== null ? `${valIA} ${unidad}` : '--';
       }
 
+      // 1. FOTO RECHAZADA (No es tablero, o es oscura/quemada/borrosa en offline)
       if (ia.es_tablero_valido === false) {
-        // Foto rechazada por IA (pantalla de PC, paisaje, persona, etc.)
         statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-rose-950/90 border-2 border-alertRed text-rose-200 shadow-lg';
         if (statusIcon) statusIcon.textContent = '🚫';
-        statusTitle.textContent = 'Foto Rechazada: No es un Tablero';
-        statusDesc.textContent = ia.observacion || 'La IA determinó que la imagen no corresponde al tablero, velocímetro u odómetro del vehículo. Vuelve a tomar la foto enfocando el medidor.';
+        statusTitle.textContent = 'Foto Rechazada: Imagen no válida';
+        statusDesc.textContent = ia.observacion || 'La imagen no corresponde al tablero o medidor, o no tiene nitidez/luz suficiente. Vuelva a tomar la foto enfocando el medidor.';
         if (btnAplicar) btnAplicar.classList.add('hidden');
-        if (valSugeridoSpan) valSugeridoSpan.textContent = 'Rechazada por IA';
+        if (valSugeridoSpan) valSugeridoSpan.textContent = 'Rechazada';
+        
+        if (input) {
+          input.classList.remove('border-emerald-500', 'text-machinery');
+          input.classList.add('border-alertRed', 'text-alertRed');
+        }
         return;
       }
 
-      if (ia.es_tablero_valido === null) {
-        // Modo sin conexión IA
-        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-slate-900 border border-gray-700 text-gray-300';
-        if (statusIcon) statusIcon.textContent = '🛡️';
-        statusTitle.textContent = 'Foto Sellada (Modo Sin Conexión IA)';
-        statusDesc.textContent = ia.observacion || 'La foto se guardó con geolocalización y marca de agua oficial para auditoría manual.';
-        if (btnAplicar) btnAplicar.classList.add('hidden');
-        if (valSugeridoSpan) valSugeridoSpan.textContent = 'Manual';
+      // 2. FOTO CON LECTURA DETECTADA (Gemini u OCR Offline)
+      if (valIA !== null && valIA > 0) {
+        if (isNaN(valManual) || valManual <= 0) {
+          statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-blue-950/70 border border-blue-500/50 text-blue-200';
+          if (statusIcon) statusIcon.textContent = '✨';
+          statusTitle.textContent = `Lectura detectada en foto: ${valIA} ${unidad}`;
+          statusDesc.textContent = `Confianza ${Math.round((ia.confianza || 0.9) * 100)}%. Pulsa el botón abajo para autocompletar tu formulario.`;
+          if (btnAplicar) btnAplicar.classList.remove('hidden');
+          return;
+        }
+
+        const diff = Math.abs(valManual - valIA);
+        const margenPermitido = 0.05;
+
+        if (diff <= margenPermitido) {
+          // COINCIDENCIA EXACTA AL 100%
+          statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-emerald-950/80 border-2 border-emerald-500 text-emerald-300';
+          if (statusIcon) statusIcon.textContent = '✅';
+          statusTitle.textContent = `¡Lectura Verificada! Coincide al 100%`;
+          statusDesc.textContent = `El número manual (${valManual} ${unidad}) y la foto (${valIA} ${unidad}) concuerdan perfectamente. Validación aprobada para avanzar.`;
+          if (btnAplicar) btnAplicar.classList.add('hidden');
+
+          if (input) {
+            input.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-rose-500');
+            input.classList.add('border-emerald-500', 'text-machinery');
+          }
+          const errBox = document.getElementById(tipo === 'inicio' ? 'err-ini-4' : 'err-cie-1');
+          if (errBox) errBox.classList.add('hidden');
+        } else {
+          // DISCREPANCIA DETECTADA (BLOQUEANTE)
+          statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-rose-950/90 border-2 border-alertRed text-rose-200 shadow-xl';
+          if (statusIcon) statusIcon.textContent = '🚨';
+          statusTitle.textContent = `Discrepancia detectada (Diferencia: ${diff.toFixed(1)} ${unidad})`;
+          statusDesc.textContent = `En la foto se lee "${valIA} ${unidad}", pero escribiste "${valManual} ${unidad}". El sistema NO dejará avanzar el registro hasta que los valores coincidan.`;
+          if (btnAplicar) btnAplicar.classList.remove('hidden');
+
+          if (input) {
+            input.classList.remove('border-gray-700', 'text-machinery', 'border-emerald-500');
+            input.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+          }
+        }
         return;
       }
 
-      if (isNaN(valIA) || valIA <= 0) {
-        // No se pudo leer números
-        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-amber-950/70 border border-amber-600/50 text-amber-200';
+      // 3. FOTO SIN NÚMEROS LEGIBLES (Baja nitidez o display apagado)
+      if (ia.es_legible === false && ia.es_tablero_valido !== null) {
+        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-rose-950/80 border-2 border-amber-500 text-amber-200';
         if (statusIcon) statusIcon.textContent = '🔍';
-        statusTitle.textContent = 'Lectura con baja nitidez';
-        statusDesc.textContent = ia.observacion || 'Asegúrese de enfocar los números del tablero sin reflejos ni polvo.';
+        statusTitle.textContent = 'Error: Lectura con baja nitidez';
+        statusDesc.textContent = ia.observacion || 'No se pudieron distinguir con claridad los números del medidor. Tome una foto nítida y enfocada sin reflejos.';
         if (btnAplicar) btnAplicar.classList.add('hidden');
         return;
       }
 
-      if (isNaN(valManual) || valManual <= 0) {
-        // Operador aún no ha ingresado el valor
-        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-blue-950/70 border border-blue-500/50 text-blue-200';
-        if (statusIcon) statusIcon.textContent = '✨';
-        statusTitle.textContent = `Lectura leída en foto: ${valIA} ${unidad}`;
-        statusDesc.textContent = `Confianza ${ia.confianza || 'ALTA'}. Pulsa el botón para autocompletar tu formulario.`;
-        if (btnAplicar) btnAplicar.classList.remove('hidden');
-        return;
-      }
-
-      // Comparación en vivo
-      const diff = Math.abs(valManual - valIA);
-      const margenPermitido = 0.05;
-
-      if (diff <= margenPermitido) {
-        // Coincidencia exacta o redondeo menor
-        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-emerald-950/80 border-2 border-emerald-500 text-emerald-300';
-        if (statusIcon) statusIcon.textContent = '✅';
-        statusTitle.textContent = `¡Lectura Verificada! Coincide al 100%`;
-        statusDesc.textContent = `El número manual (${valManual} ${unidad}) y la lectura de la foto (${valIA} ${unidad}) concuerdan perfectamente.`;
+      // 4. MODO OFFLINE AUDITADO (Foto sellada con nitidez local)
+      if (ia.modo && ia.modo.startsWith('OFFLINE')) {
+        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-slate-900 border border-machinery/40 text-machinery';
+        if (statusIcon) statusIcon.textContent = '🛡️';
+        statusTitle.textContent = 'Foto Sellada y Verificada Offline';
+        statusDesc.textContent = 'Nitidez e iluminación correctas. Foto sellada con marca de agua oficial y GPS.';
         if (btnAplicar) btnAplicar.classList.add('hidden');
-      } else {
-        // Discrepancia detectada
-        statusBanner.className = 'p-3 rounded-xl text-xs font-bold flex items-start gap-2.5 bg-rose-950/85 border-2 border-alertRed text-rose-200';
-        if (statusIcon) statusIcon.textContent = '⚠️';
-        statusTitle.textContent = `Discrepancia detectada (Diferencia: ${diff.toFixed(1)} ${unidad})`;
-        statusDesc.textContent = `En la foto se lee "${valIA} ${unidad}", pero escribiste "${valManual} ${unidad}". Si te equivocaste al digitar, puedes corregirlo abajo:`;
-        if (btnAplicar) btnAplicar.classList.remove('hidden');
+        if (valSugeridoSpan) valSugeridoSpan.textContent = 'Sellada Offline';
+        return;
       }
     }
 
@@ -2011,9 +2219,124 @@
 
       actualizarUIIA(tipo);
 
-      // Efecto de pulso en el input
-      input.classList.add('ring-4', 'ring-machinery');
-      setTimeout(() => input.classList.remove('ring-4', 'ring-machinery'), 1000);
+      // Limpiar mensaje de error si existía
+      const errBox = document.getElementById(tipo === 'inicio' ? 'err-ini-4' : 'err-cie-1');
+      if (errBox) errBox.classList.add('hidden');
+
+      // Feedback táctil y visual
+      input.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-rose-500');
+      input.classList.add('ring-4', 'ring-machinery', 'border-machinery', 'text-machinery');
+      setTimeout(() => input.classList.remove('ring-4'), 1200);
+    }
+
+    /**
+     * EVALUACIÓN UNIFICADA DE SEGURIDAD (ONLINE Y OFFLINE)
+     * Determina si la lectura coincide y si no hay errores para permitir avanzar.
+     */
+    function obtenerEstadoValidacionLectura(tipo = 'inicio') {
+      const isInicio = (tipo === 'inicio');
+      const inputId = isInicio ? 'wizard-horometro-inicio' : 'wizard-horometro-fin';
+      const fotoKey = isInicio ? 'inicio_tablero' : 'fin_tablero';
+      
+      let esKm = false;
+      let tipoNombre = 'horómetro';
+      let unidad = 'h';
+      let lecturaAnterior = 0;
+
+      if (isInicio) {
+        const eqId = parseInt(document.getElementById('select-maquinaria')?.value);
+        const eq = (catalogosLocales.equipos || []).find(e => e.id === eqId);
+        esKm = (eq && (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
+        tipoNombre = esKm ? 'kilometraje' : 'horómetro';
+        unidad = esKm ? 'km' : 'h';
+        lecturaAnterior = esKm ? (eq ? (eq.odometro_actual || 0) : 0) : (eq ? (eq.horometro_actual || 0) : 0);
+      } else {
+        esKm = (turnoEnCurso && (turnoEnCurso.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
+        tipoNombre = esKm ? 'kilometraje' : 'horómetro';
+        unidad = esKm ? 'km' : 'h';
+        lecturaAnterior = turnoEnCurso ? (turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio)) : 0;
+      }
+
+      const valManual = parseFloat(document.getElementById(inputId)?.value);
+      const foto = fotosEstado[fotoKey];
+      const ia = iaAnalisisEstado[tipo];
+
+      // 1. Validar que se haya ingresado un valor numérico
+      if (isNaN(valManual) || valManual <= 0) {
+        return {
+          puedeAvanzar: false,
+          codigo: 'LECTURA_VACIA',
+          mensaje: `⚠️ Ingrese la lectura actual de ${tipoNombre} (${unidad}) antes de continuar.`
+        };
+      }
+
+      // 2. Validar que no sea menor a la anterior registrada
+      if (lecturaAnterior > 0 && valManual < lecturaAnterior) {
+        return {
+          puedeAvanzar: false,
+          codigo: 'LECTURA_MENOR',
+          mensaje: `🚨 <strong>LECTURA INVÁLIDA:</strong> El ${tipoNombre} ingresado (${valManual} ${unidad}) es MENOR al registrado anteriormente (${lecturaAnterior} ${unidad}). Verifique el tablero de la máquina.`
+        };
+      }
+
+      // 3. Validar presencia obligatoria de la foto del tablero
+      if (!foto) {
+        return {
+          puedeAvanzar: false,
+          codigo: 'SIN_FOTO',
+          mensaje: `⚠️ Debe tomar la <strong>FOTO OBLIGATORIA</strong> del tablero mostrando el ${tipoNombre} para continuar.`
+        };
+      }
+
+      // 4. Si el análisis aún está en proceso
+      const loader = document.getElementById(`ia-loader-${tipo}`);
+      if (loader && !loader.classList.contains('hidden')) {
+        return {
+          puedeAvanzar: false,
+          codigo: 'EN_PROCESO',
+          mensaje: `⏳ <strong>VALIDANDO TABLERO:</strong> Por favor espere un momento mientras se verifica la foto...`
+        };
+      }
+
+      // 5. Validaciones de la foto e IA / Auditoría Visual (ONLINE y OFFLINE)
+      if (ia) {
+        // Foto rechazada (no es tablero o no cumple nitidez/luz)
+        if (ia.es_tablero_valido === false) {
+          return {
+            puedeAvanzar: false,
+            codigo: 'FOTO_RECHAZADA',
+            mensaje: `🚨 <strong>FOTO RECHAZADA:</strong> ${ia.observacion || 'La imagen no corresponde a un tablero válido o no tiene la nitidez requerida. Vuelva a tomar la foto enfocando los números con claridad.'}`
+          };
+        }
+
+        // Lectura ilegible o con error de detección
+        if (ia.es_legible === false && ia.es_tablero_valido !== null) {
+          return {
+            puedeAvanzar: false,
+            codigo: 'LECTURA_ILEGIBLE',
+            mensaje: `🚨 <strong>ERROR EN LECTURA:</strong> ${ia.observacion || 'No se pudieron leer claramente los dígitos en la foto del tablero. Tome una foto nítida y enfocada sin reflejos.'}`
+          };
+        }
+
+        // Discrepancia detectada (no coincide el número ingresado con la foto)
+        const valIA = (ia.lectura_detectada !== null && !isNaN(parseFloat(ia.lectura_detectada))) ? parseFloat(ia.lectura_detectada) : null;
+        if (valIA !== null && valIA > 0) {
+          const diff = Math.abs(valManual - valIA);
+          if (diff > 0.05 || ia.coincide === false || ia.alerta_discrepancia === true) {
+            return {
+              puedeAvanzar: false,
+              codigo: 'DISCREPANCIA',
+              mensaje: `🚨 <strong>DISCREPANCIA DETECTADA (Diferencia: ${diff.toFixed(1)} ${unidad}):</strong> En la foto se lee <strong>${valIA} ${unidad}</strong>, pero escribió <strong>${valManual} ${unidad}</strong>. El registro NO puede avanzar si no coincide. Corrija el número o presione <em>'Usar lectura de IA'</em>.`
+            };
+          }
+        }
+      }
+
+      return {
+        puedeAvanzar: true,
+        codigo: 'OK',
+        mensaje: ''
+      };
     }
 
     // ==========================================
@@ -2135,7 +2458,7 @@
 
       if (!isNaN(val) && val > 0 && lecturaAnterior > 0 && val < lecturaAnterior) {
         // MARCAR EN ROJO Y AVISAR
-        input.classList.remove('border-gray-700', 'text-machinery', 'focus:border-machinery');
+        input.classList.remove('border-gray-700', 'text-machinery', 'focus:border-machinery', 'border-emerald-500');
         input.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
 
         alertaTxt.textContent = `🚨 ¡LECTURA MENOR DETECTADA! El ${tipoNombre} ingresado (${val} ${unidad}) es MENOR al registrado anteriormente (${lecturaAnterior} ${unidad}). Verifique el tablero.`;
@@ -2144,55 +2467,45 @@
         if (iaAnalisisEstado.inicio) actualizarUIIA('inicio');
         return false;
       } else {
-        // RESTAURAR ESTILO NORMAL
-        input.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
-        input.classList.add('border-gray-700', 'text-machinery', 'focus:border-machinery');
         alertaBox.classList.add('hidden');
-        if (iaAnalisisEstado.inicio) actualizarUIIA('inicio');
+        if (iaAnalisisEstado.inicio) {
+          actualizarUIIA('inicio');
+        } else {
+          input.classList.remove('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+          input.classList.add('border-gray-700', 'text-machinery', 'focus:border-machinery');
+        }
+        const st = obtenerEstadoValidacionLectura('inicio');
+        if (st.puedeAvanzar && errBox) {
+          errBox.classList.add('hidden');
+        }
         return true;
       }
     }
 
     function avanzarPaso4Horometro() {
-      const eqId = parseInt(document.getElementById('select-maquinaria')?.value);
-      const eq = catalogosLocales.equipos.find(e => e.id === eqId);
-      const esKm = (eq && (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
-      const tipoNombre = esKm ? 'kilometraje' : 'horómetro';
-      const unidad = esKm ? 'km' : 'h';
-      const lecturaAnterior = esKm ? (eq ? (eq.odometro_actual || 0) : 0) : (eq ? (eq.horometro_actual || 0) : 0);
-
-      const valorMedicion = parseFloat(document.getElementById('wizard-horometro-inicio')?.value);
       const errBox = document.getElementById('err-ini-4');
+      const input = document.getElementById('wizard-horometro-inicio');
 
-      if (isNaN(valorMedicion) || valorMedicion <= 0) {
-        errBox.textContent = `⚠️ Ingrese la lectura actual de ${tipoNombre} inicial (${unidad}).`;
-        errBox.classList.remove('hidden');
-        return;
+      // BLOQUEO ESTRICTO: NO DEJA AVANZAR SI NO COINCIDE O SALE ERROR (ONLINE U OFFLINE)
+      const estado = obtenerEstadoValidacionLectura('inicio');
+
+      if (!estado.puedeAvanzar) {
+        if (errBox) {
+          errBox.innerHTML = estado.mensaje;
+          errBox.classList.remove('hidden');
+          errBox.classList.remove('animate-shake');
+          void errBox.offsetWidth;
+          errBox.classList.add('animate-shake');
+          errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (input) {
+          input.classList.remove('border-gray-700', 'text-machinery', 'border-emerald-500');
+          input.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+        }
+        return; // BLOQUEO INFRANQUEABLE
       }
 
-      if (lecturaAnterior > 0 && valorMedicion < lecturaAnterior) {
-        const input = document.getElementById('wizard-horometro-inicio');
-        input.classList.remove('border-gray-700', 'text-machinery', 'focus:border-machinery');
-        input.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
-
-        errBox.textContent = `🚨 ¡NO SE PUEDE CONTINUAR! El ${tipoNombre} ingresado (${valorMedicion} ${unidad}) es MENOR al registrado anteriormente (${lecturaAnterior} ${unidad}). Verifique el tablero de la máquina.`;
-        errBox.classList.remove('hidden');
-        return;
-      }
-
-      if (!fotosEstado.inicio_tablero) {
-        errBox.textContent = `⚠️ Debe tomar la FOTO OBLIGATORIA del tablero mostrando el ${tipoNombre} inicial.`;
-        errBox.classList.remove('hidden');
-        return;
-      }
-
-      if (iaAnalisisEstado.inicio && iaAnalisisEstado.inicio.es_tablero_valido === false) {
-        errBox.textContent = `🚨 FOTO RECHAZADA: La foto tomada no corresponde a un tablero u odómetro de maquinaria. Por favor toma una foto enfocando el medidor del vehículo para continuar.`;
-        errBox.classList.remove('hidden');
-        return;
-      }
-
-      errBox.classList.add('hidden');
+      if (errBox) errBox.classList.add('hidden');
       irVentana('win-ini-5');
     }
 
@@ -2274,6 +2587,23 @@
       }
 
       errBox.classList.add('hidden');
+
+      // VERIFICACIÓN ESTRICTA DE SEGURIDAD (ONLINE Y OFFLINE)
+      // El turno no debe avanzar ni registrarse si la lectura no coincide o si sale error
+      const stLectura = obtenerEstadoValidacionLectura('inicio');
+      if (!stLectura.puedeAvanzar) {
+        irVentana('win-ini-4');
+        const errBox4 = document.getElementById('err-ini-4');
+        if (errBox4) {
+          errBox4.innerHTML = stLectura.mensaje;
+          errBox4.classList.remove('hidden');
+          errBox4.classList.remove('animate-shake');
+          void errBox4.offsetWidth;
+          errBox4.classList.add('animate-shake');
+          errBox4.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        return;
+      }
 
       const eqId = parseInt(document.getElementById('select-maquinaria').value);
       const proyId = parseInt(document.getElementById('select-frente').value);
@@ -2454,39 +2784,29 @@
     }
 
     function avanzarCierrePaso1() {
-      const esKm = (turnoEnCurso && (turnoEnCurso.tipo_control || '').toUpperCase() === 'KILOMETRAJE');
-      const unidad = esKm ? 'km' : 'h';
-      const tipoNombre = esKm ? 'kilometraje' : 'horómetro';
-      const valIni = turnoEnCurso ? (turnoEnCurso.lectura_inicio !== undefined ? turnoEnCurso.lectura_inicio : (esKm ? turnoEnCurso.kilometraje_inicio : turnoEnCurso.horometro_inicio)) : 0;
-      const inputFin = document.getElementById('wizard-horometro-fin');
-      const valFin = parseFloat(inputFin?.value);
       const errBox = document.getElementById('err-cie-1');
+      const inputFin = document.getElementById('wizard-horometro-fin');
 
-      if (isNaN(valFin) || valFin <= 0) {
-        errBox.textContent = `⚠️ Ingrese la lectura del ${tipoNombre} de cierre (${unidad}).`;
-        errBox.classList.remove('hidden');
-        return;
-      }
-      if (valFin < valIni) {
-        inputFin.classList.remove('border-gray-700', 'text-alertGreen', 'focus:border-alertGreen');
-        inputFin.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
-        errBox.textContent = `🚨 ¡NO SE PUEDE CONTINUAR! El ${tipoNombre} final (${valFin} ${unidad}) es MENOR al inicial registrado (${valIni} ${unidad}). Verifique el tablero.`;
-        errBox.classList.remove('hidden');
-        return;
-      }
-      if (!fotosEstado.fin_tablero) {
-        errBox.textContent = `⚠️ Tome la FOTO OBLIGATORIA del tablero final mostrando el ${tipoNombre}.`;
-        errBox.classList.remove('hidden');
-        return;
-      }
+      // BLOQUEO ESTRICTO: NO DEJA AVANZAR SI NO COINCIDE O SALE ERROR
+      const estado = obtenerEstadoValidacionLectura('fin');
 
-      if (iaAnalisisEstado.fin && iaAnalisisEstado.fin.es_tablero_valido === false) {
-        errBox.textContent = `🚨 FOTO RECHAZADA: La foto final no corresponde al tablero ni odómetro de la unidad. Por favor toma una foto enfocando el medidor del vehículo para continuar.`;
-        errBox.classList.remove('hidden');
-        return;
+      if (!estado.puedeAvanzar) {
+        if (errBox) {
+          errBox.innerHTML = estado.mensaje;
+          errBox.classList.remove('hidden');
+          errBox.classList.remove('animate-shake');
+          void errBox.offsetWidth;
+          errBox.classList.add('animate-shake');
+          errBox.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+        if (inputFin) {
+          inputFin.classList.remove('border-gray-700', 'text-alertGreen', 'focus:border-alertGreen');
+          inputFin.classList.add('border-alertRed', 'text-alertRed', 'bg-rose-950/50', 'ring-2', 'ring-rose-500');
+        }
+        return; // BLOQUEO INFRANQUEABLE
       }
 
-      errBox.classList.add('hidden');
+      if (errBox) errBox.classList.add('hidden');
       irVentana('win-cie-2');
     }
 

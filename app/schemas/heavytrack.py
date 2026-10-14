@@ -79,6 +79,42 @@ class PersonalCreate(PersonalBase):
     contrasena: Optional[str] = "123456"
 
 
+class PersonalUpdate(BaseModel):
+    nombres: Optional[str] = None
+    apellidos: Optional[str] = None
+    telefono: Optional[str] = None
+    rol: Optional[RolPersonal] = None
+    brevete_numero: Optional[str] = None
+    brevete_categoria: Optional[str] = None
+    brevete_vencimiento: Optional[date] = None
+    pin_acceso: Optional[str] = None
+    tiene_certificacion: Optional[bool] = None
+    certificado_nombre: Optional[str] = None
+    certificado_vencimiento: Optional[date] = None
+    certificado_archivo_url: Optional[str] = None
+    estado: Optional[str] = None
+
+    @field_validator("brevete_vencimiento", "certificado_vencimiento", mode="before")
+    @classmethod
+    def validar_fechas_opcionales(cls, v):
+        if v is None or v == "" or (isinstance(v, str) and not v.strip()):
+            return None
+        if isinstance(v, str):
+            for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%Y/%m/%d"):
+                try:
+                    return datetime.strptime(v.strip(), fmt).date()
+                except ValueError:
+                    pass
+        return v
+
+    @field_validator("telefono", "brevete_numero", "brevete_categoria", "certificado_nombre", "certificado_archivo_url", mode="before")
+    @classmethod
+    def limpiar_strings_vacios(cls, v):
+        if isinstance(v, str) and not v.strip():
+            return None
+        return v
+
+
 class PersonalResponse(PersonalBase):
     id: int
     creado_en: datetime
