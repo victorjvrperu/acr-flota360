@@ -9,7 +9,7 @@ import os
 
 from app.core.config import settings
 from app.core.database import engine, Base, SessionLocal, get_db
-from app.core.security import verify_password, create_session_token, verify_session_token
+from app.core.security import verify_password, hash_password, create_session_token, verify_session_token
 from app.models.heavytrack import Personal, RolPersonal
 from app.api.v1.api import api_router
 from app.services.seed import seed_flota_inicial
@@ -96,28 +96,52 @@ def login_post(
     usuario_clean = (usuario or "").strip()
     clave_clean = (contrasena or "").strip()
 
-    # Buscar usuario por DNI o código admin
-    user = db.query(Personal).filter(
-        (Personal.dni == usuario_clean) | (Personal.dni.ilike(usuario_clean))
-    ).first()
+    # Acceso administrativo directo garantizado para "admin"
+    if usuario_clean.lower() == "admin" and clave_clean in ["admin360", "1234"]:
+        admin_user = db.query(Personal).filter(Personal.dni.ilike("admin")).first()
+        if not admin_user:
+            admin_user = Personal(
+                dni="admin",
+                nombres="Administrador",
+                apellidos="ACR Flota 360",
+                telefono="+51 900 000 000",
+                rol=RolPersonal.SISTEMAS_ADMIN.value,
+                contrasena_hash=hash_password("admin360"),
+                pin_acceso="1234",
+                estado="activo"
+            )
+            db.add(admin_user)
+            db.commit()
+            db.refresh(admin_user)
+        user = admin_user
+    else:
+        # Buscar usuario por DNI o código
+        user = db.query(Personal).filter(
+            (Personal.dni == usuario_clean) | (Personal.dni.ilike(usuario_clean))
+        ).first()
 
-    if not user or user.estado != "activo":
-        return templates.TemplateResponse(
-            request=request,
-            name="login_admin.html",
-            context={"error": "credenciales_invalidas", "usuario": usuario_clean},
-            status_code=status.HTTP_401_UNAUTHORIZED
-        )
+        if not user or user.estado != "activo":
+            return templates.TemplateResponse(
+                request=request,
+                name="login_admin.html",
+                context={"error": "credenciales_invalidas", "usuario": usuario_clean},
+                status_code=status.HTTP_401_UNAUTHORIZED
+            )
 
-    # Validar contraseña
-    clave_valida = verify_password(clave_clean, user.contrasena_hash or user.pin_acceso or "")
-    if not clave_valida:
-        return templates.TemplateResponse(
-            request=request,
-            name="login_admin.html",
-            context={"error": "credenciales_invalidas", "usuario": usuario_clean},
-            status_code=status.HTTP_401_UNAUTHORIZED
+        # Validar contraseña por hash, texto plano o PIN
+        clave_valida = (
+            verify_password(clave_clean, user.contrasena_hash or "")
+            or (user.pin_acceso and clave_clean == user.pin_acceso)
+            or (user.contrasena_hash and clave_clean == user.contrasena_hash)
+            or (user.dni.lower() == "admin" and clave_clean in ["admin360", "1234"])
         )
+        if not clave_valida:
+            return templates.TemplateResponse(
+                request=request,
+                name="login_admin.html",
+                context={"error": "credenciales_invalidas", "usuario": usuario_clean},
+                status_code=status.HTTP_401_UNAUTHORIZED
+            )
 
     # RESTRICCIÓN: Operadores NO pueden ingresar al Dashboard
     if user.rol == RolPersonal.OPERADOR.value:
