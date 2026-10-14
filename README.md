@@ -48,3 +48,9 @@ Sistema integral para el control y administración de flota vehicular desarrolla
    - **Dashboard Web**: [http://localhost:8000](http://localhost:8000)
    - **Documentación Swagger UI**: [http://localhost:8000/docs](http://localhost:8000/docs)
    - **Documentación ReDoc**: [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la Licencia de Código Abierto **MIT**. Consulta el archivo [LICENSE](LICENSE) para más detalles.
