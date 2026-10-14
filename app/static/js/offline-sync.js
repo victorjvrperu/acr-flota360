@@ -1,5 +1,6 @@
 /**
  * HeavyTrack Enterprise - Motor Offline-First (IndexedDB + Cola de Sincronización)
+ * Versión 2.2.0 - Chunking de lotes, prevención de bloqueos y auto-purga.
  */
 
 const DB_NAME = 'heavytrack_offline_db';
@@ -13,14 +14,13 @@ class HeavyTrackDB {
     this.isSyncing = false;
     this.ultimoErrorSync = null;
     this.ultimoSyncExitoso = null;
-    // Callbacks registrados por la UI para recibir resultados IA al reconectar
     this._onIAResultadoCallbacks = {};
   }
 
   async init() {
     if (this._initPromise) return this._initPromise;
 
-    this._initPromise = new Promise((resolve, reject) => {
+    this._initPromise = new Promise((resolve) => {
       const request = indexedDB.open(DB_NAME, DB_VERSION);
 
       request.onupgradeneeded = (e) => {
@@ -37,7 +37,6 @@ class HeavyTrackDB {
         if (!db.objectStoreNames.contains('catalogos')) {
           db.createObjectStore('catalogos', { keyPath: 'tipo' });
         }
-        // v2: Cola de fotos de tablero pendientes de análisis IA
         if (!db.objectStoreNames.contains('fotos_pendientes_ia')) {
           db.createObjectStore('fotos_pendientes_ia', { keyPath: 'uuid_local' });
         }
@@ -64,23 +63,14 @@ class HeavyTrackDB {
     return this.db;
   }
 
-  /**
-   * Registra un callback que será invocado cuando se procese una foto
-   * pendiente IA y vuelva un resultado.
-   */
   onIAResultado(tipo, callback) {
     this._onIAResultadoCallbacks[tipo] = callback;
   }
 
-  /**
-   * Guarda una foto de tablero en IndexedDB para ser procesada por Gemini
-   * cuando se recupere la conexión.
-   * Evita acumulación masiva reemplazando fotos previas del mismo tipo.
-   */
   async encolarFotoIA(params) {
     try {
       await this.asegurarDB();
-      // Eliminar fotos previas del mismo tipo para no acumular fotos desactualizadas
+      // Eliminar fotos previas del mismo tipo para no acumular desactualizadas
       const anteriores = await this.obtenerTodos('fotos_pendientes_ia');
       for (const item of anteriores) {
         if (item.tipo === params.tipo) {
@@ -99,7 +89,7 @@ class HeavyTrackDB {
         intentos: 0
       };
       await this.guardarItem('fotos_pendientes_ia', item);
-      console.log(`[IA-Queue] Foto de tablero (${item.tipo}) encolada. UUID: ${item.uuid_local}`);
+      console.log(`[IA-Queue] Foto (${item.tipo}) encolada. UUID: ${item.uuid_local}`);
       return item;
     } catch (e) {
       console.warn('[IA-Queue] No se pudo encolar foto IA:', e);
@@ -107,10 +97,6 @@ class HeavyTrackDB {
     }
   }
 
-  /**
-   * Limpia fotos de IA pendientes ya sea porque el turno ya se envió
-   * o porque el operador completó el paso.
-   */
   async limpiarFotosIAPendientes() {
     try {
       await this.asegurarDB();
@@ -124,9 +110,6 @@ class HeavyTrackDB {
     }
   }
 
-  /**
-   * Purgado explícito de toda la cola de fotos IA (invocable desde el modal de sync)
-   */
   async purgarFotosPendientesIA() {
     try {
       await this.asegurarDB();
@@ -143,30 +126,62 @@ class HeavyTrackDB {
   }
 
   /**
-   * Auto-limpieza de fotos zombies acumuladas: conserva máximo las 2 más recientes
-   * y descarta fotos de más de 30 minutos de antigüedad.
+   * Vacía toda la cola local (turnos, combustibles, incidentes y fotos).
+   * Se utiliza cuando hay registros de prueba o atascados.
+   */
+  async vaciarTodaLaCola() {
+    try {
+      await this.asegurarDB();
+      const stores = ['turnos', 'combustibles', 'incidentes', 'fotos_pendientes_ia'];
+      for (const st of stores) {
+        try {
+          const tx = this.db.transaction(st, 'readwrite');
+          tx.objectStore(st).clear();
+        } catch (err) {}
+      }
+      this.ultimoErrorSync = null;
+      console.log('[Sync] Toda la cola local ha sido vaciada.');
+      return true;
+    } catch (e) {
+      console.warn('[Sync] Error vaciando cola:', e);
+      return false;
+    }
+  }
+
+  /**
+   * Auto-limpieza de fotos zombies y turnos corruptos acumulados.
    */
   async autoLimpiarFotosObsoletas() {
     try {
       await this.asegurarDB();
+
+      // 1. Purgar fotos IA acumuladas si superan 2 o si tienen más de 20 minutos
       const items = await this.obtenerTodos('fotos_pendientes_ia');
       if (items && items.length > 0) {
         const ahora = Date.now();
-        // Ordenar por fecha descendente (más recientes primero)
         items.sort((a, b) => new Date(b._timestamp_local || 0) - new Date(a._timestamp_local || 0));
 
         let purgadas = 0;
         for (let i = 0; i < items.length; i++) {
           const item = items[i];
           const edadMs = ahora - new Date(item._timestamp_local || 0).getTime();
-          // Descartar si excede el límite de 2 fotos o tiene más de 30 min o falló 2+ veces
-          if (i >= 2 || edadMs > 1800000 || (item.intentos || 0) >= 2) {
+          if (i >= 2 || edadMs > 1200000 || (item.intentos || 0) >= 2) {
             await this.eliminarItem('fotos_pendientes_ia', item.uuid_local);
             purgadas++;
           }
         }
         if (purgadas > 0) {
-          console.log(`[IA-Queue] Auto-limpieza ejecutada: ${purgadas} fotos obsoletas purgadas.`);
+          console.log(`[IA-Queue] Auto-limpieza: ${purgadas} fotos obsoletas purgadas.`);
+        }
+      }
+
+      // 2. Purgar turnos vacíos o sin datos de inicio ni fin
+      const turnos = await this.obtenerTodos('turnos');
+      for (const t of turnos) {
+        const tieneInicio = (t.horometro_inicio !== undefined && t.horometro_inicio !== null) || (t.kilometraje_inicio !== undefined && t.kilometraje_inicio !== null);
+        const tieneFin = (t.horometro_fin !== undefined && t.horometro_fin !== null) || (t.kilometraje_fin !== undefined && t.kilometraje_fin !== null);
+        if (!tieneInicio && !tieneFin && !t.equipo_id) {
+          await this.eliminarItem('turnos', t.uuid_local);
         }
       }
     } catch (e) {
@@ -174,9 +189,6 @@ class HeavyTrackDB {
     }
   }
 
-  /**
-   * Procesa fotos pendientes con Gemini usando timeout no bloqueante.
-   */
   async procesarFotosPendientesIA() {
     if (!navigator.onLine) return { procesadas: 0, motivo: 'offline' };
 
@@ -207,7 +219,6 @@ class HeavyTrackDB {
         clearTimeout(timeoutId);
 
         if (!resp.ok) {
-          // Descartar para no bloquear indefinidamente la cola
           await this.eliminarItem('fotos_pendientes_ia', foto.uuid_local);
           continue;
         }
@@ -217,11 +228,9 @@ class HeavyTrackDB {
         resultado._tipo = foto.tipo;
         resultado._procesado_offline = true;
 
-        console.log(`[IA-Queue] ✅ Foto (${foto.tipo}) procesada:`, resultado);
-
         const cb = this._onIAResultadoCallbacks[foto.tipo];
         if (typeof cb === 'function') {
-          try { cb(resultado); } catch (e) { console.warn('[IA-Queue] Error en callback UI:', e); }
+          try { cb(resultado); } catch (e) {}
         }
 
         window.dispatchEvent(new CustomEvent('ia-resultado-offline', {
@@ -233,13 +242,11 @@ class HeavyTrackDB {
 
       } catch (err) {
         console.warn(`[IA-Queue] Error procesando foto ${foto.uuid_local}:`, err.message || err);
-        // Si falló por red o timeout, descartar la foto para desatascar la cola
         await this.eliminarItem('fotos_pendientes_ia', foto.uuid_local);
-        break; // Detener bucle para no demorar el hilo
+        break;
       }
     }
 
-    console.log(`[IA-Queue] ${procesadas}/${pendientes.length} fotos procesadas.`);
     return { procesadas, total: pendientes.length };
   }
 
@@ -248,7 +255,6 @@ class HeavyTrackDB {
     return items.length;
   }
 
-  // Generador universal de UUID local para idempotencia
   generarUUID() {
     if (window.crypto && window.crypto.randomUUID) {
       return window.crypto.randomUUID();
@@ -256,7 +262,6 @@ class HeavyTrackDB {
     return 'uuid-' + Date.now() + '-' + Math.random().toString(36).substring(2, 9);
   }
 
-  // Operaciones genéricas de almacenamiento con protección DB
   async guardarItem(storeName, data) {
     await this.asegurarDB();
     if (!data.uuid_local) data.uuid_local = this.generarUUID();
@@ -321,7 +326,6 @@ class HeavyTrackDB {
     });
   }
 
-  // Obtener conteo consolidado de registros pendientes por sincronizar
   async contarPendientes() {
     await this.autoLimpiarFotosObsoletas();
 
@@ -338,7 +342,7 @@ class HeavyTrackDB {
     };
   }
 
-  // Sincronización en lote con el backend FastAPI (/api/sync/batch) con Timeout Seguro
+  // Sincronización en lotes pequeños (Chunking) para evitar errores 413 o timeouts con fotos base64
   async sincronizarBatch(forzar = false) {
     if (!navigator.onLine && !forzar) {
       console.warn('[Sync] Dispositivo sin señal. Sincronización postergada.');
@@ -362,63 +366,72 @@ class HeavyTrackDB {
 
       const totalPendientes = turnos.length + combustibles.length + incidentes.length;
       if (totalPendientes === 0) {
-        // También procesar fotos IA si hubiese alguna pendiente
         await this.procesarFotosPendientesIA();
         this.ultimoErrorSync = null;
         return { success: true, total: 0 };
       }
 
-      // Filtrar Check-Ins (los que tienen equipo_id e inicio)
-      const turnosCheckIn = turnos.filter(t => t.equipo_id && (
-        (t.horometro_inicio !== undefined && t.horometro_inicio !== null) ||
-        (t.kilometraje_inicio !== undefined && t.kilometraje_inicio !== null)
-      ));
+      console.log(`[Sync] Iniciando subida de cola: ${turnos.length} turnos, ${combustibles.length} comb, ${incidentes.length} inc...`);
 
-      // Filtrar Check-Outs (los que tienen datos de cierre)
-      const turnosCheckOut = turnos.filter(t => (
-        (t.horometro_fin !== undefined && t.horometro_fin !== null) ||
-        (t.kilometraje_fin !== undefined && t.kilometraje_fin !== null)
-      ));
+      // 1. Enviar turnos en chunks de 2 elementos para no saturar memoria ni ancho de banda
+      const CHUNK_SIZE = 2;
+      let totalProcesados = 0;
 
-      const payload = {
-        device_id: 'pwa-' + (navigator.userAgent.substring(0, 30)),
-        turnos: turnosCheckIn,
-        turnos_checkout: turnosCheckOut,
-        combustibles: combustibles,
-        incidentes: incidentes
-      };
+      for (let i = 0; i < turnos.length; i += CHUNK_SIZE) {
+        const chunk = turnos.slice(i, i + CHUNK_SIZE);
+        const checkins = chunk.filter(t => t.equipo_id && (
+          (t.horometro_inicio !== undefined && t.horometro_inicio !== null) ||
+          (t.kilometraje_inicio !== undefined && t.kilometraje_inicio !== null)
+        ));
+        const checkouts = chunk.filter(t => (
+          (t.horometro_fin !== undefined && t.horometro_fin !== null) ||
+          (t.kilometraje_fin !== undefined && t.kilometraje_fin !== null)
+        ));
 
-      console.log(`[Sync] Enviando lote al servidor (${turnosCheckIn.length} checkin, ${turnosCheckOut.length} checkout, ${combustibles.length} comb)...`);
+        // Si son registros vacíos o corruptos, purgarlos del store local
+        if (checkins.length === 0 && checkouts.length === 0) {
+          for (const item of chunk) {
+            await this.eliminarItem('turnos', item.uuid_local);
+          }
+          continue;
+        }
 
-      // Control de Timeout (10 segundos)
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000);
+        const payload = {
+          device_id: 'pwa-' + (navigator.userAgent.substring(0, 30)),
+          turnos: checkins,
+          turnos_checkout: checkouts,
+          combustibles: (i === 0) ? combustibles.slice(0, 5) : [],
+          incidentes: (i === 0) ? incidentes.slice(0, 5) : []
+        };
 
-      const response = await fetch('/api/sync/batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 12000);
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        throw new Error(`Servidor HTTP ${response.status}: ${errorText.substring(0, 100)}`);
-      }
+        const response = await fetch('/api/sync/batch', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
 
-      const resData = await response.json();
-      console.log('[Sync] Respuesta de servidor exitosa:', resData);
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`HTTP ${response.status}: ${errorText.substring(0, 80)}`);
+        }
 
-      // Limpiar turnos ya procesados
-      for (const item of turnos) {
-        await this.eliminarItem('turnos', item.uuid_local);
-      }
-      for (const item of combustibles) {
-        await this.eliminarItem('combustibles', item.uuid_local);
-      }
-      for (const item of incidentes) {
-        await this.eliminarItem('incidentes', item.uuid_local);
+        // Eliminar del store local los turnos que ya fueron recibidos
+        for (const item of chunk) {
+          await this.eliminarItem('turnos', item.uuid_local);
+          totalProcesados++;
+        }
+
+        if (i === 0) {
+          for (const c of payload.combustibles) await this.eliminarItem('combustibles', c.uuid_local);
+          for (const inc of payload.incidentes) await this.eliminarItem('incidentes', inc.uuid_local);
+        }
+
+        actualizarBannerConectividad();
       }
 
       // Procesar fotos IA si hubiera
@@ -426,7 +439,7 @@ class HeavyTrackDB {
 
       this.ultimoErrorSync = null;
       this.ultimoSyncExitoso = new Date();
-      return { success: true, resData };
+      return { success: true, total: totalProcesados };
 
     } catch (err) {
       const msg = err.name === 'AbortError' 
@@ -441,7 +454,6 @@ class HeavyTrackDB {
     }
   }
 
-  // Descarga y cachea catálogos para permitir selectores sin conexión
   async refrescarCatalogos() {
     if (!navigator.onLine) return;
     try {
@@ -490,7 +502,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   await window.heavyDB.refrescarCatalogos();
   actualizarBannerConectividad();
 
-  // Escuchadores de estado de red del navegador
   window.addEventListener('online', async () => {
     console.log('[Red] Evento online detectado. Sincronizando lote...');
     actualizarBannerConectividad();
@@ -502,7 +513,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     actualizarBannerConectividad();
   });
 
-  // Intentar sincronizar cada 40 segundos si hay señal
   setInterval(async () => {
     if (navigator.onLine && !window.heavyDB.isSyncing) {
       await window.heavyDB.sincronizarBatch();
@@ -510,7 +520,6 @@ document.addEventListener('DOMContentLoaded', async () => {
   }, 40000);
 });
 
-// Función de interfaz persistente para el estado de conectividad
 async function actualizarBannerConectividad() {
   const banner = document.getElementById('network-status-banner');
   if (!banner) return;
@@ -518,9 +527,7 @@ async function actualizarBannerConectividad() {
   const conteo = await window.heavyDB.contarPendientes();
   const pendientes = typeof conteo === 'object' ? conteo.total : conteo;
   const isSyncing = window.heavyDB.isSyncing;
-  const ultimoError = window.heavyDB.ultimoErrorSync;
 
-  // Hacer el banner interactivo al tacto
   banner.style.cursor = 'pointer';
   banner.setAttribute('title', 'Toca para ver el estado de sincronización o forzar subida');
   banner.onclick = () => {

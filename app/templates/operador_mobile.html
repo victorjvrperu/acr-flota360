@@ -175,7 +175,7 @@
           <span id="gps-status-icon">📍</span> <span id="gps-status-text" class="hidden sm:inline">GPS: OFF</span>
         </button>
         <!-- Conectividad -->
-        <div id="network-status-banner" class="network-badge badge-online shrink-0 select-none">
+        <div id="network-status-banner" onclick="abrirModalSincronizacion()" class="network-badge badge-online shrink-0 select-none cursor-pointer" title="Toca para ver el estado de sincronización">
           <span class="pulse-dot bg-emerald"></span>
           <span class="hidden sm:inline">🟢 En línea</span>
           <span class="sm:hidden">🟢 OK</span>
@@ -1494,8 +1494,11 @@
         <button type="button" id="btn-sync-modal-forzar" onclick="forzarSincronizacionDesdeModal()" class="btn-industrial w-full bg-machinery hover:bg-machineryActive text-carbon text-xs uppercase font-black flex items-center justify-center gap-2">
           <span>🔄</span> <span>REINTENTAR SUBIDA AHORA</span>
         </button>
-        <button type="button" id="btn-sync-modal-purgar-fotos" onclick="purgarFotosObsoletasDesdeModal()" class="w-full py-2 bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 font-bold text-xs uppercase rounded-xl transition border border-rose-800/80 flex items-center justify-center gap-2">
+        <button type="button" id="btn-sync-modal-purgar-fotos" onclick="purgarFotosObsoletasDesdeModal()" class="w-full py-2 bg-amber-950/60 hover:bg-amber-900/80 text-amber-300 font-bold text-xs uppercase rounded-xl transition border border-amber-800/80 flex items-center justify-center gap-2">
           <span>🧹</span> <span>LIMPIAR FOTOS IA ATASCADAS</span>
+        </button>
+        <button type="button" id="btn-sync-modal-purgar-todo" onclick="vaciarTodaLaColaDesdeModal()" class="w-full py-2 bg-rose-950/60 hover:bg-rose-900/80 text-rose-300 font-bold text-xs uppercase rounded-xl transition border border-rose-800/80 flex items-center justify-center gap-2">
+          <span>🗑️</span> <span>VACIAR TODA LA COLA DE PRUEBAS (RESET)</span>
         </button>
         <button type="button" onclick="cerrarModalSincronizacion()" class="w-full py-2.5 bg-gray-800 hover:bg-gray-700 text-gray-300 font-bold text-xs uppercase rounded-xl transition border border-gray-700">
           Cerrar
@@ -1504,13 +1507,39 @@
     </div>
   </div>
 
-  <!-- Scripts: IndexedDB y Offline Sync -->
-  <script src="/static/js/offline-sync.js"></script>
+  <!-- Scripts: IndexedDB y Offline Sync con Cache-Buster v2.2.0 -->
+  <script src="/static/js/offline-sync.js?v=2.2.0"></script>
 
   <!-- ============================================================ -->
   <!-- CONTROLADOR DEL WIZARD, CANVAS WATERMARKING Y REGLAS         -->
   <!-- ============================================================ -->
   <script>
+    // Auto-diagnóstico y purga inmediata en el HTML para desbloquear de inmediato el móvil
+    (function purgarInmediatoFotosZombie() {
+      try {
+        const req = indexedDB.open('heavytrack_offline_db', 2);
+        req.onsuccess = (e) => {
+          const db = e.target.result;
+          if (db.objectStoreNames.contains('fotos_pendientes_ia')) {
+            const tx = db.transaction('fotos_pendientes_ia', 'readwrite');
+            const store = tx.objectStore('fotos_pendientes_ia');
+            const cReq = store.count();
+            cReq.onsuccess = () => {
+              if (cReq.result > 2) {
+                console.warn(`[Auto-Purga] Vaciando ${cReq.result} fotos IA atascadas de prueba...`);
+                store.clear();
+                setTimeout(() => {
+                  if (typeof actualizarBannerConectividad === 'function') {
+                    actualizarBannerConectividad();
+                  }
+                }, 400);
+              }
+            };
+          }
+        };
+      } catch (err) {}
+    })();
+
     // Variables globales
     let operadorActivo = null;
     let catalogosLocales = { equipos: [], proyectos: [], operadores: [] };
@@ -1754,6 +1783,19 @@
         await window.heavyDB.contarPendientes();
         actualizarBannerConectividad();
         await abrirModalSincronizacion();
+      }
+    }
+
+    async function vaciarTodaLaColaDesdeModal() {
+      if (!confirm('⚠️ ¿Estás seguro de vaciar TODOS los registros y fotos pendientes de prueba acumulados en este teléfono?')) {
+        return;
+      }
+      if (window.heavyDB) {
+        await window.heavyDB.vaciarTodaLaCola();
+        await window.heavyDB.contarPendientes();
+        actualizarBannerConectividad();
+        await abrirModalSincronizacion();
+        alert('🗑️ Se ha vaciado la cola de este teléfono correctamente.');
       }
     }
 
