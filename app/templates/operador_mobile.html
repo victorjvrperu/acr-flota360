@@ -6,9 +6,15 @@
   <meta name="theme-color" content="#01A95B">
   <title>ACR Flota 360° | Pasarela Móvil de Campo</title>
   
-  <!-- Manifest PWA -->
-  <link rel="manifest" href="/static/manifest.json">
-  <link rel="apple-touch-icon" href="/static/manifest.json">
+  <!-- Manifest PWA e Iconos Móviles Oficiales -->
+  <link rel="manifest" href="/manifest.json">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/img/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/img/icon-192.png">
+  <link rel="icon" type="image/png" sizes="512x512" href="/static/img/icon-512.png">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ACR Flota 360">
   
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
@@ -158,6 +164,10 @@
       </div>
 
       <div class="flex items-center gap-1.5 shrink-0">
+        <!-- Botón PWA Instalar en Celular -->
+        <button type="button" id="btn-pwa-header" onclick="ejecutarInstalacionPWA()" class="network-badge bg-machinery/20 hover:bg-machinery/30 text-machinery border border-machinery/50 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none font-black shadow-sm" title="Instalar aplicación en tu celular">
+          <span>📲</span> <span class="hidden xs:inline sm:inline">Instalar</span>
+        </button>
         <!-- Botón / Indicador Interactivo de GPS -->
         <button type="button" id="btn-gps-toggle-header" onclick="toggleSeguimientoGPS()" class="network-badge bg-rose-950/60 text-rose-400 border border-rose-800 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none" title="Toca para activar/desactivar seguimiento GPS">
           <span id="gps-status-icon">📍</span> <span id="gps-status-text">GPS: OFF</span>
@@ -259,6 +269,28 @@
           <button type="button" id="btn-bienvenida-gps-toggle" onclick="toggleSeguimientoGPS()" class="w-full py-2.5 px-3 bg-emerald-600 hover:bg-emerald-500 text-carbon border border-emerald-400 rounded-xl text-xs font-bold flex items-center justify-center gap-2 transition active:scale-95 shadow-md">
             <span>📍</span> <span id="btn-bienvenida-gps-text">Activar Seguimiento GPS</span>
           </button>
+        </div>
+
+        <!-- Tarjeta Prominente: INSTALACIÓN DE APP EN CELULAR (PWA) -->
+        <div id="card-pwa-install-bienvenida" class="bg-gradient-to-r from-emerald-950/60 via-graphite to-carbon border-2 border-machinery/60 rounded-2xl p-4 text-left shadow-lg space-y-3 relative overflow-hidden">
+          <div class="flex items-center gap-3">
+            <div class="w-11 h-11 rounded-xl bg-machinery/20 border border-machinery/50 flex items-center justify-center text-2xl shrink-0 shadow-inner">
+              📲
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="text-[10px] text-machinery uppercase tracking-wider font-extrabold flex items-center gap-1">
+                <span>⚡ ACCESO DIRECTO OFFLINE</span>
+              </div>
+              <h3 class="text-sm font-black text-white leading-tight">Instalar App en este Celular</h3>
+              <p class="text-[11px] text-gray-300 leading-snug">Ábrela directo desde tu pantalla de inicio y trabaja sin conexión en obra.</p>
+            </div>
+          </div>
+          <button type="button" id="btn-instalar-celular" onclick="ejecutarInstalacionPWA()" class="w-full py-3.5 px-4 bg-gradient-to-r from-machinery to-emerald-500 hover:from-machineryActive hover:to-emerald-600 text-carbon font-black text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-machinery/25 flex items-center justify-center gap-2 active:scale-95 transition">
+            <span>📲</span> <span>INSTALAR EN CELULAR</span> <span>⬇️</span>
+          </button>
+          <div id="pwa-ya-instalado-badge" class="hidden text-center text-[11px] font-bold text-emerald-400 bg-emerald-950/50 border border-emerald-700/60 py-2 px-3 rounded-xl flex items-center justify-center gap-1.5">
+            <span>✅</span> <span>App instalada en tu pantalla principal</span>
+          </div>
         </div>
 
         <!-- Botón Principal: INICIAR CHECK IN -->
@@ -1315,6 +1347,99 @@
     </div>
   </div>
 
+  <!-- ============================================================ -->
+  <!-- MODAL: GUÍA DE INSTALACIÓN DE APP EN CELULAR (PWA)           -->
+  <!-- ============================================================ -->
+  <div id="modal-pwa-instrucciones" class="fixed inset-0 bg-black/90 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border-2 border-machinery/60 rounded-3xl max-w-sm w-full p-5 space-y-4 shadow-2xl text-center max-h-[92vh] overflow-y-auto">
+      
+      <div class="flex justify-between items-center pb-2 border-b border-gray-800">
+        <div class="flex items-center gap-2 text-left">
+          <div class="w-9 h-9 rounded-xl bg-machinery/20 border border-machinery/40 flex items-center justify-center text-xl shrink-0">
+            📲
+          </div>
+          <div>
+            <h4 class="text-sm font-black text-white uppercase tracking-tight">Instalar en Celular</h4>
+            <span class="text-[10px] text-machinery font-bold block">ACR Flota 360° PWA</span>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalPWA()" class="w-7 h-7 bg-gray-800 hover:bg-gray-700 text-gray-400 hover:text-white rounded-full flex items-center justify-center text-sm font-bold">
+          ✕
+        </button>
+      </div>
+
+      <!-- Selector de Sistema Operativo (Pestañas) -->
+      <div class="grid grid-cols-2 gap-1.5 bg-carbon p-1 rounded-xl border border-gray-800 text-xs font-black">
+        <button type="button" id="tab-pwa-android" onclick="seleccionarTabPWA('android')" class="py-2 rounded-lg transition flex items-center justify-center gap-1.5 bg-machinery text-carbon">
+          <span>🤖</span> <span>Android</span>
+        </button>
+        <button type="button" id="tab-pwa-ios" onclick="seleccionarTabPWA('ios')" class="py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-white">
+          <span>🍎</span> <span>iPhone / iOS</span>
+        </button>
+      </div>
+
+      <!-- Contenido Guía: Android (Chrome / Edge / Samsung) -->
+      <div id="guia-pwa-android" class="text-left space-y-3">
+        <div class="p-3 bg-carbon/90 rounded-2xl border border-gray-800 space-y-2.5">
+          <div class="flex items-start gap-2.5">
+            <span class="w-6 h-6 rounded-full bg-machinery text-carbon font-black text-xs flex items-center justify-center shrink-0">1</span>
+            <p class="text-xs text-gray-200">
+              En tu navegador Google Chrome, toca los <strong>tres puntos (⋮)</strong> en la esquina superior derecha.
+            </p>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <span class="w-6 h-6 rounded-full bg-machinery text-carbon font-black text-xs flex items-center justify-center shrink-0">2</span>
+            <p class="text-xs text-gray-200">
+              Selecciona la opción <strong>"Instalar aplicación"</strong> o <strong>"Agregar a la pantalla principal"</strong> 📲.
+            </p>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <span class="w-6 h-6 rounded-full bg-machinery text-carbon font-black text-xs flex items-center justify-center shrink-0">3</span>
+            <p class="text-xs text-gray-200">
+              Confirma presionando <strong>"Instalar"</strong>. ¡Listo! La app aparecerá en tu teléfono para abrirla con un solo toque.
+            </p>
+          </div>
+        </div>
+        <div class="p-2.5 bg-emerald-950/40 border border-emerald-800/60 rounded-xl text-[11px] text-emerald-300 flex items-center gap-2">
+          <span>💡</span> <span>Podrás registrar turnos e inspecciones incluso sin señal de internet en obra.</span>
+        </div>
+      </div>
+
+      <!-- Contenido Guía: iPhone / iPad (Safari) -->
+      <div id="guia-pwa-ios" class="text-left space-y-3 hidden">
+        <div class="p-3 bg-carbon/90 rounded-2xl border border-gray-800 space-y-2.5">
+          <div class="flex items-start gap-2.5">
+            <span class="w-6 h-6 rounded-full bg-machinery text-carbon font-black text-xs flex items-center justify-center shrink-0">1</span>
+            <p class="text-xs text-gray-200">
+              En el navegador <strong>Safari</strong> de tu iPhone, presiona el botón <strong>Compartir</strong> (icono de cuadrado con flecha hacia arriba <span class="inline-block px-1 bg-gray-800 rounded font-bold text-white">⎋</span> en la barra inferior).
+            </p>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <span class="w-6 h-6 rounded-full bg-machinery text-carbon font-black text-xs flex items-center justify-center shrink-0">2</span>
+            <p class="text-xs text-gray-200">
+              Desliza el menú hacia abajo y selecciona <strong>"Agregar al inicio"</strong> (con icono ➕).
+            </p>
+          </div>
+          <div class="flex items-start gap-2.5">
+            <span class="w-6 h-6 rounded-full bg-machinery text-carbon font-black text-xs flex items-center justify-center shrink-0">3</span>
+            <p class="text-xs text-gray-200">
+              Toca <strong>"Agregar"</strong> en la esquina superior derecha. ¡Listo!
+            </p>
+          </div>
+        </div>
+        <div class="p-2.5 bg-amber-950/40 border border-amber-800/60 rounded-xl text-[11px] text-amber-300 flex items-center gap-2">
+          <span>ℹ️</span> <span>En iPhone es necesario abrir la página desde Safari para agregarla al inicio.</span>
+        </div>
+      </div>
+
+      <div class="pt-1">
+        <button type="button" onclick="cerrarModalPWA()" class="btn-industrial w-full bg-machinery hover:bg-machineryActive text-carbon text-xs uppercase font-black">
+          ENTENDIDO
+        </button>
+      </div>
+    </div>
+  </div>
+
   <!-- Scripts: IndexedDB y Offline Sync -->
   <script src="/static/js/offline-sync.js"></script>
 
@@ -1329,6 +1454,143 @@
     let abastecioCombustibleOpcion = null;
     let huboIncidenciaOpcion = null;
     let ultimaPosicionGPS = null;
+
+    // ============================================================
+    // GESTIÓN DE PWA E INSTALACIÓN EN CELULAR (STANDALONE)
+    // ============================================================
+    let deferredPrompt = null;
+
+    // Registro de Service Worker para PWA Offline e Instalabilidad
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('/sw.js', { scope: '/' })
+          .then((reg) => {
+            console.log('✅ [PWA] Service Worker registrado:', reg.scope);
+          })
+          .catch((err) => {
+            console.warn('⚠️ [PWA] No se pudo registrar Service Worker:', err);
+          });
+      });
+    }
+
+    // Captura del evento de instalación nativo (Chromium / Android)
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      console.log('📲 [PWA] Evento beforeinstallprompt capturado listo');
+      actualizarUIInstalacionPWA();
+    });
+
+    // Detectar instalación completada
+    window.addEventListener('appinstalled', () => {
+      deferredPrompt = null;
+      console.log('🎉 [PWA] App instalada en celular');
+      actualizarUIInstalacionPWA();
+    });
+
+    function esModoStandalone() {
+      return (
+        window.matchMedia('(display-mode: standalone)').matches ||
+        window.navigator.standalone === true ||
+        document.referrer.includes('android-app://')
+      );
+    }
+
+    function esDispositivoIOS() {
+      return /iphone|ipad|ipod/i.test(navigator.userAgent || navigator.vendor || window.opera);
+    }
+
+    function actualizarUIInstalacionPWA() {
+      const instalado = esModoStandalone();
+      const btnHeader = document.getElementById('btn-pwa-header');
+      const btnCelular = document.getElementById('btn-instalar-celular');
+      const yaInstaladoBadge = document.getElementById('pwa-ya-instalado-badge');
+
+      if (instalado) {
+        if (btnHeader) btnHeader.classList.add('hidden');
+        if (btnCelular) btnCelular.classList.add('hidden');
+        if (yaInstaladoBadge) {
+          yaInstaladoBadge.classList.remove('hidden');
+          yaInstaladoBadge.classList.add('flex');
+        }
+      } else {
+        if (btnHeader) btnHeader.classList.remove('hidden');
+        if (btnCelular) btnCelular.classList.remove('hidden');
+        if (yaInstaladoBadge) {
+          yaInstaladoBadge.classList.add('hidden');
+          yaInstaladoBadge.classList.remove('flex');
+        }
+      }
+    }
+
+    async function ejecutarInstalacionPWA() {
+      if (esModoStandalone()) {
+        alert('✅ ¡ACR Flota 360° ya está instalada en tu pantalla principal y lista para usar!');
+        return;
+      }
+
+      if (deferredPrompt) {
+        try {
+          deferredPrompt.prompt();
+          const choiceResult = await deferredPrompt.userChoice;
+          console.log('[PWA] Respuesta del operador:', choiceResult.outcome);
+          deferredPrompt = null;
+          actualizarUIInstalacionPWA();
+          return;
+        } catch (err) {
+          console.warn('[PWA] Error en prompt:', err);
+        }
+      }
+
+      // Si no hay prompt nativo disponible (iPhone iOS o navegador antes de disparar prompt), abrir guía visual
+      abrirModalPWA();
+    }
+
+    function abrirModalPWA() {
+      const modal = document.getElementById('modal-pwa-instrucciones');
+      if (!modal) return;
+      if (esDispositivoIOS()) {
+        seleccionarTabPWA('ios');
+      } else {
+        seleccionarTabPWA('android');
+      }
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalPWA() {
+      const modal = document.getElementById('modal-pwa-instrucciones');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function seleccionarTabPWA(tipo) {
+      const tabAnd = document.getElementById('tab-pwa-android');
+      const tabIos = document.getElementById('tab-pwa-ios');
+      const guiaAnd = document.getElementById('guia-pwa-android');
+      const guiaIos = document.getElementById('guia-pwa-ios');
+
+      if (tipo === 'ios') {
+        if (tabIos) {
+          tabIos.className = 'py-2 rounded-lg transition flex items-center justify-center gap-1.5 bg-machinery text-carbon font-black';
+        }
+        if (tabAnd) {
+          tabAnd.className = 'py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-white font-bold';
+        }
+        if (guiaIos) guiaIos.classList.remove('hidden');
+        if (guiaAnd) guiaAnd.classList.add('hidden');
+      } else {
+        if (tabAnd) {
+          tabAnd.className = 'py-2 rounded-lg transition flex items-center justify-center gap-1.5 bg-machinery text-carbon font-black';
+        }
+        if (tabIos) {
+          tabIos.className = 'py-2 rounded-lg transition flex items-center justify-center gap-1.5 text-gray-400 hover:text-white font-bold';
+        }
+        if (guiaAnd) guiaAnd.classList.remove('hidden');
+        if (guiaIos) guiaIos.classList.add('hidden');
+      }
+    }
 
     // Cache de fotografías selladas con Canvas
     const fotosEstado = {
@@ -1349,10 +1611,12 @@
 
     // Inicialización al cargar la página
     document.addEventListener('DOMContentLoaded', async () => {
+      actualizarUIInstalacionPWA();
       setTimeout(async () => {
         await cargarCatalogosEnUI();
         cargarOperadorActivo();
         verificarTurnoEnCurso();
+        actualizarUIInstalacionPWA();
       }, 300);
     });
 

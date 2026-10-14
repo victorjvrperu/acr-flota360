@@ -1,11 +1,16 @@
 // HeavyTrack Enterprise - Service Worker (Offline-First App Shell)
-const CACHE_NAME = 'heavytrack-v1.0.0';
+const CACHE_NAME = 'acr-flota360-v2.0.0';
 const STATIC_ASSETS = [
   '/',
+  '/operador',
   '/mobile',
   '/static/css/style.css',
   '/static/js/offline-sync.js',
-  '/static/manifest.json'
+  '/static/manifest.json',
+  '/static/img/icon-192.png',
+  '/static/img/icon-512.png',
+  '/static/img/apple-touch-icon.png',
+  '/static/img/logo_acr360_white.png'
 ];
 
 // Instalación y pre-cacheo de recursos críticos
