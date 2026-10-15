@@ -2866,9 +2866,10 @@
       try {
         const res = await fetch(`/api/v1/heavy/proyectos/${id}`, { method: 'DELETE' });
         if (res.ok) {
-          await cargarFrentes();
+          await cargarFrentesProyectos();
         } else {
-          alert("No se pudo eliminar el frente de obra.");
+          const errData = await res.json().catch(() => ({}));
+          alert(errData.detail || "No se pudo eliminar el frente de obra.");
         }
       } catch (err) {
         alert("Error de conexión al eliminar.");

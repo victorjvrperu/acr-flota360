@@ -235,14 +235,23 @@ def crear_frente_proyecto(proyecto_in: ProyectoCreate, db: Session = Depends(get
 
 @router.delete("/proyectos/{proyecto_id}", status_code=status.HTTP_204_NO_CONTENT)
 def eliminar_proyecto(proyecto_id: int, db: Session = Depends(get_db)):
-    """Elimina un frente de obra / proyecto si no tiene registros bloqueantes."""
+    """Elimina un frente de obra / proyecto y desvincula sus dependencias."""
     proyecto = db.query(Proyecto).filter(Proyecto.id == proyecto_id).first()
     if not proyecto:
         raise HTTPException(status_code=404, detail="Frente de obra no encontrado.")
-    # Desvincular maquinaria asociada al frente
+    
+    # 1. Desvincular maquinaria asociada al frente
     db.query(MaquinariaEquipo).filter(MaquinariaEquipo.proyecto_actual_id == proyecto_id).update(
         {MaquinariaEquipo.proyecto_actual_id: None}
     )
+    # 2. Desvincular órdenes de mantenimiento
+    db.query(OrdenMantenimiento).filter(OrdenMantenimiento.proyecto_id == proyecto_id).update(
+        {OrdenMantenimiento.proyecto_id: None}
+    )
+    # 3. Eliminar turnos y cargas de combustible vinculados a este frente
+    db.query(ControlCombustible).filter(ControlCombustible.proyecto_id == proyecto_id).delete()
+    db.query(TurnoOperacion).filter(TurnoOperacion.proyecto_id == proyecto_id).delete()
+    
     db.delete(proyecto)
     db.commit()
     return None

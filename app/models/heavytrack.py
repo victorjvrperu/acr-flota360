@@ -78,8 +78,8 @@ class Proyecto(Base):
 
     # Relaciones
     equipos = relationship("MaquinariaEquipo", back_populates="proyecto_actual")
-    turnos = relationship("TurnoOperacion", back_populates="proyecto")
-    cargas_combustible = relationship("ControlCombustible", back_populates="proyecto")
+    turnos = relationship("TurnoOperacion", back_populates="proyecto", cascade="all, delete-orphan")
+    cargas_combustible = relationship("ControlCombustible", back_populates="proyecto", cascade="all, delete-orphan")
     ordenes_mantenimiento = relationship("OrdenMantenimiento", back_populates="proyecto")
 
 
