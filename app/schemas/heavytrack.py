@@ -233,6 +233,11 @@ class ActualizarPagoCombustibleRequest(BaseModel):
     observaciones_pago: Optional[str] = None
 
 
+class ActualizarPrecioCombustibleRapidoRequest(BaseModel):
+    precio_por_galon: float = 0.0
+
+
+
 class MaquinariaEquipoResponse(MaquinariaEquipoBase):
     ultima_latitud: Optional[float] = None
     ultima_longitud: Optional[float] = None

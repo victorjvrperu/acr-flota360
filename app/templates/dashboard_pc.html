@@ -1141,20 +1141,15 @@
             <p class="text-xs text-gray-400">Abastecimiento previo a salida a obra, cálculo de consumo (Gal/h y Km/Gal) y conciliación financiera con administración</p>
           </div>
           <div class="flex flex-wrap items-center gap-2.5">
-            <!-- Valor del Combustible en la Zona -->
-            <div class="flex items-center gap-2 bg-carbon border border-gray-700 px-3 py-1.5 rounded-xl">
-              <span class="text-xs font-bold text-gray-300 flex items-center gap-1">
-                <span>📍</span> Precio Zona:
-              </span>
-              <span class="text-xs text-machinery font-bold">S/</span>
-              <input type="number" step="0.10" id="comb-precio-zona-input" value="17.50"
-                class="w-20 bg-graphite border border-gray-600 rounded-lg px-2 py-1 text-white text-xs font-mono font-bold focus:border-machinery focus:outline-none"
-                title="Precio del galón de combustible en esta zona">
-              <span class="text-[11px] text-gray-400">/gal</span>
-              <button onclick="guardarPrecioCombustibleZona()"
-                class="px-2.5 py-1 bg-machinery hover:bg-machineryHover text-carbon rounded-lg text-xs font-black transition cursor-pointer shadow-sm">
-                💾 Guardar
-              </button>
+            <!-- Indicador de Precios Independientes -->
+            <div class="flex items-center gap-2.5 bg-carbon/90 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl shadow-inner">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              <div>
+                <span class="text-xs font-black text-emerald-400 flex items-center gap-1.5">
+                  <span>⛽</span> Tarifas Independientes por Carga / Flota
+                </span>
+                <span class="text-[10px] text-gray-400 block">Llene el precio directamente en cada abastecimiento</span>
+              </div>
             </div>
 
             <!-- Botón Abastecer Directo antes de salir a obra -->
@@ -1213,10 +1208,10 @@
                   <th class="py-3 px-4">Equipo / Placa</th>
                   <th class="py-3 px-4 text-center">Tipo Control</th>
                   <th class="py-3 px-4">Operador</th>
-                  <th class="py-3 px-4 text-right">Galones</th>
-                  <th class="py-3 px-4 text-center">Consumo / Rendimiento</th>
-                  <th class="py-3 px-4 text-right">Precio/Gal (S/.)</th>
+                  <th class="py-3 px-4 text-right">Galones (Abastecimiento)</th>
+                  <th class="py-3 px-4 text-center">Precio / Galón (S/.)</th>
                   <th class="py-3 px-4 text-right">Total S/.</th>
+                  <th class="py-3 px-4 text-center">Consumo / Rendimiento</th>
                   <th class="py-3 px-4 text-center">Voucher</th>
                   <th class="py-3 px-4 text-center">Estado Pago</th>
                   <th class="py-3 px-4">N° Operación</th>
@@ -2391,6 +2386,103 @@
             <span>⛽</span> <span>Registrar Abastecimiento</span>
           </button>
           <button type="button" onclick="cerrarModalCombustibleDirecto()"
+            class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700 cursor-pointer">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CONCILIAR PAGO DE COMBUSTIBLE -->
+  <div id="modal-pago-combustible"
+    class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
+            💳
+          </div>
+          <div>
+            <h3 class="text-base font-black text-white uppercase">Conciliar Pago de Combustible</h3>
+            <p class="text-[11px] text-gray-400" id="modal-pago-subtitulo">Registro financiero y validación de comprobante</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalPagoCombustible()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
+      </div>
+
+      <form id="form-pago-combustible" onsubmit="guardarConciliacionPagoSubmit(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="pago-comb-id" value="">
+
+        <!-- Resumen de Carga -->
+        <div class="bg-carbon/80 p-3.5 rounded-xl border border-gray-800 space-y-2">
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Equipo / Placa:</span>
+            <span id="pago-comb-equipo" class="font-mono font-bold text-machinery text-sm">-</span>
+          </div>
+          <div class="flex justify-between items-center">
+            <span class="text-gray-400">Fecha Carga:</span>
+            <span id="pago-comb-fecha" class="font-mono text-gray-300">-</span>
+          </div>
+          <div class="flex justify-between items-center border-t border-gray-800 pt-2">
+            <span class="text-gray-400">Galones Abastecidos:</span>
+            <span id="pago-comb-galones-badge" class="font-mono font-bold text-amber-400 text-sm">0.0 Gal</span>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Precio por Galón (S/.) *</label>
+            <input type="number" step="0.01" min="0" id="pago-comb-precio" required
+              oninput="recalcularTotalModalPago()"
+              class="w-full bg-carbon border-2 border-gray-700 focus:border-emerald-400 text-white font-mono font-bold text-base rounded-xl py-2 px-3 focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Costo Total (S/.) *</label>
+            <input type="number" step="0.01" min="0" id="pago-comb-total" required
+              class="w-full bg-carbon border-2 border-gray-700 focus:border-emerald-400 text-emerald-400 font-mono font-black text-base rounded-xl py-2 px-3 focus:outline-none">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Estado de Pago *</label>
+            <select id="pago-comb-estado"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2.5 text-white font-bold text-xs focus:border-machinery focus:outline-none">
+              <option value="pendiente">🟡 Pendiente de Pago</option>
+              <option value="pagado">🟢 Pagado / Facturado</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">N° Operación / Factura / Vale</label>
+            <input type="text" id="pago-comb-nro-operacion" placeholder="Ej: OP-98214 o FACT-001"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono text-xs focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Observaciones / Grifo / Proveedor</label>
+          <input type="text" id="pago-comb-obs" placeholder="Ej: Grifo Primax Panamericana, factura a fin de mes"
+            class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:border-machinery focus:outline-none">
+        </div>
+
+        <div id="pago-comb-voucher-box" class="hidden">
+          <label class="block font-bold text-gray-300 uppercase mb-1">Voucher del Operador</label>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-ver-voucher-modal" class="px-3 py-1.5 bg-carbon hover:bg-gray-700 text-machinery border border-gray-700 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1">
+              <span>🧾</span> <span>Ver Comprobante Completo</span>
+            </button>
+          </div>
+        </div>
+
+        <div id="pago-comb-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="submit"
+            class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>💾</span> <span>Guardar Conciliación</span>
+          </button>
+          <button type="button" onclick="cerrarModalPagoCombustible()"
             class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700 cursor-pointer">
             Cancelar
           </button>
@@ -5512,21 +5604,7 @@ Cargando reporte de flota...
 
     async function cargarModuloCombustible() {
       try {
-        // 1. Cargar precio de combustible configurado para la zona
-        try {
-          const respPrecio = await fetch('/api/v1/heavy/ajustes/precio-combustible');
-          if (respPrecio.ok) {
-            const dataPrecio = await respPrecio.json();
-            const inputPrecio = document.getElementById('comb-precio-zona-input');
-            if (inputPrecio && dataPrecio.precio_por_galon) {
-              inputPrecio.value = Number(dataPrecio.precio_por_galon).toFixed(2);
-            }
-          }
-        } catch (ePrecio) {
-          console.warn("No se pudo cargar precio de combustible de zona:", ePrecio);
-        }
-
-        // 2. Cargar bitácora de abastecimientos
+        // Cargar bitácora de abastecimientos independientes por operador/flota
         const res = await fetch('/api/v1/heavy/combustible');
         if (!res.ok) throw new Error('Error al obtener cargas de combustible');
         combustibleCache = await res.json();
@@ -5572,8 +5650,9 @@ Cargando reporte de flota...
 
         combustibleCache.forEach(c => {
           const fechaStr = c.fecha_hora ? c.fecha_hora.substring(0, 16).replace('T', ' ') : '-';
-          const precioStr = c.precio_por_galon ? `S/ ${Number(c.precio_por_galon).toFixed(2)}` : '<span class="text-amber-400 font-bold">Por definir</span>';
-          const costoStr = c.costo_total ? `S/ ${Number(c.costo_total).toFixed(2)}` : '<span class="text-gray-500 font-mono">S/ 0.00</span>';
+          const galonesNum = Number(c.galones_cargados || 0);
+          const precioNum = Number(c.precio_por_galon || 0);
+          const costoNum = Number(c.costo_total || 0);
 
           const esKm = (c.tipo_control || '').toUpperCase() === 'KILOMETRAJE';
           const tipoBadge = esKm
@@ -5604,6 +5683,7 @@ Cargando reporte de flota...
 
           const tr = document.createElement('tr');
           tr.className = 'hover:bg-graphiteLight/50 transition';
+          tr.id = `comb-fila-${c.id}`;
           tr.innerHTML = `
             <td class="py-3 px-4 font-mono text-gray-300 font-semibold">${fechaStr}</td>
             <td class="py-3 px-4 font-bold text-white">
@@ -5611,16 +5691,42 @@ Cargando reporte de flota...
               <div class="text-[10px] text-gray-400">${c.placa ? `Placa: ${c.placa}` : (c.equipo_nombre || '')}</div>
             </td>
             <td class="py-3 px-4 text-center">${tipoBadge}</td>
-            <td class="py-3 px-4 text-gray-200">${c.operador_nombre || '-'}</td>
-            <td class="py-3 px-4 text-right font-mono font-bold text-amber-400 text-sm">${Number(c.galones_cargados || 0).toFixed(1)} Gal</td>
+            <td class="py-3 px-4">
+              <div class="text-gray-200 font-bold">${c.operador_nombre || '-'}</div>
+              <div class="text-[10px] text-gray-400">${c.proyecto_nombre || 'En Base'}</div>
+            </td>
+            <td class="py-3 px-4 text-right font-mono font-black text-amber-400 text-sm whitespace-nowrap">
+              ${galonesNum.toFixed(1)} Gal
+            </td>
+            <td class="py-3 px-3 text-center">
+              <div class="inline-flex items-center gap-1 bg-carbon border ${precioNum > 0 ? 'border-gray-700' : 'border-amber-500/80 ring-1 ring-amber-500/30'} focus-within:border-machinery focus-within:ring-1 focus-within:ring-machinery rounded-lg px-2 py-1 transition">
+                <span class="text-xs text-machinery font-bold">S/</span>
+                <input type="number" step="0.01" min="0"
+                  id="precio-comb-${c.id}"
+                  value="${precioNum > 0 ? precioNum.toFixed(2) : ''}"
+                  placeholder="0.00"
+                  title="Ingrese el precio por galón pagado para este abastecimiento"
+                  class="w-16 bg-transparent text-white font-mono font-bold text-xs text-right focus:outline-none placeholder-gray-500"
+                  onchange="actualizarPrecioCombustibleDirecto(${c.id}, this.value, ${galonesNum})"
+                  onkeydown="if(event.key==='Enter') this.blur();">
+                <button type="button" onclick="guardarPrecioDesdeBoton(${c.id}, ${galonesNum})"
+                  title="Guardar precio de este abastecimiento"
+                  id="btn-save-precio-${c.id}"
+                  class="text-xs text-gray-400 hover:text-emerald-400 transition cursor-pointer p-0.5">
+                  💾
+                </button>
+              </div>
+              <div id="precio-msg-${c.id}" class="text-[10px] text-emerald-400 font-bold hidden mt-0.5 text-center">✓ Guardado</div>
+            </td>
+            <td class="py-3 px-4 text-right font-mono font-black text-emerald-400 text-sm whitespace-nowrap" id="total-comb-celda-${c.id}">
+              S/ ${costoNum.toFixed(2)}
+            </td>
             <td class="py-3 px-4 text-center">${rendimientoHtml}</td>
-            <td class="py-3 px-4 text-right font-mono text-gray-300">${precioStr}</td>
-            <td class="py-3 px-4 text-right font-mono font-bold text-emerald-400 text-sm">${costoStr}</td>
             <td class="py-3 px-4 text-center">${voucherBtn}</td>
-            <td class="py-3 px-4 text-center">${estadoBadge}</td>
-            <td class="py-3 px-4 font-mono text-xs text-gray-300">${c.numero_operacion_pago || '<span class="text-gray-500">-</span>'}</td>
+            <td class="py-3 px-4 text-center" id="estado-pago-celda-${c.id}">${estadoBadge}</td>
+            <td class="py-3 px-4 font-mono text-xs text-gray-300" id="nro-op-celda-${c.id}">${c.numero_operacion_pago || '<span class="text-gray-500">-</span>'}</td>
             <td class="py-3 px-4 text-center">
-              <button onclick="abrirModalPagoCombustible(${c.id}, '${c.equipo_codigo || ''}', '${fechaStr}', ${c.galones_cargados || 0}, ${c.precio_por_galon || 0}, ${c.costo_total || 0}, '${c.estado_pago || 'pendiente'}', '${c.numero_operacion_pago || ''}', '${c.observaciones_pago || ''}', '${c.foto_comprobante || ''}')" class="px-2.5 py-1 bg-graphiteLight hover:bg-emerald-600 hover:text-white text-emerald-400 text-xs font-bold rounded border border-gray-700 transition cursor-pointer flex items-center gap-1 mx-auto">
+              <button onclick="abrirModalPagoCombustible(${c.id})" class="px-2.5 py-1 bg-graphiteLight hover:bg-emerald-600 hover:text-white text-emerald-400 text-xs font-bold rounded border border-gray-700 transition cursor-pointer flex items-center gap-1 mx-auto">
                 <span>💳</span> <span>Conciliar Pago</span>
               </button>
             </td>
@@ -5633,24 +5739,212 @@ Cargando reporte de flota...
       }
     }
 
-    async function guardarPrecioCombustibleZona() {
-      const input = document.getElementById('comb-precio-zona-input');
-      const val = parseFloat(input.value);
-      if (!val || val <= 0) {
-        alert("Por favor ingrese un precio válido por galón.");
-        return;
+    async function actualizarPrecioCombustibleDirecto(combustibleId, nuevoPrecioStr, galones) {
+      const precio = parseFloat(nuevoPrecioStr) || 0.0;
+      const gal = parseFloat(galones) || 0.0;
+      const nuevoTotal = Math.round(gal * precio * 100) / 100;
+
+      // Actualizar inmediatamente en el DOM para feedback instantáneo
+      const celdaTotal = document.getElementById(`total-comb-celda-${combustibleId}`);
+      if (celdaTotal) {
+        celdaTotal.textContent = `S/ ${nuevoTotal.toFixed(2)}`;
       }
+
+      const input = document.getElementById(`precio-comb-${combustibleId}`);
+      const btn = document.getElementById(`btn-save-precio-${combustibleId}`);
+      const msg = document.getElementById(`precio-msg-${combustibleId}`);
+
       try {
-        const resp = await fetch('/api/v1/heavy/ajustes/precio-combustible', {
-          method: 'POST',
+        if (btn) btn.textContent = '⏳';
+        const resp = await fetch(`/api/v1/heavy/combustible/${combustibleId}/precio`, {
+          method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ precio_por_galon: val, zona: 'Jaén / Obra Central' })
+          body: JSON.stringify({ precio_por_galon: precio })
         });
-        if (!resp.ok) throw new Error("Error al guardar precio en el servidor");
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Error actualizando precio');
+        }
         const res = await resp.json();
-        alert(`✅ ${res.mensaje || 'Precio actualizado con éxito'}`);
+
+        // Actualizar item en cache
+        const item = combustibleCache.find(x => x.id === combustibleId);
+        if (item) {
+          item.precio_por_galon = res.precio_por_galon;
+          item.costo_total = res.costo_total;
+        }
+
+        // Quitar highlight de alerta si ya tiene precio
+        if (input && input.parentElement) {
+          if (precio > 0) {
+            input.parentElement.classList.remove('border-amber-500/80', 'ring-1', 'ring-amber-500/30');
+            input.parentElement.classList.add('border-gray-700');
+          }
+        }
+
+        if (btn) btn.textContent = '✅';
+        if (msg) {
+          msg.textContent = '✓ Guardado';
+          msg.classList.remove('hidden');
+          setTimeout(() => {
+            msg.classList.add('hidden');
+            if (btn) btn.textContent = '💾';
+          }, 2000);
+        }
+
+        recalcularKPIsCombustible();
+
       } catch (err) {
-        alert(`❌ Error: ${err.message}`);
+        console.error("Error al actualizar precio:", err);
+        if (btn) btn.textContent = '❌';
+        if (msg) {
+          msg.textContent = 'Error al guardar';
+          msg.className = 'text-[10px] text-red-400 font-bold mt-0.5 text-center';
+          msg.classList.remove('hidden');
+        }
+        alert(`❌ Error al guardar precio: ${err.message}`);
+      }
+    }
+
+    function guardarPrecioDesdeBoton(combustibleId, galones) {
+      const input = document.getElementById(`precio-comb-${combustibleId}`);
+      if (input) {
+        actualizarPrecioCombustibleDirecto(combustibleId, input.value, galones);
+      }
+    }
+
+    function recalcularKPIsCombustible() {
+      let totalGal = 0;
+      let totalPendiente = 0;
+      let totalPagado = 0;
+      let totalSoles = 0;
+
+      combustibleCache.forEach(c => {
+        const gal = Number(c.galones_cargados) || 0;
+        const sol = Number(c.costo_total) || 0;
+        totalGal += gal;
+        totalSoles += sol;
+        if (c.estado_pago === 'pagado') {
+          totalPagado += sol;
+        } else {
+          totalPendiente += sol;
+        }
+      });
+
+      const elGal = document.getElementById('comb-kpi-galones');
+      const elPen = document.getElementById('comb-kpi-pendiente');
+      const elPag = document.getElementById('comb-kpi-pagado');
+      const elTot = document.getElementById('comb-kpi-total');
+
+      if (elGal) elGal.textContent = `${totalGal.toLocaleString('es-PE', { minimumFractionDigits: 1, maximumFractionDigits: 1 })} Gal`;
+      if (elPen) elPen.textContent = `S/ ${totalPendiente.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      if (elPag) elPag.textContent = `S/ ${totalPagado.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      if (elTot) elTot.textContent = `S/ ${totalSoles.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    function abrirModalPagoCombustible(combustibleId) {
+      const c = combustibleCache.find(x => x.id === combustibleId);
+      if (!c) return;
+
+      document.getElementById('pago-comb-id').value = c.id;
+      document.getElementById('pago-comb-equipo').textContent = `${c.equipo_codigo || '-'} (${c.placa ? 'Placa: ' + c.placa : (c.equipo_nombre || '')})`;
+      document.getElementById('pago-comb-fecha').textContent = c.fecha_hora ? c.fecha_hora.substring(0, 16).replace('T', ' ') : '-';
+      document.getElementById('pago-comb-galones-badge').textContent = `${Number(c.galones_cargados || 0).toFixed(1)} Gal (${c.operador_nombre || 'Operador'})`;
+
+      const precio = Number(c.precio_por_galon || 0);
+      const total = Number(c.costo_total || 0);
+
+      document.getElementById('pago-comb-precio').value = precio > 0 ? precio.toFixed(2) : '';
+      document.getElementById('pago-comb-total').value = total > 0 ? total.toFixed(2) : '';
+      document.getElementById('pago-comb-estado').value = c.estado_pago || 'pendiente';
+      document.getElementById('pago-comb-nro-operacion').value = (c.numero_operacion_pago && c.numero_operacion_pago !== '-') ? c.numero_operacion_pago : '';
+      document.getElementById('pago-comb-obs').value = c.observaciones_pago || '';
+
+      const voucherBox = document.getElementById('pago-comb-voucher-box');
+      const btnVoucher = document.getElementById('btn-ver-voucher-modal');
+      if (c.foto_comprobante && c.foto_comprobante.length > 20) {
+        voucherBox.classList.remove('hidden');
+        btnVoucher.onclick = () => verFotoComprobanteModal(c.foto_comprobante);
+      } else {
+        voucherBox.classList.add('hidden');
+      }
+
+      const errBox = document.getElementById('pago-comb-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const modal = document.getElementById('modal-pago-combustible');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalPagoCombustible() {
+      const modal = document.getElementById('modal-pago-combustible');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function recalcularTotalModalPago() {
+      const cId = parseInt(document.getElementById('pago-comb-id').value);
+      const c = combustibleCache.find(x => x.id === cId);
+      const gal = c ? Number(c.galones_cargados || 0) : 0;
+      const precio = parseFloat(document.getElementById('pago-comb-precio').value) || 0;
+      const tot = Math.round(gal * precio * 100) / 100;
+      document.getElementById('pago-comb-total').value = tot.toFixed(2);
+    }
+
+    async function guardarConciliacionPagoSubmit(e) {
+      e.preventDefault();
+      const cId = parseInt(document.getElementById('pago-comb-id').value);
+      const precio = parseFloat(document.getElementById('pago-comb-precio').value) || 0.0;
+      const total = parseFloat(document.getElementById('pago-comb-total').value) || 0.0;
+      const estado = document.getElementById('pago-comb-estado').value;
+      const nroOp = document.getElementById('pago-comb-nro-operacion').value.trim() || null;
+      const obs = document.getElementById('pago-comb-obs').value.trim() || null;
+      const errBox = document.getElementById('pago-comb-error');
+
+      try {
+        const resp = await fetch(`/api/v1/heavy/combustible/${cId}/pago`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            precio_por_galon: precio,
+            costo_total: total,
+            estado_pago: estado,
+            numero_operacion_pago: nroOp,
+            observaciones_pago: obs
+          })
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Error registrando conciliación de pago');
+        }
+
+        const res = await resp.json();
+
+        // Actualizar item en cache
+        const item = combustibleCache.find(x => x.id === cId);
+        if (item) {
+          item.precio_por_galon = res.precio_por_galon;
+          item.costo_total = res.costo_total;
+          item.estado_pago = res.estado_pago;
+          item.numero_operacion_pago = res.numero_operacion_pago;
+          item.observaciones_pago = obs;
+        }
+
+        cerrarModalPagoCombustible();
+        await cargarModuloCombustible();
+        alert(`✅ Conciliación registrada exitosamente (Total: S/ ${total.toFixed(2)})`);
+
+      } catch (err) {
+        if (errBox) {
+          errBox.textContent = err.message;
+          errBox.classList.remove('hidden');
+        } else {
+          alert(`❌ Error: ${err.message}`);
+        }
       }
     }
 
@@ -5679,10 +5973,8 @@ Cargando reporte de flota...
         });
       }
 
-      // Pre-llenar precio de la zona
-      const inputZona = document.getElementById('comb-precio-zona-input');
-      const precioZona = inputZona ? parseFloat(inputZona.value) || 17.50 : 17.50;
-      document.getElementById('direct-comb-precio').value = precioZona.toFixed(2);
+      // Valores iniciales
+      document.getElementById('direct-comb-precio').value = '';
       document.getElementById('direct-comb-galones').value = '';
       document.getElementById('direct-comb-total-badge').textContent = 'S/ 0.00';
       document.getElementById('direct-comb-voucher').value = '';
@@ -5736,7 +6028,7 @@ Cargando reporte de flota...
       const equipoId = parseInt(document.getElementById('direct-comb-equipo').value);
       const opId = parseInt(document.getElementById('direct-comb-operador').value) || null;
       const gal = parseFloat(document.getElementById('direct-comb-galones').value) || 0;
-      const precio = parseFloat(document.getElementById('direct-comb-precio').value) || 17.50;
+      const precio = parseFloat(document.getElementById('direct-comb-precio').value) || 0.0;
       const lectura = parseFloat(document.getElementById('direct-comb-lectura').value) || 0;
       const voucherNum = document.getElementById('direct-comb-voucher').value.trim() || null;
       const estado = document.getElementById('direct-comb-estado').value;

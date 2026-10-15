@@ -28,7 +28,7 @@ from app.schemas.heavytrack import (
     TelemetriaGPSRequest, ActualizarCombustibleTurno,
     ConfigurarMantenimientoEquipoRequest, ActualizarPagoCombustibleRequest,
     PrecioCombustibleRequest, RegistroCombustibleDirectoRequest,
-    MantenimientoEfectuadoRequest
+    MantenimientoEfectuadoRequest, ActualizarPrecioCombustibleRapidoRequest
 )
 from app.services.heavytrack_service import HeavyTrackService
 
@@ -496,6 +496,8 @@ def listar_registros_combustible(db: Session = Depends(get_db)):
         turno = None
         if r.uuid_local and r.uuid_local.startswith("comb-"):
             turno_uuid = r.uuid_local.replace("comb-", "")
+            if turno_uuid.startswith("checkout-"):
+                turno_uuid = turno_uuid.replace("checkout-", "")
             turno = db.query(TurnoOperacion).filter(TurnoOperacion.uuid_local == turno_uuid).first()
 
         rendimiento_str = "-"
@@ -599,6 +601,53 @@ def registrar_pago_combustible(
         "estado_pago": comb.estado_pago,
         "numero_operacion_pago": comb.numero_operacion_pago
     }
+
+
+@router.put("/combustible/{combustible_id}/precio")
+def actualizar_precio_combustible_rapido(
+    combustible_id: int,
+    payload: ActualizarPrecioCombustibleRapidoRequest,
+    db: Session = Depends(get_db)
+):
+    """
+    Permite al Encargado de Flota ingresar o ajustar el precio del combustible por galón
+    de manera independiente y directa para cada abastecimiento de operador.
+    Calcula automáticamente el total en soles y sincroniza con el turno correspondiente si aplica.
+    """
+    comb = db.query(ControlCombustible).filter(ControlCombustible.id == combustible_id).first()
+    if not comb:
+        raise HTTPException(status_code=404, detail="Registro de combustible no encontrado")
+
+    precio = round(float(payload.precio_por_galon or 0.0), 2)
+    galones = float(comb.galones_cargados or 0.0)
+    total = round(galones * precio, 2)
+
+    comb.precio_por_galon = precio
+    comb.costo_total = total
+
+    # Si hay turno asociado, sincronizar valorización
+    if comb.uuid_local and comb.uuid_local.startswith("comb-"):
+        turno_uuid = comb.uuid_local.replace("comb-", "")
+        if turno_uuid.startswith("checkout-"):
+            turno_uuid = turno_uuid.replace("checkout-", "")
+        turno = db.query(TurnoOperacion).filter(TurnoOperacion.uuid_local == turno_uuid).first()
+        if turno:
+            turno.combustible_precio_galon = precio
+            turno.combustible_total_soles = total
+
+    db.commit()
+    db.refresh(comb)
+
+    return {
+        "success": True,
+        "mensaje": f"Precio registrado: S/ {precio:.2f}/gal (Total: S/ {total:.2f})",
+        "combustible_id": comb.id,
+        "galones": comb.galones_cargados,
+        "precio_por_galon": comb.precio_por_galon,
+        "costo_total": comb.costo_total,
+        "estado_pago": comb.estado_pago
+    }
+
 
 
 @router.get("/ajustes/precio-combustible")

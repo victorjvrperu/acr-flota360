@@ -141,10 +141,9 @@ class HeavyTrackService:
             galones_in = getattr(turno_in, "combustible_galones", 0.0) or 0.0
             abastecio = getattr(turno_in, "abastecio_combustible", False) or (galones_in > 0)
             if abastecio and galones_in > 0:
-                precio_in = getattr(turno_in, "combustible_precio_galon", 0.0) or 0.0
-                if precio_in <= 0:
-                    aj_precio = db.query(AjusteSistema).filter(AjusteSistema.clave == "precio_combustible_zona").first()
-                    precio_in = float(aj_precio.valor) if aj_precio and aj_precio.valor else 17.50
+                precio_in = float(getattr(turno_in, "combustible_precio_galon", 0.0) or 0.0)
+                if precio_in < 0:
+                    precio_in = 0.0
                 turno.combustible_galones = galones_in
                 turno.combustible_precio_galon = precio_in
                 total_in = getattr(turno_in, "combustible_total_soles", 0.0) or round(galones_in * precio_in, 2)
@@ -271,9 +270,8 @@ class HeavyTrackService:
                 comb_rec = db.query(ControlCombustible).filter(ControlCombustible.uuid_local == uuid_cout).first()
                 if not comb_rec:
                     precio_c = float(getattr(out, "combustible_precio_galon", 0.0) or 0.0)
-                    if precio_c <= 0:
-                        aj_p = db.query(AjusteSistema).filter(AjusteSistema.clave == "precio_combustible_zona").first()
-                        precio_c = float(aj_p.valor) if aj_p and aj_p.valor else 17.50
+                    if precio_c < 0:
+                        precio_c = 0.0
                     costo_c = round(gal_out * precio_c, 2)
                     eq_act = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == turno.equipo_id).first()
                     lect_t = getattr(out, "kilometraje_fin", 0.0) if (eq_act and (eq_act.tipo_control or '').upper() == 'KILOMETRAJE') else (out.horometro_fin or 0.0)
@@ -405,10 +403,9 @@ class HeavyTrackService:
                 ))
                 continue
 
-            precio_gal = getattr(c, "precio_por_galon", 0.0) or 0.0
-            if precio_gal <= 0:
-                aj_p = db.query(AjusteSistema).filter(AjusteSistema.clave == "precio_combustible_zona").first()
-                precio_gal = float(aj_p.valor) if aj_p and aj_p.valor else 17.50
+            precio_gal = float(getattr(c, "precio_por_galon", 0.0) or 0.0)
+            if precio_gal < 0:
+                precio_gal = 0.0
 
             total_comb = getattr(c, "costo_total", 0.0) or round((c.galones_cargados or 0.0) * precio_gal, 2)
 
