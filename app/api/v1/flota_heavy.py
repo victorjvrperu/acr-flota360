@@ -24,6 +24,7 @@ from app.schemas.heavytrack import (
     VerificarAccesoRequest, CambiarClaveRequest,
     OrdenMantenimientoCreate, OrdenMantenimientoResponse,
     InventarioRepuestoCreate, InventarioRepuestoResponse,
+    InventarioRepuestoUpdate, AjusteStockRepuestoRequest,
     ProveedorCreate, ProveedorResponse,
     TelemetriaGPSRequest, ActualizarCombustibleTurno,
     ConfigurarMantenimientoEquipoRequest, ActualizarPagoCombustibleRequest,
@@ -868,7 +869,98 @@ def crear_orden_mantenimiento(payload: dict, db: Session = Depends(get_db)):
 
 @router.get("/repuestos", response_model=List[InventarioRepuestoResponse])
 def listar_repuestos(db: Session = Depends(get_db)):
-    return db.query(InventarioRepuesto).all()
+    """Lista todos los repuestos y filtros registrados en el almacén central."""
+    return db.query(InventarioRepuesto).order_by(InventarioRepuesto.id.desc()).all()
+
+
+@router.post("/repuestos", response_model=InventarioRepuestoResponse, status_code=status.HTTP_201_CREATED)
+def crear_repuesto(payload: InventarioRepuestoCreate, db: Session = Depends(get_db)):
+    """Registra un nuevo repuesto o filtro en el almacén de mantenimiento."""
+    cod = payload.codigo_parte.strip().upper()
+    existente = db.query(InventarioRepuesto).filter(InventarioRepuesto.codigo_parte == cod).first()
+    if existente:
+        raise HTTPException(status_code=400, detail=f"El repuesto con código '{cod}' ya está registrado en almacén.")
+    
+    nuevo = InventarioRepuesto(
+        codigo_parte=cod,
+        nombre=payload.nombre.strip(),
+        categoria=payload.categoria.strip(),
+        stock_actual=max(0, payload.stock_actual),
+        stock_minimo=max(1, payload.stock_minimo),
+        precio_unitario=max(0.0, float(payload.precio_unitario)),
+        ubicacion_almacen=payload.ubicacion_almacen.strip() if payload.ubicacion_almacen else "Bahía Central"
+    )
+    db.add(nuevo)
+    db.commit()
+    db.refresh(nuevo)
+    return nuevo
+
+
+@router.put("/repuestos/{repuesto_id}", response_model=InventarioRepuestoResponse)
+def actualizar_repuesto(repuesto_id: int, payload: InventarioRepuestoUpdate, db: Session = Depends(get_db)):
+    """Actualiza los datos de un repuesto en el almacén."""
+    repuesto = db.query(InventarioRepuesto).filter(InventarioRepuesto.id == repuesto_id).first()
+    if not repuesto:
+        raise HTTPException(status_code=404, detail="Repuesto no encontrado.")
+
+    if payload.codigo_parte:
+        cod = payload.codigo_parte.strip().upper()
+        if cod != repuesto.codigo_parte:
+            dup = db.query(InventarioRepuesto).filter(InventarioRepuesto.codigo_parte == cod).first()
+            if dup:
+                raise HTTPException(status_code=400, detail=f"El código '{cod}' ya pertenece a otro repuesto.")
+            repuesto.codigo_parte = cod
+
+    if payload.nombre is not None:
+        repuesto.nombre = payload.nombre.strip()
+    if payload.categoria is not None:
+        repuesto.categoria = payload.categoria.strip()
+    if payload.stock_actual is not None:
+        repuesto.stock_actual = max(0, payload.stock_actual)
+    if payload.stock_minimo is not None:
+        repuesto.stock_minimo = max(1, payload.stock_minimo)
+    if payload.precio_unitario is not None:
+        repuesto.precio_unitario = max(0.0, float(payload.precio_unitario))
+    if payload.ubicacion_almacen is not None:
+        repuesto.ubicacion_almacen = payload.ubicacion_almacen.strip()
+
+    db.commit()
+    db.refresh(repuesto)
+    return repuesto
+
+
+@router.post("/repuestos/{repuesto_id}/ajustar-stock")
+def ajustar_stock_repuesto(repuesto_id: int, payload: AjusteStockRepuestoRequest, db: Session = Depends(get_db)):
+    """Permite registrar ingreso (+ compra/adquisición) o salida (- mantenimiento a máquina) de stock."""
+    repuesto = db.query(InventarioRepuesto).filter(InventarioRepuesto.id == repuesto_id).first()
+    if not repuesto:
+        raise HTTPException(status_code=404, detail="Repuesto no encontrado.")
+
+    nuevo_stock = repuesto.stock_actual + payload.cantidad
+    if nuevo_stock < 0:
+        raise HTTPException(status_code=400, detail=f"Stock insuficiente. Stock actual disponible: {repuesto.stock_actual}")
+
+    repuesto.stock_actual = nuevo_stock
+    db.commit()
+    db.refresh(repuesto)
+    return {
+        "success": True,
+        "mensaje": f"Stock actualizado para {repuesto.codigo_parte}: {repuesto.stock_actual} unidades ({'+' if payload.cantidad > 0 else ''}{payload.cantidad})",
+        "stock_actual": repuesto.stock_actual,
+        "id": repuesto.id
+    }
+
+
+@router.delete("/repuestos/{repuesto_id}")
+def eliminar_repuesto(repuesto_id: int, db: Session = Depends(get_db)):
+    """Elimina un repuesto del almacén."""
+    repuesto = db.query(InventarioRepuesto).filter(InventarioRepuesto.id == repuesto_id).first()
+    if not repuesto:
+        raise HTTPException(status_code=404, detail="Repuesto no encontrado.")
+
+    db.delete(repuesto)
+    db.commit()
+    return {"success": True, "mensaje": f"Repuesto {repuesto.codigo_parte} eliminado exitosamente."}
 
 
 @router.get("/proveedores", response_model=List[ProveedorResponse])

@@ -403,6 +403,21 @@ class InventarioRepuestoCreate(InventarioRepuestoBase):
     pass
 
 
+class InventarioRepuestoUpdate(BaseModel):
+    codigo_parte: Optional[str] = None
+    nombre: Optional[str] = None
+    categoria: Optional[str] = None
+    stock_actual: Optional[int] = None
+    stock_minimo: Optional[int] = None
+    precio_unitario: Optional[float] = None
+    ubicacion_almacen: Optional[str] = None
+
+
+class AjusteStockRepuestoRequest(BaseModel):
+    cantidad: int  # Positivo para entrada (+ compra), negativo para salida (- mantenimiento)
+    motivo: Optional[str] = "Ingreso para mantenimiento / stock de taller"
+
+
 class InventarioRepuestoResponse(InventarioRepuestoBase):
     id: int
     creado_en: datetime

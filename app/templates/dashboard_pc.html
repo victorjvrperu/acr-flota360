@@ -828,7 +828,7 @@
                 <th class="py-3.5 px-4 text-center">Δ Horas Efectivas</th>
                 <th class="py-3.5 px-4 text-center">Combustible</th>
                 <th class="py-3.5 px-4 text-center">Ratio (Gal/h)</th>
-                <th class="py-3.5 px-4">Novedad / Cierre</th>
+                <th class="py-3.5 px-4">Novedad / Fotos 360°</th>
                 <th class="py-3.5 px-4 text-center">Estado</th>
               </tr>
             </thead>
@@ -951,31 +951,104 @@
       </div>
 
       <!-- SECCIÓN: ALMACÉN Y CONTROL DE REPUESTOS -->
-      <div id="seccion-almacen" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden">
-        <div class="flex items-center justify-between mb-4">
+      <div id="seccion-almacen" class="tab-seccion bg-graphite border border-gray-800 rounded-xl p-6 hidden space-y-6">
+        <!-- Encabezado con Botones de Acción -->
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h3 class="text-lg font-black text-white uppercase tracking-wide flex items-center gap-2">
+            <div class="flex items-center gap-2.5">
               <span class="w-3 h-3 bg-machinery rounded-sm"></span>
-              Almacén de Repuestos & Filtros Críticos
-            </h3>
-            <p class="text-xs text-gray-400">Control de stock mínimo, ubicación en taller y costos unitarios</p>
+              <h3 class="text-lg font-black text-white uppercase tracking-wide">
+                Almacén de Repuestos & Filtros Críticos
+              </h3>
+              <span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+                📦 Inventario Central
+              </span>
+            </div>
+            <p class="text-xs text-gray-400 mt-1">
+              Control de stock mínimo, reposición para mantenimientos preventivos, ubicación en taller y valorización de inventario
+            </p>
+          </div>
+          <div class="flex items-center gap-2.5 flex-wrap">
+            <button onclick="abrirModalNuevoRepuesto()"
+              class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-carbon rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20 cursor-pointer">
+              <span>➕</span> + Registrar Repuesto / Filtro
+            </button>
+            <button onclick="cargarTablaRepuestos()"
+              class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
+              🔄 Refrescar
+            </button>
           </div>
         </div>
+
+        <!-- KPIs Resumen de Almacén -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Total Ítems en Catálogo</div>
+            <div id="rep-kpi-total-items" class="text-2xl font-black text-machinery mt-1">0</div>
+            <div class="text-[10px] text-gray-500">Repuestos y filtros registrados</div>
+          </div>
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Stock Bajo / Alerta Crítica</div>
+            <div id="rep-kpi-criticos" class="text-2xl font-black text-amber-400 mt-1">0</div>
+            <div class="text-[10px] text-amber-400/80">Stock menor o igual al mínimo</div>
+          </div>
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Unidades Totales</div>
+            <div id="rep-kpi-total-unidades" class="text-2xl font-black text-emerald-400 mt-1">0 und</div>
+            <div class="text-[10px] text-gray-500">Conteo físico acumulado</div>
+          </div>
+          <div class="bg-carbon border border-gray-800 rounded-xl p-4">
+            <div class="text-[11px] text-gray-400 font-bold uppercase">Valorización del Almacén</div>
+            <div id="rep-kpi-valor-total" class="text-2xl font-black text-white mt-1">S/ 0.00</div>
+            <div class="text-[10px] text-gray-500">Capital en repuestos y fluidos</div>
+          </div>
+        </div>
+
+        <!-- Barra de Filtros y Búsqueda -->
+        <div class="bg-carbon p-4 rounded-xl border border-gray-800 flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div class="relative w-full md:w-96">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">🔍</span>
+            <input type="text" id="filtro-repuesto-busqueda" oninput="filtrarRepuestos()"
+              placeholder="Buscar por código, descripción o bahía..."
+              class="w-full bg-graphite border border-gray-700 rounded-xl pl-9 pr-3 py-2 text-white text-xs font-medium focus:border-machinery focus:outline-none placeholder-gray-500">
+          </div>
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <label class="text-xs text-gray-400 font-bold uppercase shrink-0">Categoría:</label>
+            <select id="filtro-repuesto-categoria" onchange="filtrarRepuestos()"
+              class="bg-graphite border border-gray-700 rounded-xl px-3 py-2 text-white text-xs font-bold focus:border-machinery focus:outline-none">
+              <option value="">Todas las Categorías</option>
+              <option value="Filtros">Filtros (Aceite, Petróleo, Aire)</option>
+              <option value="Lubricantes">Lubricantes & Fluidos</option>
+              <option value="Desgaste">Elementos de Desgaste (Cuchillas, Puntas)</option>
+              <option value="Tren de Rodaje">Tren de Rodaje / Orugas</option>
+              <option value="Hidráulico">Sistema Hidráulico (Mangueras, Sellos)</option>
+              <option value="Motor">Motor & Componentes</option>
+              <option value="Eléctrico">Sistema Eléctrico & Baterías</option>
+              <option value="Otros">Otros Repuestos</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Tabla: Catálogo de Repuestos -->
         <div class="overflow-x-auto rounded-lg border border-gray-800">
-          <table class="w-full text-left text-sm text-gray-300">
-            <thead
-              class="bg-carbon text-gray-400 uppercase text-[11px] font-bold tracking-wider border-b border-gray-800">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-carbon text-gray-400 uppercase font-semibold border-b border-gray-800">
               <tr>
-                <th class="py-3.5 px-4">Código de Parte</th>
-                <th class="py-3.5 px-4">Descripción de Repuesto</th>
-                <th class="py-3.5 px-4">Categoría</th>
-                <th class="py-3.5 px-4 text-center">Stock Actual / Mínimo</th>
-                <th class="py-3.5 px-4 text-right">Precio Unitario</th>
-                <th class="py-3.5 px-4">Ubicación Bahía</th>
+                <th class="py-3 px-4">Código de Parte</th>
+                <th class="py-3 px-4">Descripción de Repuesto</th>
+                <th class="py-3 px-4">Categoría</th>
+                <th class="py-3 px-4 text-center">Stock Actual / Mínimo</th>
+                <th class="py-3 px-4 text-right">Precio Unitario</th>
+                <th class="py-3 px-4 text-right">Valorización Total</th>
+                <th class="py-3 px-4">Ubicación Bahía</th>
+                <th class="py-3 px-4 text-center">Ajuste de Stock</th>
+                <th class="py-3 px-4 text-center">Acciones</th>
               </tr>
             </thead>
             <tbody id="tabla-repuestos-body" class="divide-y divide-gray-800 font-medium">
-              <!-- Dinámico -->
+              <tr>
+                <td colspan="9" class="py-8 text-center text-gray-500 font-medium">Cargando inventario de repuestos...</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -2490,6 +2563,329 @@
     </div>
   </div>
 
+  <!-- MODAL: REGISTRAR / EDITAR REPUESTO EN ALMACÉN -->
+  <div id="modal-repuesto"
+    class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
+            📦
+          </div>
+          <div>
+            <h3 id="modal-repuesto-titulo" class="text-base font-black text-white uppercase">Registrar Repuesto / Filtro</h3>
+            <p class="text-[11px] text-gray-400">Control de inventario de taller y stock para mantenimientos</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalRepuesto()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
+      </div>
+
+      <form id="form-repuesto" onsubmit="guardarRepuestoSubmit(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="repuesto-id" value="">
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Código de Parte / OEM *</label>
+            <input type="text" id="repuesto-codigo" required placeholder="Ej: CAT-1R-0716 o LF16015"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold text-xs focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Categoría *</label>
+            <select id="repuesto-categoria" required
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold text-xs focus:border-machinery focus:outline-none">
+              <option value="Filtros">Filtros (Aceite, Petróleo, Aire)</option>
+              <option value="Lubricantes">Lubricantes & Fluidos</option>
+              <option value="Desgaste">Elementos de Desgaste</option>
+              <option value="Tren de Rodaje">Tren de Rodaje / Orugas</option>
+              <option value="Hidráulico">Sistema Hidráulico</option>
+              <option value="Motor">Motor & Componentes</option>
+              <option value="Eléctrico">Sistema Eléctrico & Baterías</option>
+              <option value="Otros">Otros</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Descripción del Repuesto / Filtro *</label>
+          <input type="text" id="repuesto-nombre" required placeholder="Ej: Filtro de Aceite Primario CAT 336 / Volvo D13"
+            class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold text-xs focus:border-machinery focus:outline-none">
+        </div>
+
+        <div class="grid grid-cols-3 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Stock Actual *</label>
+            <input type="number" min="0" id="repuesto-stock-actual" required placeholder="0"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-emerald-400 font-mono font-black text-sm text-center focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Stock Mínimo *</label>
+            <input type="number" min="1" id="repuesto-stock-minimo" required value="4"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-amber-400 font-mono font-black text-sm text-center focus:border-machinery focus:outline-none">
+          </div>
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Precio Unit. (S/.) *</label>
+            <input type="number" step="0.01" min="0" id="repuesto-precio" required placeholder="0.00"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold text-sm text-right focus:border-machinery focus:outline-none">
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Ubicación en Almacén / Bahía</label>
+          <input type="text" id="repuesto-ubicacion" placeholder="Ej: Estante B-03, Taller Central o Patio Lubricantes"
+            class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:border-machinery focus:outline-none">
+        </div>
+
+        <div id="repuesto-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="submit"
+            class="flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>💾</span> <span>Guardar en Almacén</span>
+          </button>
+          <button type="button" onclick="cerrarModalRepuesto()"
+            class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700 cursor-pointer">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: AJUSTE RÁPIDO DE STOCK (ENTRADA / SALIDA) -->
+  <div id="modal-ajuste-stock"
+    class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border-2 border-machinery/60 rounded-3xl max-w-md w-full p-6 relative space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+            🔄
+          </div>
+          <div>
+            <h3 class="text-base font-black text-white uppercase">Movimiento de Stock</h3>
+            <p class="text-[11px] text-gray-400" id="ajuste-repuesto-subtitulo">Entrada de compras o salida para mantenimiento</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalAjusteStock()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
+      </div>
+
+      <form id="form-ajuste-stock" onsubmit="guardarAjusteStockSubmit(event)" class="space-y-3.5 text-xs">
+        <input type="hidden" id="ajuste-repuesto-id">
+
+        <div class="bg-carbon/80 p-3 rounded-xl border border-gray-800 flex justify-between items-center">
+          <div>
+            <div id="ajuste-repuesto-codigo" class="font-mono font-bold text-machinery text-sm">CAT-1R-0716</div>
+            <div id="ajuste-repuesto-nombre" class="text-gray-300 text-xs mt-0.5">Filtro de Aceite CAT</div>
+          </div>
+          <div class="text-right">
+            <span class="text-gray-400 text-[10px] block">Stock Actual:</span>
+            <span id="ajuste-repuesto-stock-badge" class="font-mono font-black text-emerald-400 text-base">14 und</span>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Tipo de Movimiento *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="btn-mov-entrada" onclick="seleccionarTipoMovimiento('entrada')"
+              class="py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-emerald-950 text-emerald-300 border-emerald-600">
+              <span>➕</span> Entrada / Compra
+            </button>
+            <button type="button" id="btn-mov-salida" onclick="seleccionarTipoMovimiento('salida')"
+              class="py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white">
+              <span>➖</span> Salida Mantenimiento
+            </button>
+          </div>
+          <input type="hidden" id="ajuste-tipo-movimiento" value="entrada">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Cantidad de Unidades *</label>
+          <input type="number" min="1" id="ajuste-cantidad" required placeholder="Ej: 5"
+            class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-white font-mono font-black text-xl text-center rounded-xl py-2 px-3 focus:outline-none">
+        </div>
+
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Motivo / Destino / Máquina</label>
+          <input type="text" id="ajuste-motivo" placeholder="Ej: Compra de lote grifo / Instalado en Excavadora CAT 336"
+            class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:border-machinery focus:outline-none">
+        </div>
+
+        <div id="ajuste-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+
+        <div class="pt-2 flex gap-2">
+          <button type="submit"
+            class="flex-1 py-3 bg-machinery hover:bg-machineryHover text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-machinery/25 flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>💾</span> <span>Confirmar Movimiento</span>
+          </button>
+          <button type="button" onclick="cerrarModalAjusteStock()"
+            class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700 cursor-pointer">
+            Cancelar
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: INSPECCIÓN 360° (4 FOTOS CHECK-IN & 4 FOTOS CHECK-OUT) -->
+  <div id="modal-inspeccion-360"
+    class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border-2 border-emerald-500/50 rounded-3xl max-w-4xl w-full p-6 relative space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+      
+      <!-- Encabezado -->
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
+            📸
+          </div>
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-base font-black text-white uppercase tracking-wider">
+                Inspección 360° de Maquinaria
+              </h3>
+              <span id="insp-360-equipo-badge" class="px-2.5 py-0.5 rounded text-xs font-black bg-machinery text-carbon">CAT 336</span>
+            </div>
+            <p class="text-[11px] text-gray-400 mt-0.5" id="insp-360-subtitulo">
+              4 vistas obligatorias (Delantera, Trasera, Izquierda, Derecha) registradas por el operador en campo
+            </p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalInspeccion360()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer transition">&times;</button>
+      </div>
+
+      <!-- Selector de Momento: Check-In vs Check-Out -->
+      <div class="flex items-center justify-between bg-carbon p-1.5 rounded-xl border border-gray-800">
+        <div class="flex items-center gap-2">
+          <button type="button" id="btn-tab-insp-checkin" onclick="cambiarTabInspeccion('checkin')"
+            class="px-4 py-2 rounded-lg text-xs font-black transition cursor-pointer bg-emerald-500 text-carbon shadow-md">
+            🟢 Check-In (Salida a Obra)
+          </button>
+          <button type="button" id="btn-tab-insp-checkout" onclick="cambiarTabInspeccion('checkout')"
+            class="px-4 py-2 rounded-lg text-xs font-black transition cursor-pointer text-gray-400 hover:text-white hover:bg-graphite">
+            🔴 Check-Out (Cierre de Turno)
+          </button>
+        </div>
+        <div id="insp-360-lectura-badge" class="text-xs font-mono font-bold text-machinery pr-2">
+          Horómetro: 0.0 h
+        </div>
+      </div>
+
+      <!-- Cuadrícula 4 Vistas (Delantera, Trasera, Izquierda, Derecha) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        <!-- 1. Delantera -->
+        <div class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <span class="text-[11px] font-black uppercase text-gray-300 flex items-center gap-1">
+              <span>🔼</span> Vista Delantera
+            </span>
+            <span id="insp-badge-delantera" class="text-[10px] text-emerald-400 font-bold">✓ Registrada</span>
+          </div>
+          <div class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer" onclick="zoomFotoInspeccion('delantera')">
+            <img id="insp-img-delantera" src="" alt="Vista Delantera" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <div id="insp-empty-delantera" class="hidden text-center p-4 text-gray-500 text-xs">
+              <div class="text-2xl mb-1">📷</div>
+              Sin foto reportada
+            </div>
+          </div>
+          <div class="mt-2 text-center">
+            <button type="button" onclick="zoomFotoInspeccion('delantera')" class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
+              🔍 Ampliar Imagen
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. Trasera -->
+        <div class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <span class="text-[11px] font-black uppercase text-gray-300 flex items-center gap-1">
+              <span>🔽</span> Vista Trasera
+            </span>
+            <span id="insp-badge-trasera" class="text-[10px] text-emerald-400 font-bold">✓ Registrada</span>
+          </div>
+          <div class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer" onclick="zoomFotoInspeccion('trasera')">
+            <img id="insp-img-trasera" src="" alt="Vista Trasera" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <div id="insp-empty-trasera" class="hidden text-center p-4 text-gray-500 text-xs">
+              <div class="text-2xl mb-1">📷</div>
+              Sin foto reportada
+            </div>
+          </div>
+          <div class="mt-2 text-center">
+            <button type="button" onclick="zoomFotoInspeccion('trasera')" class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
+              🔍 Ampliar Imagen
+            </button>
+          </div>
+        </div>
+
+        <!-- 3. Lateral Izquierda -->
+        <div class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <span class="text-[11px] font-black uppercase text-gray-300 flex items-center gap-1">
+              <span>◀️</span> Lateral Izquierda
+            </span>
+            <span id="insp-badge-izquierda" class="text-[10px] text-emerald-400 font-bold">✓ Registrada</span>
+          </div>
+          <div class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer" onclick="zoomFotoInspeccion('izquierda')">
+            <img id="insp-img-izquierda" src="" alt="Lateral Izquierda" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <div id="insp-empty-izquierda" class="hidden text-center p-4 text-gray-500 text-xs">
+              <div class="text-2xl mb-1">📷</div>
+              Sin foto reportada
+            </div>
+          </div>
+          <div class="mt-2 text-center">
+            <button type="button" onclick="zoomFotoInspeccion('izquierda')" class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
+              🔍 Ampliar Imagen
+            </button>
+          </div>
+        </div>
+
+        <!-- 4. Lateral Derecha -->
+        <div class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
+          <div class="flex items-center justify-between mb-1.5 px-1">
+            <span class="text-[11px] font-black uppercase text-gray-300 flex items-center gap-1">
+              <span>▶️</span> Lateral Derecha
+            </span>
+            <span id="insp-badge-derecha" class="text-[10px] text-emerald-400 font-bold">✓ Registrada</span>
+          </div>
+          <div class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer" onclick="zoomFotoInspeccion('derecha')">
+            <img id="insp-img-derecha" src="" alt="Lateral Derecha" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+            <div id="insp-empty-derecha" class="hidden text-center p-4 text-gray-500 text-xs">
+              <div class="text-2xl mb-1">📷</div>
+              Sin foto reportada
+            </div>
+          </div>
+          <div class="mt-2 text-center">
+            <button type="button" onclick="zoomFotoInspeccion('derecha')" class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
+              🔍 Ampliar Imagen
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Evidencias Complementarias: Horómetro, Combustible e Incidencia -->
+      <div class="bg-carbon/70 p-3.5 rounded-2xl border border-gray-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+        <div class="flex items-center gap-3">
+          <div id="insp-box-horometro-foto" class="flex items-center gap-2">
+            <span class="text-gray-400">Lectura Tablero:</span>
+            <button type="button" id="btn-insp-horometro-foto" class="px-2.5 py-1 bg-graphite hover:bg-machinery hover:text-carbon rounded text-xs font-bold border border-gray-700 transition">
+              📸 Ver Tablero
+            </button>
+          </div>
+          <div id="insp-box-combustible-foto" class="hidden flex items-center gap-2">
+            <span class="text-gray-400">Vale de Combustible:</span>
+            <button type="button" id="btn-insp-combustible-foto" class="px-2.5 py-1 bg-graphite hover:bg-amber-400 hover:text-carbon rounded text-xs font-bold border border-gray-700 transition">
+              🧾 Ver Vale
+            </button>
+          </div>
+        </div>
+        <div id="insp-box-incidencia-foto" class="hidden flex items-center gap-2">
+          <span class="text-rose-400 font-bold">⚠️ Incidencia / Daño:</span>
+          <button type="button" id="btn-insp-incidencia-foto" class="px-2.5 py-1 bg-rose-950/80 text-rose-300 hover:bg-rose-900 rounded text-xs font-bold border border-rose-800 transition">
+            📸 Ver Evidencia de Incidencia
+          </button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
   <!-- MODAL: ENVIAR REPORTE POR WHATSAPP Y ASOCIAR NÚMERO -->
   <div id="modal-enviar-reporte-whatsapp"
     class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
@@ -3985,9 +4381,16 @@ Cargando reporte de flota...
               ${t.km_recorridos ? t.km_recorridos.toFixed(1) + ' Km' : '-'}
             </td>
             <td class="py-3.5 px-4 text-center">
-              <div class="flex items-center justify-center gap-1.5">
-                ${fotoInicioBtn}
-                ${fotoFinBtn}
+              <div class="flex flex-col items-center justify-center gap-1.5">
+                <button onclick="abrirModalInspeccion360(${t.id})"
+                  class="px-2.5 py-1 bg-emerald-950/80 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[11px] font-bold rounded-lg border border-emerald-700/80 transition cursor-pointer flex items-center gap-1 shadow-sm"
+                  title="Ver las 4 fotos de inspección obligatorias de Check-In y Check-Out">
+                  <span>📸</span> <span>Ver 4 Fotos 360°</span>
+                </button>
+                <div class="flex items-center gap-1">
+                  ${fotoInicioBtn}
+                  ${fotoFinBtn}
+                </div>
               </div>
             </td>
             <td class="py-3.5 px-4 text-center">
@@ -4233,7 +4636,14 @@ Cargando reporte de flota...
           <td class="py-3 px-4 text-center whitespace-nowrap font-mono text-xs ${ratioBadgeClass}">
             ${ratioStr}
           </td>
-          <td class="py-3 px-4 max-w-[140px] truncate">${incidenciaHtml}</td>
+          <td class="py-3 px-4 whitespace-nowrap">
+            <div class="flex items-center gap-1.5">
+              ${incidenciaHtml}
+              <button onclick="abrirModalInspeccion360(${t.id})" class="px-2 py-0.5 bg-emerald-950/80 hover:bg-emerald-600 hover:text-white text-emerald-400 text-[10px] font-bold rounded border border-emerald-700/80 transition inline-flex items-center gap-1 shadow-sm" title="Ver las 4 fotos 360° obligatorias (Delantera, Trasera, Izquierda, Derecha) de Check-In y Check-Out">
+                <span>📸</span> <span>360°</span>
+              </button>
+            </div>
+          </td>
           <td class="py-3 px-4 text-center">
             <span class="px-2 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-400 border border-emerald-800">
               🟢 ${t.estado_sync || 'SYNC'}
@@ -5247,32 +5657,513 @@ Cargando reporte de flota...
       actualizarMapaGPS();
     }
 
+    // ==========================================
+    // ALMACÉN & CONTROL DE REPUESTOS
+    // ==========================================
+    let repuestosCache = [];
+    let repuestosFiltradosCache = [];
+
     async function cargarTablaRepuestos() {
       try {
         const res = await fetch('/api/v1/heavy/repuestos');
-        const lista = await res.json();
-        const tbody = document.getElementById('tabla-repuestos-body');
-        if (!tbody) return;
-        tbody.innerHTML = '';
+        if (!res.ok) throw new Error('Error al obtener repuestos');
+        repuestosCache = await res.json();
 
-        lista.forEach(r => {
-          const esCritico = r.stock_actual <= r.stock_minimo;
-          const tr = document.createElement('tr');
-          tr.className = 'hover:bg-graphiteLight/50 transition';
-          tr.innerHTML = `
-            <td class="py-3.5 px-4 font-mono font-bold text-machinery">${r.codigo_parte}</td>
-            <td class="py-3.5 px-4 font-bold text-white">${r.nombre}</td>
-            <td class="py-3.5 px-4 text-gray-400 capitalize">${r.categoria}</td>
-            <td class="py-3.5 px-4 text-center font-bold font-mono ${esCritico ? 'text-alertRed' : 'text-alertGreen'}">
-              ${r.stock_actual} / ${r.stock_minimo} ${esCritico ? '⚠️' : ''}
-            </td>
-            <td class="py-3.5 px-4 text-right font-mono font-bold text-gray-200">S/ ${r.precio_unitario.toFixed(2)}</td>
-            <td class="py-3.5 px-4 text-xs text-gray-400">${r.ubicacion_almacen || 'Bahía 1'}</td>
-          `;
-          tbody.appendChild(tr);
+        // Calcular KPIs de Almacén
+        let totalItems = repuestosCache.length;
+        let totalUnidades = 0;
+        let totalCriticos = 0;
+        let valorTotal = 0;
+
+        repuestosCache.forEach(r => {
+          const stock = Number(r.stock_actual) || 0;
+          const min = Number(r.stock_minimo) || 0;
+          const precio = Number(r.precio_unitario) || 0;
+          totalUnidades += stock;
+          valorTotal += (stock * precio);
+          if (stock <= min) {
+            totalCriticos++;
+          }
         });
+
+        const elTot = document.getElementById('rep-kpi-total-items');
+        const elCrit = document.getElementById('rep-kpi-criticos');
+        const elUnd = document.getElementById('rep-kpi-total-unidades');
+        const elVal = document.getElementById('rep-kpi-valor-total');
+
+        if (elTot) elTot.textContent = totalItems;
+        if (elCrit) elCrit.textContent = totalCriticos;
+        if (elUnd) elUnd.textContent = `${totalUnidades.toLocaleString('es-PE')} und`;
+        if (elVal) elVal.textContent = `S/ ${valorTotal.toLocaleString('es-PE', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+        filtrarRepuestos();
+
       } catch (err) {
         console.error("Error al cargar repuestos:", err);
+      }
+    }
+
+    function filtrarRepuestos() {
+      const q = (document.getElementById('filtro-repuesto-busqueda')?.value || '').toLowerCase().trim();
+      const cat = document.getElementById('filtro-repuesto-categoria')?.value || '';
+
+      let lista = repuestosCache || [];
+
+      if (cat) {
+        lista = lista.filter(r => (r.categoria || '').toLowerCase() === cat.toLowerCase());
+      }
+      if (q) {
+        lista = lista.filter(r => {
+          const str = `${r.codigo_parte} ${r.nombre} ${r.categoria} ${r.ubicacion_almacen || ''}`.toLowerCase();
+          return str.includes(q);
+        });
+      }
+
+      repuestosFiltradosCache = lista;
+      renderTablaRepuestos(lista);
+    }
+
+    function renderTablaRepuestos(lista) {
+      const tbody = document.getElementById('tabla-repuestos-body');
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="9" class="py-10 text-center text-gray-500 font-medium">
+              <div class="text-3xl mb-2">📦</div>
+              <p class="font-bold text-gray-300">No se encontraron repuestos en el inventario.</p>
+              <p class="text-xs text-gray-500 mt-1">Utilice el botón "+ Registrar Repuesto / Filtro" para incorporar repuestos al almacén.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      lista.forEach(r => {
+        const stock = Number(r.stock_actual) || 0;
+        const min = Number(r.stock_minimo) || 0;
+        const precio = Number(r.precio_unitario) || 0;
+        const totalSoles = stock * precio;
+        const esCritico = stock <= min;
+
+        // Categoría Badge
+        let catColor = 'bg-gray-800 text-gray-300 border-gray-700';
+        if (r.categoria === 'Filtros') catColor = 'bg-blue-950/80 text-blue-300 border-blue-800';
+        else if (r.categoria === 'Lubricantes') catColor = 'bg-amber-950/80 text-amber-300 border-amber-800';
+        else if (r.categoria === 'Desgaste') catColor = 'bg-orange-950/80 text-orange-300 border-orange-800';
+        else if (r.categoria === 'Tren de Rodaje') catColor = 'bg-purple-950/80 text-purple-300 border-purple-800';
+        else if (r.categoria === 'Hidráulico') catColor = 'bg-cyan-950/80 text-cyan-300 border-cyan-800';
+        else if (r.categoria === 'Motor') catColor = 'bg-rose-950/80 text-rose-300 border-rose-800';
+        else if (r.categoria === 'Eléctrico') catColor = 'bg-yellow-950/80 text-yellow-300 border-yellow-800';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-graphiteLight/50 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4 font-mono font-bold text-machinery whitespace-nowrap">${r.codigo_parte}</td>
+          <td class="py-3 px-4 font-bold text-white">${r.nombre}</td>
+          <td class="py-3 px-4">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${catColor}">
+              ${r.categoria}
+            </span>
+          </td>
+          <td class="py-3 px-4 text-center font-bold font-mono">
+            <span class="${esCritico ? 'text-amber-400 font-black' : 'text-emerald-400 font-bold'} text-sm">${stock}</span>
+            <span class="text-gray-500"> / ${min}</span>
+            ${esCritico ? '<span class="ml-1 text-xs" title="Stock en nivel crítico">⚠️</span>' : ''}
+          </td>
+          <td class="py-3 px-4 text-right font-mono text-gray-200">S/ ${precio.toFixed(2)}</td>
+          <td class="py-3 px-4 text-right font-mono font-bold text-emerald-400 text-sm">S/ ${totalSoles.toFixed(2)}</td>
+          <td class="py-3 px-4 text-xs text-gray-400 font-mono">${r.ubicacion_almacen || 'Bahía Central'}</td>
+          <td class="py-3 px-4 text-center">
+            <div class="inline-flex items-center gap-1">
+              <button onclick="abrirModalAjusteStock(${r.id}, 'entrada')" title="Registrar Entrada / Compra"
+                class="px-2 py-1 bg-emerald-950/80 hover:bg-emerald-600 hover:text-white text-emerald-400 rounded text-xs font-bold border border-emerald-800 transition cursor-pointer">
+                + Entrada
+              </button>
+              <button onclick="abrirModalAjusteStock(${r.id}, 'salida')" title="Registrar Salida para Mantenimiento"
+                class="px-2 py-1 bg-rose-950/80 hover:bg-rose-600 hover:text-white text-rose-300 rounded text-xs font-bold border border-rose-800 transition cursor-pointer">
+                - Salida
+              </button>
+            </div>
+          </td>
+          <td class="py-3 px-4 text-center">
+            <div class="inline-flex items-center gap-1">
+              <button onclick="abrirModalEditarRepuesto(${r.id})" title="Editar Repuesto"
+                class="px-2 py-1 bg-graphiteLight hover:bg-machinery hover:text-carbon text-gray-300 rounded text-xs font-bold border border-gray-700 transition cursor-pointer">
+                ✏️
+              </button>
+              <button onclick="eliminarRepuesto(${r.id}, '${r.codigo_parte}')" title="Eliminar de Almacén"
+                class="px-2 py-1 bg-graphiteLight hover:bg-red-600 hover:text-white text-gray-400 rounded text-xs font-bold border border-gray-700 transition cursor-pointer">
+                🗑️
+              </button>
+            </div>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function abrirModalNuevoRepuesto() {
+      document.getElementById('repuesto-id').value = '';
+      document.getElementById('modal-repuesto-titulo').textContent = 'Registrar Repuesto / Filtro';
+      document.getElementById('repuesto-codigo').value = '';
+      document.getElementById('repuesto-nombre').value = '';
+      document.getElementById('repuesto-categoria').value = 'Filtros';
+      document.getElementById('repuesto-stock-actual').value = '0';
+      document.getElementById('repuesto-stock-minimo').value = '4';
+      document.getElementById('repuesto-precio').value = '';
+      document.getElementById('repuesto-ubicacion').value = '';
+
+      const errBox = document.getElementById('repuesto-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const modal = document.getElementById('modal-repuesto');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function abrirModalEditarRepuesto(id) {
+      const r = repuestosCache.find(x => x.id === id);
+      if (!r) return;
+
+      document.getElementById('repuesto-id').value = r.id;
+      document.getElementById('modal-repuesto-titulo').textContent = `Editar Repuesto: ${r.codigo_parte}`;
+      document.getElementById('repuesto-codigo').value = r.codigo_parte;
+      document.getElementById('repuesto-nombre').value = r.nombre;
+      document.getElementById('repuesto-categoria').value = r.categoria;
+      document.getElementById('repuesto-stock-actual').value = r.stock_actual;
+      document.getElementById('repuesto-stock-minimo').value = r.stock_minimo;
+      document.getElementById('repuesto-precio').value = Number(r.precio_unitario || 0).toFixed(2);
+      document.getElementById('repuesto-ubicacion').value = r.ubicacion_almacen || '';
+
+      const errBox = document.getElementById('repuesto-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const modal = document.getElementById('modal-repuesto');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalRepuesto() {
+      const modal = document.getElementById('modal-repuesto');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    async function guardarRepuestoSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('repuesto-id').value;
+      const codigo = document.getElementById('repuesto-codigo').value.trim().toUpperCase();
+      const nombre = document.getElementById('repuesto-nombre').value.trim();
+      const categoria = document.getElementById('repuesto-categoria').value;
+      const stockActual = parseInt(document.getElementById('repuesto-stock-actual').value) || 0;
+      const stockMinimo = parseInt(document.getElementById('repuesto-stock-minimo').value) || 4;
+      const precio = parseFloat(document.getElementById('repuesto-precio').value) || 0.0;
+      const ubicacion = document.getElementById('repuesto-ubicacion').value.trim() || 'Bahía Central';
+      const errBox = document.getElementById('repuesto-error');
+
+      const payload = {
+        codigo_parte: codigo,
+        nombre: nombre,
+        categoria: categoria,
+        stock_actual: stockActual,
+        stock_minimo: stockMinimo,
+        precio_unitario: precio,
+        ubicacion_almacen: ubicacion
+      };
+
+      try {
+        const url = id ? `/api/v1/heavy/repuestos/${id}` : '/api/v1/heavy/repuestos';
+        const method = id ? 'PUT' : 'POST';
+
+        const resp = await fetch(url, {
+          method: method,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Error al guardar repuesto en almacén');
+        }
+
+        cerrarModalRepuesto();
+        await cargarTablaRepuestos();
+        alert(`✅ Repuesto ${codigo} guardado con éxito en el almacén.`);
+
+      } catch (err) {
+        if (errBox) {
+          errBox.textContent = err.message;
+          errBox.classList.remove('hidden');
+        } else {
+          alert(`❌ Error: ${err.message}`);
+        }
+      }
+    }
+
+    function abrirModalAjusteStock(id, tipo) {
+      const r = repuestosCache.find(x => x.id === id);
+      if (!r) return;
+
+      document.getElementById('ajuste-repuesto-id').value = r.id;
+      document.getElementById('ajuste-repuesto-codigo').textContent = r.codigo_parte;
+      document.getElementById('ajuste-repuesto-nombre').textContent = r.nombre;
+      document.getElementById('ajuste-repuesto-stock-badge').textContent = `${r.stock_actual} und`;
+      document.getElementById('ajuste-cantidad').value = '';
+      document.getElementById('ajuste-motivo').value = '';
+
+      seleccionarTipoMovimiento(tipo || 'entrada');
+
+      const errBox = document.getElementById('ajuste-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const modal = document.getElementById('modal-ajuste-stock');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalAjusteStock() {
+      const modal = document.getElementById('modal-ajuste-stock');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+    }
+
+    function seleccionarTipoMovimiento(tipo) {
+      document.getElementById('ajuste-tipo-movimiento').value = tipo;
+      const btnEntrada = document.getElementById('btn-mov-entrada');
+      const btnSalida = document.getElementById('btn-mov-salida');
+
+      if (tipo === 'entrada') {
+        btnEntrada.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-emerald-950 text-emerald-300 border-emerald-600 shadow-md';
+        btnSalida.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white';
+        document.getElementById('ajuste-repuesto-subtitulo').textContent = 'Ingreso de compras o recepción de proveedor';
+      } else {
+        btnSalida.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-rose-950 text-rose-300 border-rose-600 shadow-md';
+        btnEntrada.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white';
+        document.getElementById('ajuste-repuesto-subtitulo').textContent = 'Salida / consumo para mantenimiento preventivo a máquina';
+      }
+    }
+
+    async function guardarAjusteStockSubmit(e) {
+      e.preventDefault();
+      const id = document.getElementById('ajuste-repuesto-id').value;
+      const tipo = document.getElementById('ajuste-tipo-movimiento').value;
+      const cant = parseInt(document.getElementById('ajuste-cantidad').value) || 0;
+      const motivo = document.getElementById('ajuste-motivo').value.trim() || 'Ajuste de stock en taller';
+      const errBox = document.getElementById('ajuste-error');
+
+      if (cant <= 0) {
+        if (errBox) {
+          errBox.textContent = 'Ingrese una cantidad mayor a 0.';
+          errBox.classList.remove('hidden');
+        }
+        return;
+      }
+
+      const delta = (tipo === 'salida') ? -cant : cant;
+
+      try {
+        const resp = await fetch(`/api/v1/heavy/repuestos/${id}/ajustar-stock`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ cantidad: delta, motivo: motivo })
+        });
+
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Error al ajustar stock');
+        }
+
+        const res = await resp.json();
+        cerrarModalAjusteStock();
+        await cargarTablaRepuestos();
+        alert(`✅ ${res.mensaje}`);
+
+      } catch (err) {
+        if (errBox) {
+          errBox.textContent = err.message;
+          errBox.classList.remove('hidden');
+        } else {
+          alert(`❌ Error: ${err.message}`);
+        }
+      }
+    }
+
+    async function eliminarRepuesto(id, codigo) {
+      if (!confirm(`¿Está seguro de eliminar el repuesto "${codigo}" del almacén?`)) return;
+
+      try {
+        const resp = await fetch(`/api/v1/heavy/repuestos/${id}`, { method: 'DELETE' });
+        if (!resp.ok) {
+          const errData = await resp.json().catch(() => ({}));
+          throw new Error(errData.detail || 'Error al eliminar');
+        }
+        await cargarTablaRepuestos();
+        alert(`🗑️ Repuesto ${codigo} eliminado correctamente.`);
+      } catch (err) {
+        alert(`❌ Error: ${err.message}`);
+      }
+    }
+
+    // ==========================================
+    // INSPECCIÓN 360° (4 FOTOS CHECK-IN / CHECK-OUT)
+    // ==========================================
+    let _inspeccionTurnoActual = null;
+    let _inspeccionTabMomento = 'checkin';
+
+    function abrirModalInspeccion360(turnoId) {
+      const t = (turnosCache || []).find(x => x.id === turnoId) || (horometrosCache || []).find(x => x.id === turnoId);
+      if (!t) {
+        alert("No se encontró la información del turno.");
+        return;
+      }
+
+      _inspeccionTurnoActual = t;
+      document.getElementById('insp-360-equipo-badge').textContent = t.equipo_codigo || 'EQUIPO';
+      document.getElementById('insp-360-subtitulo').textContent = `${t.equipo_modelo || ''} • Operador: ${t.operador_nombre || '-'} • Fecha: ${t.fecha}`;
+
+      cambiarTabInspeccion('checkin');
+
+      const modal = document.getElementById('modal-inspeccion-360');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function cerrarModalInspeccion360() {
+      const modal = document.getElementById('modal-inspeccion-360');
+      if (modal) {
+        modal.classList.add('hidden');
+        modal.classList.remove('flex');
+      }
+      _inspeccionTurnoActual = null;
+    }
+
+    function cambiarTabInspeccion(momento) {
+      _inspeccionTabMomento = momento;
+      const t = _inspeccionTurnoActual;
+      if (!t) return;
+
+      const btnIn = document.getElementById('btn-tab-insp-checkin');
+      const btnOut = document.getElementById('btn-tab-insp-checkout');
+      const badgeLectura = document.getElementById('insp-360-lectura-badge');
+
+      const esKm = (t.equipo_tipo_control || '').toUpperCase() === 'KILOMETRAJE';
+
+      if (momento === 'checkin') {
+        btnIn.className = 'px-4 py-2 rounded-lg text-xs font-black transition cursor-pointer bg-emerald-500 text-carbon shadow-md';
+        btnOut.className = 'px-4 py-2 rounded-lg text-xs font-black transition cursor-pointer text-gray-400 hover:text-white hover:bg-graphite';
+
+        const lect = esKm ? `${(t.kilometraje_inicio || 0).toFixed(0)} km` : `${Number(t.horometro_inicio || 0).toFixed(1)} h`;
+        badgeLectura.textContent = `Check-In Inicial: ${lect}`;
+
+        _renderizarVistaFoto('delantera', t.foto_inicio_delantera);
+        _renderizarVistaFoto('trasera', t.foto_inicio_trasera);
+        _renderizarVistaFoto('izquierda', t.foto_inicio_izquierda);
+        _renderizarVistaFoto('derecha', t.foto_inicio_derecha);
+
+        // Foto tablero inicio
+        const btnTablero = document.getElementById('btn-insp-horometro-foto');
+        if (t.foto_inicio) {
+          btnTablero.onclick = () => verFoto(t.foto_inicio, `Tablero Check-In (${t.equipo_codigo})`);
+          btnTablero.classList.remove('hidden');
+        } else {
+          btnTablero.classList.add('hidden');
+        }
+
+        // Vale de combustible
+        const boxComb = document.getElementById('insp-box-combustible-foto');
+        const btnComb = document.getElementById('btn-insp-combustible-foto');
+        if (t.foto_combustible) {
+          btnComb.onclick = () => verFoto(t.foto_combustible, `Vale Combustible (${t.equipo_codigo})`);
+          boxComb.classList.remove('hidden');
+        } else {
+          boxComb.classList.add('hidden');
+        }
+
+        document.getElementById('insp-box-incidencia-foto').classList.add('hidden');
+
+      } else {
+        btnOut.className = 'px-4 py-2 rounded-lg text-xs font-black transition cursor-pointer bg-rose-600 text-white shadow-md';
+        btnIn.className = 'px-4 py-2 rounded-lg text-xs font-black transition cursor-pointer text-gray-400 hover:text-white hover:bg-graphite';
+
+        const lect = esKm ? `${t.kilometraje_fin ? t.kilometraje_fin.toFixed(0) + ' km' : 'En turno...'}` : `${t.horometro_fin ? Number(t.horometro_fin).toFixed(1) + ' h' : 'En turno...'}`;
+        badgeLectura.textContent = `Check-Out Cierre: ${lect}`;
+
+        _renderizarVistaFoto('delantera', t.foto_fin_delantera);
+        _renderizarVistaFoto('trasera', t.foto_fin_trasera);
+        _renderizarVistaFoto('izquierda', t.foto_fin_izquierda);
+        _renderizarVistaFoto('derecha', t.foto_fin_derecha);
+
+        // Foto tablero fin
+        const btnTablero = document.getElementById('btn-insp-horometro-foto');
+        if (t.foto_fin) {
+          btnTablero.onclick = () => verFoto(t.foto_fin, `Tablero Check-Out (${t.equipo_codigo})`);
+          btnTablero.classList.remove('hidden');
+        } else {
+          btnTablero.classList.add('hidden');
+        }
+
+        // Incidencia si hubo
+        const boxInc = document.getElementById('insp-box-incidencia-foto');
+        const btnInc = document.getElementById('btn-insp-incidencia-foto');
+        if (t.hubo_incidencia && t.foto_incidencia) {
+          btnInc.onclick = () => verFoto(t.foto_incidencia, `Incidencia Cierre (${t.equipo_codigo}): ${t.incidencia_descripcion || ''}`);
+          boxInc.classList.remove('hidden');
+        } else {
+          boxInc.classList.add('hidden');
+        }
+
+        document.getElementById('insp-box-combustible-foto').classList.add('hidden');
+      }
+    }
+
+    function _renderizarVistaFoto(lado, fotoUrl) {
+      const img = document.getElementById(`insp-img-${lado}`);
+      const empty = document.getElementById(`insp-empty-${lado}`);
+      const badge = document.getElementById(`insp-badge-${lado}`);
+
+      if (fotoUrl && fotoUrl.length > 20) {
+        img.src = fotoUrl;
+        img.classList.remove('hidden');
+        empty.classList.add('hidden');
+        badge.textContent = '✓ Registrada';
+        badge.className = 'text-[10px] text-emerald-400 font-bold';
+      } else {
+        img.src = '';
+        img.classList.add('hidden');
+        empty.classList.remove('hidden');
+        badge.textContent = 'Pendiente';
+        badge.className = 'text-[10px] text-gray-500';
+      }
+    }
+
+    function zoomFotoInspeccion(lado) {
+      const t = _inspeccionTurnoActual;
+      if (!t) return;
+      const momento = _inspeccionTabMomento;
+      let url = null;
+      if (momento === 'checkin') {
+        if (lado === 'delantera') url = t.foto_inicio_delantera;
+        else if (lado === 'trasera') url = t.foto_inicio_trasera;
+        else if (lado === 'izquierda') url = t.foto_inicio_izquierda;
+        else if (lado === 'derecha') url = t.foto_inicio_derecha;
+      } else {
+        if (lado === 'delantera') url = t.foto_fin_delantera;
+        else if (lado === 'trasera') url = t.foto_fin_trasera;
+        else if (lado === 'izquierda') url = t.foto_fin_izquierda;
+        else if (lado === 'derecha') url = t.foto_fin_derecha;
+      }
+
+      if (url && url.length > 20) {
+        verFoto(url, `Vista ${lado.toUpperCase()} (${momento.toUpperCase()}) - ${t.equipo_codigo}`);
+      } else {
+        alert(`No hay fotografía reportada para la vista ${lado}.`);
       }
     }
 
