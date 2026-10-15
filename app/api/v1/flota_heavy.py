@@ -132,15 +132,19 @@ def actualizar_equipo(equipo_id: int, payload: dict, db: Session = Depends(get_d
             pass
 
     if cambio_lectura:
-        if esta_bloqueado:
+        es_forzado = bool(payload.get("forzar_admin") or payload.get("modo_creador"))
+        if esta_bloqueado and not es_forzado:
             raise HTTPException(
                 status_code=400,
                 detail="🔒 El registro de kilometraje/horómetro está BLOQUEADO contra modificaciones directas porque ya fue registrado 2 veces. Las nuevas lecturas deben reportarse mediante Partes Diarios o Mantenimientos."
             )
-        else:
+        elif not esta_bloqueado:
             equipo.modificaciones_lectura = (equipo.modificaciones_lectura or 0) + 1
             if equipo.modificaciones_lectura >= 2:
                 equipo.lectura_bloqueada = True
+        elif esta_bloqueado and es_forzado:
+            # Modo Creador / Superadmin: permitir cambio forzado
+            pass
 
     DATE_FIELDS = {"poliza_vencimiento", "soat_vencimiento", "revision_tecnica_vencimiento"}
     FLOAT_FIELDS = {

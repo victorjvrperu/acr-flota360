@@ -1959,11 +1959,17 @@
                 valor registrado (<span id="editar-valor-ant-km"></span> km)</div>
             </div>
           </div>
-          <div id="editar-bloqueo-acciones" class="hidden pt-1 flex items-center justify-between border-t border-gray-800/80">
-            <span class="text-[11px] text-gray-400">🔒 La lectura inicial solo permite hasta 2 modificaciones antes de ser bloqueada.</span>
-            <button type="button" id="btn-desbloquear-lectura" onclick="desbloquearLecturaAdmin()" class="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline flex items-center gap-1 cursor-pointer">
-              <span>🔓</span> Desbloquear Lectura (Admin)
-            </button>
+          <div id="editar-bloqueo-acciones" class="hidden pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-gray-800/80">
+            <span class="text-[11px] text-gray-400">🔒 Límite de modificaciones de campo alcanzado (Bloqueo anti-fraude).</span>
+            <div class="flex items-center gap-3">
+              <label class="inline-flex items-center gap-1.5 text-[11px] text-amber-400 font-bold cursor-pointer hover:text-amber-300 select-none bg-amber-500/10 px-2 py-1 rounded border border-amber-500/30">
+                <input type="checkbox" id="check-forzar-admin" onchange="toggleModoCreadorLectura(this.checked)" class="rounded bg-graphite border-gray-700 text-machinery focus:ring-0">
+                <span>👑 Forzar como Creador</span>
+              </label>
+              <button type="button" id="btn-desbloquear-lectura" onclick="desbloquearLecturaAdmin()" class="text-[11px] text-gray-300 hover:text-white font-medium underline flex items-center gap-1 cursor-pointer">
+                <span>🔓</span> Desbloquear permanentemente
+              </button>
+            </div>
           </div>
         </div>
 
@@ -4562,6 +4568,9 @@ Cargando reporte de flota...
         if (accionesBloqueo) accionesBloqueo.classList.add('hidden');
       }
 
+      const chkForzar = document.getElementById('check-forzar-admin');
+      if (chkForzar) chkForzar.checked = false;
+
       toggleCamposControl('editar');
 
       const m = document.getElementById('modal-editar-equipo');
@@ -4569,9 +4578,53 @@ Cargando reporte de flota...
       m.classList.add('flex');
     }
 
+    function toggleModoCreadorLectura(activo) {
+      const hInput = document.getElementById('editar-input-horometro-actual');
+      const kmInput = document.getElementById('editar-input-odometro-actual');
+      const hBadge = document.getElementById('editar-badge-bloqueo-h');
+      const kmBadge = document.getElementById('editar-badge-bloqueo-km');
+      const hLockIcon = document.getElementById('editar-lock-icon-h');
+      const kmLockIcon = document.getElementById('editar-lock-icon-km');
+      const hAvisoBloq = document.getElementById('editar-aviso-bloqueo-h');
+      const kmAvisoBloq = document.getElementById('editar-aviso-bloqueo-km');
+
+      if (activo) {
+        if (hInput) {
+          hInput.readOnly = false;
+          hInput.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-carbon');
+          hInput.classList.add('border-amber-500', 'ring-1', 'ring-amber-500');
+        }
+        if (kmInput) {
+          kmInput.readOnly = false;
+          kmInput.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-carbon');
+          kmInput.classList.add('border-amber-500', 'ring-1', 'ring-amber-500');
+        }
+        if (hLockIcon) hLockIcon.classList.add('hidden');
+        if (kmLockIcon) kmLockIcon.classList.add('hidden');
+
+        const creatorBadge = '<span class="bg-amber-500/25 text-amber-300 border border-amber-500/50 text-[10px] px-1.5 py-0.5 rounded font-mono font-black animate-pulse">👑 CREADOR ACTIVO</span>';
+        if (hBadge) hBadge.innerHTML = creatorBadge;
+        if (kmBadge) kmBadge.innerHTML = creatorBadge;
+
+        const avisoTxt = '👑 <b>Modo Creador activado:</b> Tienes autorización total para forzar y sobreescribir la lectura actual.';
+        if (hAvisoBloq) {
+          hAvisoBloq.innerHTML = avisoTxt;
+          hAvisoBloq.classList.remove('hidden');
+        }
+        if (kmAvisoBloq) {
+          kmAvisoBloq.innerHTML = avisoTxt;
+          kmAvisoBloq.classList.remove('hidden');
+        }
+      } else {
+        if (equipoEnEdicion) {
+          abrirModalEditarEquipo(equipoEnEdicion.id);
+        }
+      }
+    }
+
     async function desbloquearLecturaAdmin() {
       if (!equipoEnEdicion) return;
-      if (!confirm(`⚠️ ¿Deseas desbloquear la lectura para la unidad "${equipoEnEdicion.codigo_interno}"?\n\nEsta acción habilitará 1 registro adicional para calibrar o corregir el kilometraje/horómetro.`)) {
+      if (!confirm(`⚠️ ¿Deseas desbloquear permanentemente la lectura para la unidad "${equipoEnEdicion.codigo_interno}"?\n\nEsta acción habilitará 1 registro adicional para calibrar o corregir el kilometraje/horómetro.`)) {
         return;
       }
       try {
@@ -4655,6 +4708,7 @@ Cargando reporte de flota...
         horomProx = 0.0;
       }
 
+      const modoCreadorForzado = !!document.getElementById('check-forzar-admin')?.checked;
       const eqBloqueado = eqExistente && (eqExistente.lectura_bloqueada || (eqExistente.modificaciones_lectura || 0) >= 2);
       const nuevoHorom = parseFloat(form.horometro_actual.value) || 0.0;
       const nuevoOdom = parseFloat(form.odometro_actual.value) || 0.0;
@@ -4662,7 +4716,10 @@ Cargando reporte de flota...
       let horomFinal = nuevoHorom;
       let odomFinal = nuevoOdom;
 
-      if (eqBloqueado) {
+      if (modoCreadorForzado) {
+        horomFinal = nuevoHorom;
+        odomFinal = nuevoOdom;
+      } else if (eqBloqueado) {
         horomFinal = eqExistente.horometro_actual || 0.0;
         odomFinal = eqExistente.odometro_actual || 0.0;
       } else {
@@ -4691,6 +4748,7 @@ Cargando reporte de flota...
         horometro_proximo_servicio: horomProx,
         odometro_actual: odomFinal,
         odometro_proximo_servicio: odomProx,
+        forzar_admin: modoCreadorForzado,
         poliza_seguro: form.poliza_seguro.value.trim() || null,
         poliza_vencimiento: form.poliza_vencimiento.value || null,
         soat_numero: form.soat_numero.value.trim() || null,
