@@ -6149,7 +6149,7 @@ Cargando reporte de flota...
     }
 
     function abrirModalEditarRepuesto(id) {
-      const r = repuestosCache.find(x => x.id === id);
+      const r = repuestosCache.find(x => Number(x.id) === Number(id));
       if (!r) return;
 
       document.getElementById('repuesto-id').value = r.id;
@@ -6364,12 +6364,12 @@ Cargando reporte de flota...
     function poblarEquiposDestinoAjuste() {
       const selEq = document.getElementById('ajuste-equipo-id');
       if (!selEq) return;
-      const equipos = flotaCache || [];
+      const equipos = (typeof equiposCache !== 'undefined' ? equiposCache : []) || [];
       if (equipos.length === 0) {
         selEq.innerHTML = '<option value="">Sin maquinaria registrada</option>';
       } else {
         selEq.innerHTML = equipos.map(e => `
-          <option value="${e.id}">${e.codigo_interno} — ${e.marca} ${e.modelo} (${e.placa || 'Sin Placa'})</option>
+          <option value="${e.id}">${e.codigo_interno || 'EQ'} — ${e.nombre || e.tipo_equipo || e.marca || 'Maquinaria'} (${e.placa || 'Sin Placa'})</option>
         `).join('');
       }
     }
@@ -6388,40 +6388,55 @@ Cargando reporte de flota...
 
       poblarEquiposDestinoAjuste();
 
-      document.getElementById('ajuste-repuesto-id').value = '';
-      document.getElementById('box-ajuste-select-repuesto').classList.remove('hidden');
-      document.getElementById('box-ajuste-repuesto-info').classList.remove('hidden');
+      const repIdEl = document.getElementById('ajuste-repuesto-id');
+      if (repIdEl) repIdEl.value = '';
+      const boxSelect = document.getElementById('box-ajuste-select-repuesto');
+      if (boxSelect) boxSelect.classList.remove('hidden');
+      const boxInfo = document.getElementById('box-ajuste-repuesto-info');
+      if (boxInfo) boxInfo.classList.remove('hidden');
 
       alCambiarRepuestoSelect(repuestosCache[0].id);
       seleccionarTipoMovimiento(tipo || 'salida');
 
-      document.getElementById('ajuste-cantidad').value = '1';
-      document.getElementById('ajuste-numero-vale').value = `VAL-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(100+Math.random()*900)}`;
+      const cantEl = document.getElementById('ajuste-cantidad');
+      if (cantEl) cantEl.value = '1';
+      const valeEl = document.getElementById('ajuste-numero-vale');
+      if (valeEl) {
+        const prefijo = (tipo === 'entrada') ? 'ING' : 'VAL';
+        valeEl.value = `${prefijo}-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(100+Math.random()*900)}`;
+      }
       calcularTotalAjuste();
 
       const errBox = document.getElementById('ajuste-error');
       if (errBox) errBox.classList.add('hidden');
 
       const modal = document.getElementById('modal-ajuste-stock');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
     }
 
     function alCambiarRepuestoSelect(id) {
-      const r = repuestosCache.find(x => x.id === Number(id));
+      const r = repuestosCache.find(x => Number(x.id) === Number(id));
       if (!r) return;
-      document.getElementById('ajuste-repuesto-id').value = r.id;
-      document.getElementById('ajuste-repuesto-codigo').textContent = r.codigo_parte;
-      document.getElementById('ajuste-repuesto-nombre').textContent = r.nombre;
-      document.getElementById('ajuste-repuesto-precio-sub').textContent = `Precio: S/ ${(r.precio_unitario || 0).toFixed(2)} c/u`;
-      document.getElementById('ajuste-repuesto-stock-badge').textContent = `${r.stock_actual} und`;
+      const repIdEl = document.getElementById('ajuste-repuesto-id');
+      if (repIdEl) repIdEl.value = r.id;
+      const codEl = document.getElementById('ajuste-repuesto-codigo');
+      if (codEl) codEl.textContent = r.codigo_parte;
+      const nomEl = document.getElementById('ajuste-repuesto-nombre');
+      if (nomEl) nomEl.textContent = r.nombre;
+      const precEl = document.getElementById('ajuste-repuesto-precio-sub');
+      if (precEl) precEl.textContent = `Precio: S/ ${(r.precio_unitario || 0).toFixed(2)} c/u`;
+      const stockBadge = document.getElementById('ajuste-repuesto-stock-badge');
+      if (stockBadge) stockBadge.textContent = `${r.stock_actual} und`;
       calcularTotalAjuste();
     }
 
     function calcularTotalAjuste() {
       const repId = document.getElementById('ajuste-repuesto-id')?.value;
       const cant = parseInt(document.getElementById('ajuste-cantidad')?.value) || 0;
-      const r = repuestosCache.find(x => x.id === Number(repId));
+      const r = repuestosCache.find(x => Number(x.id) === Number(repId));
       const precio = r ? Number(r.precio_unitario || 0) : 0;
       const tot = cant * precio;
       const b = document.getElementById('ajuste-total-soles-badge');
@@ -6429,21 +6444,36 @@ Cargando reporte de flota...
     }
 
     function abrirModalAjusteStock(id, tipo) {
-      const r = repuestosCache.find(x => x.id === id);
-      if (!r) return;
+      const r = repuestosCache.find(x => Number(x.id) === Number(id));
+      if (!r) {
+        console.warn('Repuesto no encontrado para id:', id);
+        return;
+      }
 
       poblarEquiposDestinoAjuste();
 
-      document.getElementById('ajuste-repuesto-id').value = r.id;
-      document.getElementById('box-ajuste-select-repuesto').classList.add('hidden');
-      document.getElementById('box-ajuste-repuesto-info').classList.remove('hidden');
+      const repIdEl = document.getElementById('ajuste-repuesto-id');
+      if (repIdEl) repIdEl.value = r.id;
+      const boxSelect = document.getElementById('box-ajuste-select-repuesto');
+      if (boxSelect) boxSelect.classList.add('hidden');
+      const boxInfo = document.getElementById('box-ajuste-repuesto-info');
+      if (boxInfo) boxInfo.classList.remove('hidden');
 
-      document.getElementById('ajuste-repuesto-codigo').textContent = r.codigo_parte;
-      document.getElementById('ajuste-repuesto-nombre').textContent = r.nombre;
-      document.getElementById('ajuste-repuesto-precio-sub').textContent = `Precio: S/ ${(r.precio_unitario || 0).toFixed(2)} c/u`;
-      document.getElementById('ajuste-repuesto-stock-badge').textContent = `${r.stock_actual} und`;
-      document.getElementById('ajuste-cantidad').value = '1';
-      document.getElementById('ajuste-numero-vale').value = `VAL-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${r.id}`;
+      const codEl = document.getElementById('ajuste-repuesto-codigo');
+      if (codEl) codEl.textContent = r.codigo_parte;
+      const nomEl = document.getElementById('ajuste-repuesto-nombre');
+      if (nomEl) nomEl.textContent = r.nombre;
+      const precEl = document.getElementById('ajuste-repuesto-precio-sub');
+      if (precEl) precEl.textContent = `Precio: S/ ${(r.precio_unitario || 0).toFixed(2)} c/u`;
+      const stockBadge = document.getElementById('ajuste-repuesto-stock-badge');
+      if (stockBadge) stockBadge.textContent = `${r.stock_actual} und`;
+      const cantEl = document.getElementById('ajuste-cantidad');
+      if (cantEl) cantEl.value = '1';
+      const valeEl = document.getElementById('ajuste-numero-vale');
+      if (valeEl) {
+        const prefijo = (tipo === 'entrada') ? 'ING' : 'VAL';
+        valeEl.value = `${prefijo}-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${r.id}`;
+      }
 
       seleccionarTipoMovimiento(tipo || 'salida');
       calcularTotalAjuste();
@@ -6452,8 +6482,10 @@ Cargando reporte de flota...
       if (errBox) errBox.classList.add('hidden');
 
       const modal = document.getElementById('modal-ajuste-stock');
-      modal.classList.remove('hidden');
-      modal.classList.add('flex');
+      if (modal) {
+        modal.classList.remove('hidden');
+        modal.classList.add('flex');
+      }
     }
 
     function cerrarModalAjusteStock() {
@@ -6465,7 +6497,8 @@ Cargando reporte de flota...
     }
 
     function seleccionarTipoMovimiento(tipo) {
-      document.getElementById('ajuste-tipo-movimiento').value = tipo;
+      const movInput = document.getElementById('ajuste-tipo-movimiento');
+      if (movInput) movInput.value = tipo;
       const btnEntrada = document.getElementById('btn-mov-entrada');
       const btnSalida = document.getElementById('btn-mov-salida');
       const secSalida = document.getElementById('seccion-campos-salida');
@@ -6473,20 +6506,33 @@ Cargando reporte de flota...
       const labelSubmit = document.getElementById('label-submit-ajuste');
       const btnSubmit = document.getElementById('btn-submit-ajuste');
 
+      const numValeInput = document.getElementById('ajuste-numero-vale');
+      if (numValeInput && numValeInput.value) {
+        if (tipo === 'entrada' && numValeInput.value.startsWith('VAL-')) {
+          numValeInput.value = numValeInput.value.replace('VAL-', 'ING-');
+        } else if (tipo === 'salida' && numValeInput.value.startsWith('ING-')) {
+          numValeInput.value = numValeInput.value.replace('ING-', 'VAL-');
+        }
+      }
+
       if (tipo === 'entrada') {
-        btnEntrada.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-emerald-950 text-emerald-300 border-emerald-600 shadow-md';
-        btnSalida.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white';
-        document.getElementById('ajuste-modal-titulo').textContent = 'Ingreso de Repuestos (Compra / Reposición)';
-        document.getElementById('ajuste-repuesto-subtitulo').textContent = 'Entrada de compras, reposición de stock y factura de proveedor';
+        if (btnEntrada) btnEntrada.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-emerald-950 text-emerald-300 border-emerald-600 shadow-md';
+        if (btnSalida) btnSalida.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white';
+        const tit = document.getElementById('ajuste-modal-titulo');
+        if (tit) tit.textContent = 'Ingreso de Repuestos (Compra / Reposición)';
+        const sub = document.getElementById('ajuste-repuesto-subtitulo');
+        if (sub) sub.textContent = 'Entrada de compras, reposición de stock y factura de proveedor';
         if (secSalida) secSalida.classList.add('hidden');
         if (secEntrada) secEntrada.classList.remove('hidden');
         if (labelSubmit) labelSubmit.textContent = 'Registrar Ingreso a Almacén';
         if (btnSubmit) btnSubmit.className = 'flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-1.5 cursor-pointer';
       } else {
-        btnSalida.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-rose-950 text-rose-300 border-rose-600 shadow-md';
-        btnEntrada.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white';
-        document.getElementById('ajuste-modal-titulo').textContent = 'Vale de Salida de Almacén (Despacho a Máquina)';
-        document.getElementById('ajuste-repuesto-subtitulo').textContent = 'Salida de repuesto, asignación a unidad y generación de Vale de Almacén';
+        if (btnSalida) btnSalida.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-rose-950 text-rose-300 border-rose-600 shadow-md';
+        if (btnEntrada) btnEntrada.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white';
+        const tit = document.getElementById('ajuste-modal-titulo');
+        if (tit) tit.textContent = 'Vale de Salida de Almacén (Despacho a Máquina)';
+        const sub = document.getElementById('ajuste-repuesto-subtitulo');
+        if (sub) sub.textContent = 'Salida de repuesto, asignación a unidad y generación de Vale de Almacén';
         if (secEntrada) secEntrada.classList.add('hidden');
         if (secSalida) secSalida.classList.remove('hidden');
         if (labelSubmit) labelSubmit.textContent = 'Generar Vale de Salida & Despachar';
@@ -6656,7 +6702,7 @@ Cargando reporte de flota...
     async function probarAlertaGpsApagadoModal(equipoCodigo) {
       try {
         const payload = {
-          equipo_codigo: equipoCodigo || (flotaCache && flotaCache.length > 0 ? flotaCache[0].codigo_interno : 'CAT-336'),
+          equipo_codigo: equipoCodigo || ((typeof equiposCache !== 'undefined' && equiposCache.length > 0) ? equiposCache[0].codigo_interno : 'CAT-336'),
           motivo: 'Unidad apagó el GPS durante su tiempo de uso o trabajo para evitar detección'
         };
         const resp = await fetch('/api/v1/heavy/notificaciones/alerta-gps-apagado', {
