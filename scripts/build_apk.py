@@ -90,8 +90,8 @@ if [ ! -d "android" ]; then
 fi
 npx cap sync android
 
-echo "🎨 Copiando iconos oficiales con logo ACR 360 en todos los tamaños (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)..."
-cp -rf res/mipmap-* android/app/src/main/res/ 2>/dev/null || true
+echo "🎨 Copiando recursos oficiales con logo ACR 360 (adaptive icons, drawable, values, mipmaps)..."
+cp -rf res/* android/app/src/main/res/ 2>/dev/null || true
 
 echo "🛡️ Configurando permisos de Cámara, GPS y Red en AndroidManifest.xml..."
 MANIFEST="android/app/src/main/AndroidManifest.xml"
@@ -108,7 +108,13 @@ if [ -f "$MANIFEST" ]; then
     done
 fi
 
-echo "⚙️ Compilando APK con Gradle (Debug Release)..."
+echo "🔐 Preparando certificado y clave de firma ACR Flota 360..."
+KEYSTORE="/home/bodylab/acr-mobile-build/acr-release.keystore"
+if [ ! -f "$KEYSTORE" ]; then
+    keytool -genkeypair -v -keystore "$KEYSTORE" -alias acrkey -keyalg RSA -keysize 2048 -validity 10000 -storepass acrflota360 -keypass acrflota360 -dname "CN=ACR Operadores, OU=Operaciones, O=ACR Flota 360, L=Lima, ST=Lima, C=PE"
+fi
+
+echo "⚙️ Compilando APK con Gradle..."
 cd android
 chmod +x gradlew
 ./gradlew assembleDebug --no-daemon
@@ -118,6 +124,9 @@ if [ ! -f "$APK_OUT" ]; then
     echo "❌ Error: No se generó el archivo APK"
     exit 1
 fi
+
+echo "✍️ Re-firmando APK con identidad corporativa ACR Operadores..."
+jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore "$KEYSTORE" -storepass acrflota360 -keypass acrflota360 "$APK_OUT" acrkey 2>/dev/null || true
 
 echo "📥 Publicando APK en servidor web..."
 echo "{SUDO_PASS}" | sudo -S mkdir -p /var/www/acr-flota360/app/static/downloads

@@ -3,7 +3,7 @@
   "appName": "ACR Operadores",
   "webDir": "www",
   "server": {
-    "androidScheme": "http",
+    "androidScheme": "https",
     "cleartext": true
   },
   "android": {
