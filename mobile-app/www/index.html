@@ -153,11 +153,17 @@
   <!-- ACR NATIVE MOBILE API CONNECTOR & CONFIG -->
   <script>
     window.DEFAULT_SERVERS = [
+      "https://flota.bodylab.net.pe",
       "http://192.168.1.92:8001",
       "http://192.168.1.92:8000",
       "http://100.84.247.4:8001"
     ];
-    window.API_BASE_URL = localStorage.getItem("acr_api_server_url") || window.DEFAULT_SERVERS[0];
+    let savedServer = localStorage.getItem("acr_api_server_url");
+    if (!savedServer || savedServer.includes("192.168.1.") || savedServer.includes("100.84.247.")) {
+      savedServer = "https://flota.bodylab.net.pe";
+      localStorage.setItem("acr_api_server_url", savedServer);
+    }
+    window.API_BASE_URL = savedServer;
 
     const _nativeFetch = window.fetch;
     window.fetch = async function(resource, init) {
@@ -169,14 +175,32 @@
     };
 
     async function autoDetectarServidor() {
+      // 1. Probar el servidor prioritario
+      try {
+        const res = await _nativeFetch(window.API_BASE_URL + '/health', { signal: AbortSignal.timeout(2500) });
+        if (res.ok) {
+          console.log("Conectado a servidor:", window.API_BASE_URL);
+          const badge = document.getElementById('servidor-badge-txt');
+          if (badge) badge.textContent = 'En línea';
+          if (typeof cargarCatalogosEnUI === 'function') await cargarCatalogosEnUI();
+          if (typeof cargarOperadorActivo === 'function') await cargarOperadorActivo();
+          return;
+        }
+      } catch(e) {}
+
+      // 2. Fallbacks
       for (const srv of window.DEFAULT_SERVERS) {
+        if (srv === window.API_BASE_URL) continue;
         try {
-          const res = await _nativeFetch(srv + '/health', { signal: AbortSignal.timeout(1800) });
+          const res = await _nativeFetch(srv + '/health', { signal: AbortSignal.timeout(2000) });
           if (res.ok) {
             window.API_BASE_URL = srv;
             localStorage.setItem("acr_api_server_url", srv);
+            console.log("Servidor fallback conectado:", srv);
             const badge = document.getElementById('servidor-badge-txt');
-            if (badge) badge.textContent = srv.replace('http://', '');
+            if (badge) badge.textContent = 'En línea';
+            if (typeof cargarCatalogosEnUI === 'function') await cargarCatalogosEnUI();
+            if (typeof cargarOperadorActivo === 'function') await cargarOperadorActivo();
             return;
           }
         } catch(e) {}
@@ -239,13 +263,13 @@
 
       <!-- Derecha: Acciones Compactas y Estado -->
       <div class="flex items-center gap-1 shrink-0">
-        <!-- Botón Configuración de Servidor IP -->
-        <button type="button" onclick="abrirModalConfigServidor()" class="px-2 py-1 rounded-full bg-graphiteLight text-gray-300 border border-gray-700 text-[10px] cursor-pointer hover:text-white transition flex items-center gap-1 select-none font-bold shrink-0" title="Configurar conexión a servidor">
+        <!-- Botón Configuración de Servidor IP (Oculto en Vista Operador) -->
+        <button type="button" onclick="abrirModalConfigServidor()" class="hidden px-2 py-1 rounded-full bg-graphiteLight text-gray-300 border border-gray-700 text-[10px] cursor-pointer hover:text-white transition items-center gap-1 select-none font-bold shrink-0" title="Configurar conexión a servidor">
           <span>🌐</span> <span id="servidor-badge-txt" class="hidden xs:inline">Servidor</span>
         </button>
 
-        <!-- Botón PWA Instalar en Celular -->
-        <button type="button" id="btn-pwa-header" onclick="ejecutarInstalacionPWA()" class="px-2 py-1 rounded-full bg-machinery/20 hover:bg-machinery/30 text-machinery border border-machinery/50 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none font-black shadow-sm shrink-0" title="Instalar aplicación en tu celular">
+        <!-- Botón PWA Instalar en Celular (Oculto en App Nativa) -->
+        <button type="button" id="btn-pwa-header" onclick="ejecutarInstalacionPWA()" class="hidden px-2 py-1 rounded-full bg-machinery/20 hover:bg-machinery/30 text-machinery border border-machinery/50 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition items-center gap-1 select-none font-black shadow-sm shrink-0" title="Instalar aplicación en tu celular">
           <span>📲</span> <span class="hidden sm:inline">Instalar</span>
         </button>
         <!-- Botón / Indicador Interactivo de GPS -->
@@ -292,8 +316,8 @@
           </p>
         </div>
 
-        <!-- Botón Descargar APK Nativo Oficial -->
-        <a href="static/downloads/acr-operadores.apk" download="acr-operadores.apk" class="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-graphite to-carbon border border-machinery/40 hover:border-machinery text-left transition shadow-lg active:scale-98">
+        <!-- Botón Descargar APK Nativo Oficial (Oculto) -->
+        <a href="static/downloads/acr-operadores.apk" download="acr-operadores.apk" style="display: none !important;" class="hidden items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-graphite to-carbon border border-machinery/40 hover:border-machinery text-left transition shadow-lg active:scale-98">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-machinery/20 border border-machinery/40 flex items-center justify-center text-xl shrink-0">
               🤖
@@ -375,8 +399,8 @@
           </div>
         </div>
 
-        <!-- Tarjeta Prominente: INSTALACIÓN DE APP EN CELULAR (PWA) -->
-        <div id="card-pwa-install-bienvenida" class="bg-gradient-to-r from-emerald-950/60 via-graphite to-carbon border-2 border-machinery/60 rounded-2xl p-4 text-left shadow-lg space-y-3 relative overflow-hidden">
+        <!-- Tarjeta Prominente: INSTALACIÓN DE APP EN CELULAR (PWA) (Oculto) -->
+        <div id="card-pwa-install-bienvenida" style="display: none !important;" class="hidden bg-gradient-to-r from-emerald-950/60 via-graphite to-carbon border-2 border-machinery/60 rounded-2xl p-4 text-left shadow-lg space-y-3 relative overflow-hidden">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-xl bg-machinery/20 border border-machinery/50 flex items-center justify-center text-2xl shrink-0 shadow-inner">
               📲

@@ -170,8 +170,8 @@
 
       <!-- Derecha: Acciones Compactas y Estado -->
       <div class="flex items-center gap-1 shrink-0">
-        <!-- Botón PWA Instalar en Celular -->
-        <button type="button" id="btn-pwa-header" onclick="ejecutarInstalacionPWA()" class="px-2 py-1 rounded-full bg-machinery/20 hover:bg-machinery/30 text-machinery border border-machinery/50 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition flex items-center gap-1 select-none font-black shadow-sm shrink-0" title="Instalar aplicación en tu celular">
+        <!-- Botón PWA Instalar en Celular (Oculto) -->
+        <button type="button" id="btn-pwa-header" onclick="ejecutarInstalacionPWA()" style="display: none !important;" class="hidden px-2 py-1 rounded-full bg-machinery/20 hover:bg-machinery/30 text-machinery border border-machinery/50 text-[10px] cursor-pointer hover:opacity-90 active:scale-95 transition items-center gap-1 select-none font-black shadow-sm shrink-0" title="Instalar aplicación en tu celular">
           <span>📲</span> <span class="hidden sm:inline">Instalar</span>
         </button>
         <!-- Botón / Indicador Interactivo de GPS -->
@@ -218,8 +218,8 @@
           </p>
         </div>
 
-        <!-- Botón Descargar APK Nativo Oficial -->
-        <a href="/static/downloads/acr-operadores.apk" download="acr-operadores.apk" class="flex items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-graphite to-carbon border border-machinery/40 hover:border-machinery text-left transition shadow-lg active:scale-98">
+        <!-- Botón Descargar APK Nativo Oficial (Oculto) -->
+        <a href="/static/downloads/acr-operadores.apk" download="acr-operadores.apk" style="display: none !important;" class="hidden items-center justify-between p-3 rounded-2xl bg-gradient-to-r from-emerald-950/70 via-graphite to-carbon border border-machinery/40 hover:border-machinery text-left transition shadow-lg active:scale-98">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-xl bg-machinery/20 border border-machinery/40 flex items-center justify-center text-xl shrink-0">
               🤖
@@ -301,8 +301,8 @@
           </div>
         </div>
 
-        <!-- Tarjeta Prominente: INSTALACIÓN DE APP EN CELULAR (PWA) -->
-        <div id="card-pwa-install-bienvenida" class="bg-gradient-to-r from-emerald-950/60 via-graphite to-carbon border-2 border-machinery/60 rounded-2xl p-4 text-left shadow-lg space-y-3 relative overflow-hidden">
+        <!-- Tarjeta Prominente: INSTALACIÓN DE APP EN CELULAR (PWA) (Oculto) -->
+        <div id="card-pwa-install-bienvenida" style="display: none !important;" class="hidden bg-gradient-to-r from-emerald-950/60 via-graphite to-carbon border-2 border-machinery/60 rounded-2xl p-4 text-left shadow-lg space-y-3 relative overflow-hidden">
           <div class="flex items-center gap-3">
             <div class="w-11 h-11 rounded-xl bg-machinery/20 border border-machinery/50 flex items-center justify-center text-2xl shrink-0 shadow-inner">
               📲
