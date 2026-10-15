@@ -512,111 +512,158 @@ class NotificationService:
             return None
 
         # 1. Menú / Ayuda
-        if t in ("ayuda", "menu", "hola", "inicio", "?", "comandos"):
+        if t in ("ayuda", "menu", "hola", "inicio", "?", "comandos", "buenos dias", "buenas tardes", "buenas noches"):
             nom_saludo = f" {remitente_nombre}" if remitente_nombre else ""
             return (
                 f"🚜 *ACR FLOTA 360° — BOT ASISTENTE*\n"
-                f"¡Hola{nom_saludo}! Comandos disponibles:\n\n"
-                f"• *estado [código]* ➡️ Ej: *estado CAT-336*\n"
+                f"¡Hola{nom_saludo}! Comandos que puedes enviarme:\n\n"
+                f"• *estado [código o placa]* ➡️ Ej: *estado GEELY* o *estado M5I252*\n"
                 f"• *horometro [código]* ➡️ Lectura y próximo servicio\n"
                 f"• *resumen* ➡️ Resumen general de flota hoy\n"
-                f"• *alertas* ➡️ Equipos con servicio vencido o crítico\n"
+                f"• *alertas* ➡️ Unidades con servicio vencido o crítico\n"
                 f"• *stock [repuesto]* ➡️ Ej: *stock filtro*\n"
                 f"• *mis unidades* ➡️ Listado de maquinaria activa"
             )
 
-        # 2. Resumen
+        # 2. Resumen general de flota
         if t in ("resumen", "kpis", "reporte"):
-            from app.services.heavy_service import HeavyTrackService
-            r = HeavyTrackService.obtener_resumen_dashboard(db)
-            sem = r.get("semaforo_flota", {})
-            return (
-                f"📊 *ACR FLOTA 360° — RESUMEN EN TIEMPO REAL*\n\n"
-                f"🚜 *Total Equipos:* {r.get('total_equipos', 0)}\n"
-                f"🟢 *Operativos:* {sem.get('verde', 0)}\n"
-                f"🟡 *Próximo Servicio:* {sem.get('amarillo', 0)}\n"
-                f"🔴 *Mantenimiento Vencido:* {sem.get('rojo', 0)}\n"
-                f"🛠️ *En Taller:* {r.get('equipos_en_taller', 0)}\n"
-                f"⏱️ *Horas Acumuladas:* {r.get('horas_totales_trabajadas', 0)} h\n"
-                f"⛽ *Combustible Mes:* {r.get('galones_combustible_mes', 0)} Gal"
-            )
-
-        # 3. Alertas
-        if t in ("alerta", "alertas", "vencidos"):
-            from app.services.heavy_service import HeavyTrackService
-            equipos = db.query(MaquinariaEquipo).all()
-            alertas = []
-            for eq in equipos:
-                color, rest = HeavyTrackService.calcular_semaforo_equipo(eq)
-                unit = "km" if (eq.tipo_control or "HOROMETRO").upper() == "KILOMETRAJE" else "h"
-                if color == "rojo":
-                    alertas.append(f"🔴 *{eq.codigo_interno}*: Vencido hace {abs(rest):.1f} {unit}")
-                elif color == "amarillo":
-                    alertas.append(f"🟡 *{eq.codigo_interno}*: Faltan {rest:.1f} {unit}")
-
-            if not alertas:
-                return "✅ *ACR Flota 360°:* Ningún equipo tiene alertas. Toda la flota está al día."
-            return "🚨 *EQUIPOS CON ATENCIÓN REQUERIDA:*\n\n" + "\n".join(alertas)
-
-        # 4. Estado o Horómetro de equipo específico
-        if t.startswith("estado ") or t.startswith("horometro ") or t.startswith("eq "):
-            partes = t.split()
-            if len(partes) >= 2:
-                cod = partes[1].upper().replace("-", "")
-                equipos = db.query(MaquinariaEquipo).all()
-                eq = next((e for e in equipos if (e.codigo_interno or "").upper().replace("-", "") == cod), None)
-                if not eq:
-                    return f"❌ No se encontró la unidad con código *{partes[1].upper()}* en el sistema."
-
-                from app.services.heavy_service import HeavyTrackService
-                color, rest = HeavyTrackService.calcular_semaforo_equipo(eq)
-                unit = "km" if (eq.tipo_control or "HOROMETRO").upper() == "KILOMETRAJE" else "h"
-                semaforo_emoji = "🟢" if color == "verde" else ("🟡" if color == "amarillo" else "🔴")
-
-                op_nom = f"{eq.operador_asignado.nombres} {eq.operador_asignado.apellidos}" if eq.operador_asignado else "Sin asignar"
-                frente = eq.proyecto_actual.nombre if eq.proyecto_actual else "Base Central"
-
+            try:
+                from app.services.heavytrack_service import HeavyTrackService
+                r = HeavyTrackService.obtener_resumen_dashboard(db)
+                sem = r.get("semaforo_flota", {})
                 return (
-                    f"{semaforo_emoji} *FICHA DE UNIDAD: {eq.codigo_interno}*\n"
-                    f"🚜 *Modelo:* {eq.marca} {eq.modelo} ({eq.placa or 'S/P'})\n"
-                    f"📍 *Frente:* {frente}\n"
-                    f"👤 *Operador:* {op_nom}\n"
-                    f"⏱️ *Lectura Actual:* {eq.horometro_actual or eq.odometro_actual or 0.0} {unit}\n"
-                    f"🎯 *Próximo Mant.:* {eq.horometro_proximo_servicio or 250.0} {unit} (Margen: {rest:.1f} {unit})\n"
-                    f"📋 *Estado Operativo:* {eq.estado or 'OPERATIVO'}"
+                    f"📊 *ACR FLOTA 360° — RESUMEN EN TIEMPO REAL*\n\n"
+                    f"🚜 *Total Equipos:* {r.get('total_equipos', 0)}\n"
+                    f"🟢 *Operativos:* {sem.get('verde', 0)}\n"
+                    f"🟡 *Próximo Servicio:* {sem.get('amarillo', 0)}\n"
+                    f"🔴 *Mantenimiento Vencido:* {sem.get('rojo', 0)}\n"
+                    f"🛠️ *En Taller:* {r.get('equipos_en_taller', 0)}\n"
+                    f"⏱️ *Horas Acumuladas:* {r.get('horas_totales_trabajadas', 0)} h\n"
+                    f"⛽ *Combustible Mes:* {r.get('galones_combustible_mes', 0)} Gal"
                 )
+            except Exception as e:
+                return f"⚠️ Error al obtener resumen de flota: {e}"
 
-        # 5. Stock de repuesto
-        if t.startswith("stock "):
+        # 3. Alertas de flota
+        if t in ("alerta", "alertas", "vencidos", "vencido"):
+            try:
+                from app.services.heavytrack_service import HeavyTrackService
+                equipos = db.query(MaquinariaEquipo).all()
+                alertas = []
+                for eq in equipos:
+                    color, rest = HeavyTrackService.calcular_semaforo_equipo(eq)
+                    unit = "km" if (eq.tipo_control or "HOROMETRO").upper() == "KILOMETRAJE" else "h"
+                    if color == "rojo":
+                        alertas.append(f"🔴 *{eq.codigo_interno}*: Vencido hace {abs(rest):.1f} {unit}")
+                    elif color == "amarillo":
+                        alertas.append(f"🟡 *{eq.codigo_interno}*: Faltan {rest:.1f} {unit}")
+
+                if not alertas:
+                    return "✅ *ACR Flota 360°:* Ningún equipo tiene alertas. Toda la flota está al día."
+                return "🚨 *EQUIPOS CON ATENCIÓN REQUERIDA:*\n\n" + "\n".join(alertas)
+            except Exception as e:
+                return f"⚠️ Error al consultar alertas: {e}"
+
+        # 4. Stock de repuesto
+        if t.startswith("stock"):
             partes = t.split(maxsplit=1)
-            if len(partes) >= 2:
-                busq = partes[1].strip()
+            busq = partes[1].strip() if len(partes) > 1 else ""
+            if not busq:
+                return "📦 *Consulta de Almacén:* Escribe *stock [nombre o código]* (ej: *stock filtro* o *stock CAT*)."
+
+            try:
                 from app.models.heavytrack import InventarioRepuesto
                 repuestos = db.query(InventarioRepuesto).filter(
                     (InventarioRepuesto.codigo_parte.ilike(f"%{busq}%")) |
-                    (InventarioRepuesto.nombre.ilike(f"%{busq}%"))
+                    (InventarioRepuesto.nombre.ilike(f"%{busq}%")) |
+                    (InventarioRepuesto.categoria.ilike(f"%{busq}%"))
                 ).limit(5).all()
 
                 if not repuestos:
-                    return f"❌ No se encontraron repuestos con la búsqueda *{busq}*."
+                    return f"❌ No se encontraron repuestos con la búsqueda *{busq}* en almacén."
 
-                lineas = [f"📦 *RESULTADOS DE ALMACÉN ({busq}):*"]
+                lineas = [f"📦 *RESULTADOS DE ALMACÉN ({busq.upper()}):*"]
                 for r in repuestos:
-                    critico = "⚠️ Stock Bajo" if (r.stock_actual or 0) <= (r.stock_minimo or 0) else "✅"
-                    lineas.append(f"• *{r.codigo_parte}*: {r.nombre} ➡️ *{r.stock_actual} und* ({critico}) en {r.ubicacion_almacen or 'Bahía Central'}")
+                    critico = "⚠️ Stock Bajo" if (r.stock_actual or 0) <= (r.stock_minimo or 0) else "✅ Conforme"
+                    lineas.append(f"• *{r.codigo_parte}*: {r.nombre}\n  Stock: *{r.stock_actual} und* ({critico}) | Ubicación: {r.ubicacion_almacen or 'Bahía Central'} | Precio: S/ {float(r.precio_unitario or 0):.2f}")
                 return "\n\n".join(lineas)
+            except Exception as e:
+                return f"⚠️ Error al consultar almacén: {e}"
 
-        # 6. Mis unidades / Flota
-        if "unidades" in t or "maquinaria" in t or "flota" in t:
-            equipos = db.query(MaquinariaEquipo).limit(10).all()
-            lineas = ["🚜 *FLOTA ACTIVA ACR:*"]
-            for e in equipos:
-                lineas.append(f"• *{e.codigo_interno}* ({e.marca} {e.modelo}) — {e.estado or 'OPERATIVO'}")
-            return "\n".join(lineas)
+        # 5. Mis unidades / Flota activa
+        if "unidades" in t or "maquinaria" in t:
+            try:
+                equipos = db.query(MaquinariaEquipo).all()
+                if not equipos:
+                    return "🚜 No hay maquinaria registrada actualmente."
+                lineas = ["🚜 *FLOTA ACTIVA ACR:*"]
+                for e in equipos:
+                    estado_str = (e.estado_operativo or 'OPERATIVO').upper()
+                    lineas.append(f"• *{e.codigo_interno}* ({e.marca} {e.modelo} | {e.placa or 'S/P'}) — {estado_str}")
+                return "\n".join(lineas)
+            except Exception as e:
+                return f"⚠️ Error al listar unidades: {e}"
 
+        # 6. Búsqueda inteligente de Unidad (por 'estado ...', 'horometro ...', o directamente código/marca/modelo/placa)
+        busqueda_unidad = t
+        for prefijo in ("estado ", "horometro ", "equipo ", "eq ", "unidad ", "resumen "):
+            if busqueda_unidad.startswith(prefijo):
+                busqueda_unidad = busqueda_unidad[len(prefijo):].strip()
+                break
+
+        busq_clean = busqueda_unidad.replace("-", "").replace(" ", "").upper()
+        if busq_clean:
+            equipos = db.query(MaquinariaEquipo).all()
+            # 1. Búsqueda exacta en código_interno o placa
+            eq = next((e for e in equipos if (e.codigo_interno or "").replace("-", "").replace(" ", "").upper() == busq_clean or
+                                            (e.placa or "").replace("-", "").replace(" ", "").upper() == busq_clean), None)
+
+            # 2. Búsqueda flexible por coincidencia parcial en marca, modelo, nombre o código
+            if not eq:
+                eq = next((e for e in equipos if busq_clean in (e.codigo_interno or "").replace("-", "").replace(" ", "").upper() or
+                                                busq_clean in (e.placa or "").replace("-", "").replace(" ", "").upper() or
+                                                busqueda_unidad in (e.marca or "").lower() or
+                                                busqueda_unidad in (e.modelo or "").lower() or
+                                                busqueda_unidad in (e.nombre or "").lower() or
+                                                (e.marca or "").lower() in busqueda_unidad), None)
+
+            if eq:
+                try:
+                    from app.services.heavytrack_service import HeavyTrackService
+                    color, rest = HeavyTrackService.calcular_semaforo_equipo(eq)
+                    unit = "km" if (eq.tipo_control or "HOROMETRO").upper() == "KILOMETRAJE" else "h"
+                    semaforo_emoji = "🟢" if color == "verde" else ("🟡" if color == "amarillo" else "🔴")
+
+                    op_nom = f"{eq.operador_asignado.nombres} {eq.operador_asignado.apellidos}" if eq.operador_asignado else "Sin asignar"
+                    frente = eq.proyecto_actual.nombre if eq.proyecto_actual else "Base Central"
+                    condicion_txt = (eq.estado_operativo or 'OPERATIVO').upper()
+
+                    estado_txt = f"Mantenimiento VENCIDO por {abs(rest):.1f} {unit}" if rest < 0 else f"Faltan {rest:.1f} {unit} para próximo servicio"
+
+                    return (
+                        f"{semaforo_emoji} *FICHA DE UNIDAD: {eq.codigo_interno}*\n"
+                        f"🚜 *Equipo:* {eq.nombre or (eq.marca + ' ' + eq.modelo)}\n"
+                        f"📋 *Placa:* {eq.placa or 'Sin Placa'}\n"
+                        f"📍 *Frente / Proyecto:* {frente}\n"
+                        f"👤 *Operador Asignado:* {op_nom}\n"
+                        f"⏱️ *Lectura Actual:* *{eq.horometro_actual or eq.odometro_actual or 0.0:.1f} {unit}*\n"
+                        f"🎯 *Próximo Servicio:* {eq.horometro_proximo_servicio or 250.0:.1f} {unit} ({estado_txt})\n"
+                        f"⚙️ *Condición:* {condicion_txt}"
+                    )
+                except Exception as e:
+                    return f"⚠️ Error al obtener ficha de {eq.codigo_interno}: {e}"
+
+        # 7. Fallback amigable
         return (
             f"🤖 *ACR Flota 360° Bot*\n"
-            f"No reconocí tu mensaje. Escribe *ayuda* para ver los comandos disponibles."
+            f"No encontré información para *\"{texto.strip()}\"*.\n\n"
+            f"Prueba escribiendo:\n"
+            f"• *estado geely* (o cualquier modelo/placa)\n"
+            f"• *resumen*\n"
+            f"• *alertas*\n"
+            f"• *mis unidades*\n"
+            f"• *stock filtro*\n"
+            f"• *ayuda*"
         )
 
     # ==========================================
