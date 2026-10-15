@@ -965,15 +965,25 @@
               </span>
             </div>
             <p class="text-xs text-gray-400 mt-1">
-              Control de stock mínimo, reposición para mantenimientos preventivos, ubicación en taller y valorización de inventario
+              Control de stock mínimo, gestión de salidas para mantenimiento a maquinaria, reposición y valorización de inventario
             </p>
           </div>
-          <div class="flex items-center gap-2.5 flex-wrap">
+          <div class="flex items-center gap-2 flex-wrap">
             <button onclick="abrirModalNuevoRepuesto()"
-              class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-carbon rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20 cursor-pointer">
-              <span>➕</span> + Registrar Repuesto / Filtro
+              class="px-3.5 py-2 bg-emerald-500 hover:bg-emerald-400 text-carbon rounded-xl text-xs font-black flex items-center gap-1.5 transition shadow-lg shadow-emerald-500/20 cursor-pointer">
+              <span>➕</span> + Registrar Repuesto
             </button>
-            <button onclick="cargarTablaRepuestos()"
+            <button onclick="abrirModalAjusteDirecto('salida')"
+              class="px-3.5 py-2 bg-rose-950/90 hover:bg-rose-600 hover:text-white text-rose-300 border border-rose-800 rounded-xl text-xs font-black flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+              title="Registrar salida de repuesto y generar Vale de Almacén para una máquina">
+              <span>📤</span> Salida a Máquina (Vale)
+            </button>
+            <button onclick="abrirModalAjusteDirecto('entrada')"
+              class="px-3.5 py-2 bg-carbon hover:bg-gray-700 text-gray-200 border border-gray-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer"
+              title="Registrar ingreso de repuestos por compra o reposición">
+              <span>📥</span> + Entrada (Compra)
+            </button>
+            <button onclick="cargarTablaRepuestos(); cargarKardexAlmacen();"
               class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 text-gray-200 border border-gray-700 rounded-xl text-xs font-bold flex items-center gap-1.5 transition cursor-pointer">
               🔄 Refrescar
             </button>
@@ -1004,53 +1014,111 @@
           </div>
         </div>
 
-        <!-- Barra de Filtros y Búsqueda -->
-        <div class="bg-carbon p-4 rounded-xl border border-gray-800 flex flex-col md:flex-row gap-3 items-center justify-between">
-          <div class="relative w-full md:w-96">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">🔍</span>
-            <input type="text" id="filtro-repuesto-busqueda" oninput="filtrarRepuestos()"
-              placeholder="Buscar por código, descripción o bahía..."
-              class="w-full bg-graphite border border-gray-700 rounded-xl pl-9 pr-3 py-2 text-white text-xs font-medium focus:border-machinery focus:outline-none placeholder-gray-500">
+        <!-- Subnavegación de Vistas: Catálogo vs Kardex de Movimientos -->
+        <div class="flex items-center gap-2 border-b border-gray-800 pb-2">
+          <button type="button" id="tab-almacen-btn-catalogo" onclick="cambiarSubTabAlmacen('catalogo')"
+            class="px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer bg-emerald-500 text-carbon shadow-md flex items-center gap-1.5">
+            <span>📦</span> Catálogo & Stock de Repuestos
+          </button>
+          <button type="button" id="tab-almacen-btn-kardex" onclick="cambiarSubTabAlmacen('kardex')"
+            class="px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer text-gray-400 hover:text-white hover:bg-carbon flex items-center gap-1.5">
+            <span>📋</span> Kardex de Salidas & Entradas (Vales)
+          </button>
+        </div>
+
+        <!-- VISTA 1: CATÁLOGO DE REPUESTOS -->
+        <div id="vista-almacen-catalogo" class="space-y-4">
+          <!-- Barra de Filtros y Búsqueda -->
+          <div class="bg-carbon p-4 rounded-xl border border-gray-800 flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div class="relative w-full md:w-96">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">🔍</span>
+              <input type="text" id="filtro-repuesto-busqueda" oninput="filtrarRepuestos()"
+                placeholder="Buscar por código, descripción o bahía..."
+                class="w-full bg-graphite border border-gray-700 rounded-xl pl-9 pr-3 py-2 text-white text-xs font-medium focus:border-machinery focus:outline-none placeholder-gray-500">
+            </div>
+            <div class="flex items-center gap-2 w-full md:w-auto">
+              <label class="text-xs text-gray-400 font-bold uppercase shrink-0">Categoría:</label>
+              <select id="filtro-repuesto-categoria" onchange="filtrarRepuestos()"
+                class="bg-graphite border border-gray-700 rounded-xl px-3 py-2 text-white text-xs font-bold focus:border-machinery focus:outline-none">
+                <option value="">Todas las Categorías</option>
+                <option value="Filtros">Filtros (Aceite, Petróleo, Aire)</option>
+                <option value="Lubricantes">Lubricantes & Fluidos</option>
+                <option value="Desgaste">Elementos de Desgaste (Cuchillas, Puntas)</option>
+                <option value="Tren de Rodaje">Tren de Rodaje / Orugas</option>
+                <option value="Hidráulico">Sistema Hidráulico (Mangueras, Sellos)</option>
+                <option value="Motor">Motor & Componentes</option>
+                <option value="Eléctrico">Sistema Eléctrico & Baterías</option>
+                <option value="Otros">Otros Repuestos</option>
+              </select>
+            </div>
           </div>
-          <div class="flex items-center gap-2 w-full md:w-auto">
-            <label class="text-xs text-gray-400 font-bold uppercase shrink-0">Categoría:</label>
-            <select id="filtro-repuesto-categoria" onchange="filtrarRepuestos()"
-              class="bg-graphite border border-gray-700 rounded-xl px-3 py-2 text-white text-xs font-bold focus:border-machinery focus:outline-none">
-              <option value="">Todas las Categorías</option>
-              <option value="Filtros">Filtros (Aceite, Petróleo, Aire)</option>
-              <option value="Lubricantes">Lubricantes & Fluidos</option>
-              <option value="Desgaste">Elementos de Desgaste (Cuchillas, Puntas)</option>
-              <option value="Tren de Rodaje">Tren de Rodaje / Orugas</option>
-              <option value="Hidráulico">Sistema Hidráulico (Mangueras, Sellos)</option>
-              <option value="Motor">Motor & Componentes</option>
-              <option value="Eléctrico">Sistema Eléctrico & Baterías</option>
-              <option value="Otros">Otros Repuestos</option>
-            </select>
+
+          <!-- Tabla: Catálogo de Repuestos -->
+          <div class="overflow-x-auto rounded-lg border border-gray-800">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-carbon text-gray-400 uppercase font-semibold border-b border-gray-800">
+                <tr>
+                  <th class="py-3 px-4">Código de Parte</th>
+                  <th class="py-3 px-4">Descripción de Repuesto</th>
+                  <th class="py-3 px-4">Categoría</th>
+                  <th class="py-3 px-4 text-center">Stock Actual / Mínimo</th>
+                  <th class="py-3 px-4 text-right">Precio Unitario</th>
+                  <th class="py-3 px-4 text-right">Valorización Total</th>
+                  <th class="py-3 px-4">Ubicación Bahía</th>
+                  <th class="py-3 px-4 text-center">Gestión Rápida</th>
+                  <th class="py-3 px-4 text-center">Acciones</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-repuestos-body" class="divide-y divide-gray-800 font-medium">
+                <tr>
+                  <td colspan="9" class="py-8 text-center text-gray-500 font-medium">Cargando inventario de repuestos...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
 
-        <!-- Tabla: Catálogo de Repuestos -->
-        <div class="overflow-x-auto rounded-lg border border-gray-800">
-          <table class="w-full text-left text-xs">
-            <thead class="bg-carbon text-gray-400 uppercase font-semibold border-b border-gray-800">
-              <tr>
-                <th class="py-3 px-4">Código de Parte</th>
-                <th class="py-3 px-4">Descripción de Repuesto</th>
-                <th class="py-3 px-4">Categoría</th>
-                <th class="py-3 px-4 text-center">Stock Actual / Mínimo</th>
-                <th class="py-3 px-4 text-right">Precio Unitario</th>
-                <th class="py-3 px-4 text-right">Valorización Total</th>
-                <th class="py-3 px-4">Ubicación Bahía</th>
-                <th class="py-3 px-4 text-center">Ajuste de Stock</th>
-                <th class="py-3 px-4 text-center">Acciones</th>
-              </tr>
-            </thead>
-            <tbody id="tabla-repuestos-body" class="divide-y divide-gray-800 font-medium">
-              <tr>
-                <td colspan="9" class="py-8 text-center text-gray-500 font-medium">Cargando inventario de repuestos...</td>
-              </tr>
-            </tbody>
-          </table>
+        <!-- VISTA 2: KARDEX Y REGISTRO DE MOVIMIENTOS -->
+        <div id="vista-almacen-kardex" class="hidden space-y-4">
+          <div class="bg-carbon p-4 rounded-xl border border-gray-800 flex flex-col md:flex-row gap-3 items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-sm font-bold text-gray-300">Filtrar Movimientos:</span>
+              <button onclick="filtrarKardexPorTipo('')" id="btn-kardex-filtro-todos"
+                class="px-3 py-1.5 bg-gray-700 text-white rounded-lg text-xs font-bold transition">Todos</button>
+              <button onclick="filtrarKardexPorTipo('SALIDA')" id="btn-kardex-filtro-salidas"
+                class="px-3 py-1.5 bg-graphite text-rose-300 hover:bg-rose-950/80 border border-gray-700 rounded-lg text-xs font-bold transition">📤 Salidas a Máquinas</button>
+              <button onclick="filtrarKardexPorTipo('ENTRADA')" id="btn-kardex-filtro-entradas"
+                class="px-3 py-1.5 bg-graphite text-emerald-300 hover:bg-emerald-950/80 border border-gray-700 rounded-lg text-xs font-bold transition">📥 Entradas de Compras</button>
+            </div>
+            <div class="text-xs text-gray-400 font-mono" id="kardex-total-registros">
+              0 movimientos registrados
+            </div>
+          </div>
+
+          <div class="overflow-x-auto rounded-lg border border-gray-800">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-carbon text-gray-400 uppercase font-semibold border-b border-gray-800">
+                <tr>
+                  <th class="py-3 px-4 text-center">N°</th>
+                  <th class="py-3 px-4">Fecha & Hora</th>
+                  <th class="py-3 px-4">N° Vale / Guía</th>
+                  <th class="py-3 px-4 text-center">Tipo</th>
+                  <th class="py-3 px-4">Repuesto / Código</th>
+                  <th class="py-3 px-4 text-center">Cantidad</th>
+                  <th class="py-3 px-4">Unidad Asignada</th>
+                  <th class="py-3 px-4">Receptor / Mecánico</th>
+                  <th class="py-3 px-4">Motivo / Servicio</th>
+                  <th class="py-3 px-4 text-right">Total S/.</th>
+                  <th class="py-3 px-4 text-center">Comprobante</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-kardex-body" class="divide-y divide-gray-800 font-medium">
+                <tr>
+                  <td colspan="11" class="py-8 text-center text-gray-500 font-medium">Cargando Kardex de almacén...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -2651,18 +2719,18 @@
     </div>
   </div>
 
-  <!-- MODAL: AJUSTE RÁPIDO DE STOCK (ENTRADA / SALIDA) -->
+  <!-- MODAL: GESTIÓN DE SALIDAS Y ENTRADAS DE ALMACÉN (VALE DE DESPACHO) -->
   <div id="modal-ajuste-stock"
     class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-graphite border-2 border-machinery/60 rounded-3xl max-w-md w-full p-6 relative space-y-4 shadow-2xl">
+    <div class="bg-graphite border-2 border-machinery/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
-            🔄
+            📦
           </div>
           <div>
-            <h3 class="text-base font-black text-white uppercase">Movimiento de Stock</h3>
-            <p class="text-[11px] text-gray-400" id="ajuste-repuesto-subtitulo">Entrada de compras o salida para mantenimiento</p>
+            <h3 class="text-base font-black text-white uppercase" id="ajuste-modal-titulo">Vale de Salida de Almacén</h3>
+            <p class="text-[11px] text-gray-400" id="ajuste-repuesto-subtitulo">Despacho de repuestos para mantenimiento a maquinaria</p>
           </div>
         </div>
         <button type="button" onclick="cerrarModalAjusteStock()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
@@ -2671,50 +2739,123 @@
       <form id="form-ajuste-stock" onsubmit="guardarAjusteStockSubmit(event)" class="space-y-3.5 text-xs">
         <input type="hidden" id="ajuste-repuesto-id">
 
-        <div class="bg-carbon/80 p-3 rounded-xl border border-gray-800 flex justify-between items-center">
+        <!-- Selector de Tipo de Movimiento (Tabs) -->
+        <div>
+          <label class="block font-bold text-gray-300 uppercase mb-1">Tipo de Operación *</label>
+          <div class="grid grid-cols-2 gap-2">
+            <button type="button" id="btn-mov-salida" onclick="seleccionarTipoMovimiento('salida')"
+              class="py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-rose-950 text-rose-300 border-rose-600 shadow-md">
+              <span>📤</span> Salida a Máquina (Vale)
+            </button>
+            <button type="button" id="btn-mov-entrada" onclick="seleccionarTipoMovimiento('entrada')"
+              class="py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white">
+              <span>📥</span> + Entrada (Compra)
+            </button>
+          </div>
+          <input type="hidden" id="ajuste-tipo-movimiento" value="salida">
+        </div>
+
+        <!-- Selector de Repuesto (si no se preseleccionó de la fila) -->
+        <div id="box-ajuste-select-repuesto" class="hidden">
+          <label class="block font-bold text-gray-300 uppercase mb-1">Seleccionar Repuesto / Filtro *</label>
+          <select id="ajuste-select-repuesto" onchange="alCambiarRepuestoSelect(this.value)"
+            class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2.5 text-white font-bold focus:border-machinery focus:outline-none">
+            <!-- Dinámico -->
+          </select>
+        </div>
+
+        <!-- Banner de Repuesto Seleccionado -->
+        <div id="box-ajuste-repuesto-info" class="bg-carbon/80 p-3 rounded-xl border border-gray-800 flex justify-between items-center">
           <div>
             <div id="ajuste-repuesto-codigo" class="font-mono font-bold text-machinery text-sm">CAT-1R-0716</div>
             <div id="ajuste-repuesto-nombre" class="text-gray-300 text-xs mt-0.5">Filtro de Aceite CAT</div>
+            <div id="ajuste-repuesto-precio-sub" class="text-[10px] text-gray-400 font-mono mt-0.5">Precio: S/ 0.00 c/u</div>
           </div>
           <div class="text-right">
-            <span class="text-gray-400 text-[10px] block">Stock Actual:</span>
-            <span id="ajuste-repuesto-stock-badge" class="font-mono font-black text-emerald-400 text-base">14 und</span>
+            <span class="text-gray-400 text-[10px] block">Stock Disponible:</span>
+            <span id="ajuste-repuesto-stock-badge" class="font-mono font-black text-emerald-400 text-base">0 und</span>
           </div>
         </div>
 
-        <div>
-          <label class="block font-bold text-gray-300 uppercase mb-1">Tipo de Movimiento *</label>
-          <div class="grid grid-cols-2 gap-2">
-            <button type="button" id="btn-mov-entrada" onclick="seleccionarTipoMovimiento('entrada')"
-              class="py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-emerald-950 text-emerald-300 border-emerald-600">
-              <span>➕</span> Entrada / Compra
-            </button>
-            <button type="button" id="btn-mov-salida" onclick="seleccionarTipoMovimiento('salida')"
-              class="py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white">
-              <span>➖</span> Salida Mantenimiento
-            </button>
+        <!-- Campos de Cantidad y N° Vale -->
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Cantidad *</label>
+            <input type="number" min="1" id="ajuste-cantidad" required placeholder="Ej: 2" oninput="calcularTotalAjuste()"
+              class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-white font-mono font-black text-xl text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
-          <input type="hidden" id="ajuste-tipo-movimiento" value="entrada">
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">N° Vale / OT / Guía</label>
+            <input type="text" id="ajuste-numero-vale" placeholder="VAL-0042 o Auto"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2.5 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+          </div>
         </div>
 
-        <div>
-          <label class="block font-bold text-gray-300 uppercase mb-1">Cantidad de Unidades *</label>
-          <input type="number" min="1" id="ajuste-cantidad" required placeholder="Ej: 5"
-            class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-white font-mono font-black text-xl text-center rounded-xl py-2 px-3 focus:outline-none">
+        <!-- SECCIÓN EXCLUSIVA DE SALIDA: Unidad Destino y Receptor -->
+        <div id="seccion-campos-salida" class="space-y-3 pt-1 border-t border-gray-800">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Maquinaria / Equipo Destino *</label>
+              <select id="ajuste-equipo-id"
+                class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+                <!-- Se pobla dinámicamente con flota -->
+              </select>
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Mecánico / Persona que Recibe *</label>
+              <input type="text" id="ajuste-personal-receptor" placeholder="Ej: Juan Quispe (Mecánico)"
+                class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-medium focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-gray-300 uppercase mb-1">Motivo del Despacho / Mantenimiento</label>
+            <select id="ajuste-motivo-servicio"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
+              <option value="Mantenimiento Preventivo (Cambio Periódico)">Mantenimiento Preventivo (Cambio Periódico)</option>
+              <option value="Mantenimiento Correctivo / Falla Mecánica">Mantenimiento Correctivo / Falla Mecánica</option>
+              <option value="Desgaste de Operación / Cambio de Cuchillas">Desgaste de Operación / Cambio de Cuchillas</option>
+              <option value="Reposición de Emergencia en Obra">Reposición de Emergencia en Obra</option>
+              <option value="Ajuste / Calibración de Taller">Ajuste / Calibración de Taller</option>
+            </select>
+          </div>
         </div>
 
+        <!-- SECCIÓN EXCLUSIVA DE ENTRADA: Proveedor y Costo -->
+        <div id="seccion-campos-entrada" class="hidden space-y-3 pt-1 border-t border-gray-800">
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Proveedor / Distribuidor</label>
+              <input type="text" id="ajuste-proveedor" placeholder="Ej: Ferreyros S.A. / Volvo Perú"
+                class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-medium focus:border-machinery focus:outline-none">
+            </div>
+            <div>
+              <label class="block font-bold text-gray-300 uppercase mb-1">Precio Unitario Adquisición (S/.)</label>
+              <input type="number" step="0.01" min="0" id="ajuste-precio-unitario" placeholder="Opcional para actualizar"
+                class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
+            </div>
+          </div>
+        </div>
+
+        <!-- Observaciones -->
         <div>
-          <label class="block font-bold text-gray-300 uppercase mb-1">Motivo / Destino / Máquina</label>
-          <input type="text" id="ajuste-motivo" placeholder="Ej: Compra de lote grifo / Instalado en Excavadora CAT 336"
+          <label class="block font-bold text-gray-300 uppercase mb-1">Observaciones / Notas Adicionales</label>
+          <input type="text" id="ajuste-observaciones" placeholder="Detalle adicional u orden de trabajo..."
             class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:border-machinery focus:outline-none">
+        </div>
+
+        <!-- Resumen de Costo Total -->
+        <div class="bg-carbon/60 p-2.5 rounded-xl border border-gray-800 flex justify-between items-center text-xs">
+          <span class="text-gray-400">Total Valorizado de la Operación:</span>
+          <span id="ajuste-total-soles-badge" class="font-mono font-black text-emerald-400 text-sm">S/ 0.00</span>
         </div>
 
         <div id="ajuste-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
 
         <div class="pt-2 flex gap-2">
-          <button type="submit"
-            class="flex-1 py-3 bg-machinery hover:bg-machineryHover text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-machinery/25 flex items-center justify-center gap-1.5 cursor-pointer">
-            <span>💾</span> <span>Confirmar Movimiento</span>
+          <button type="submit" id="btn-submit-ajuste"
+            class="flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white text-xs font-black uppercase rounded-xl transition shadow-lg shadow-rose-900/40 flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>💾</span> <span id="label-submit-ajuste">Generar Vale de Salida & Despachar</span>
           </button>
           <button type="button" onclick="cerrarModalAjusteStock()"
             class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 text-xs font-bold uppercase rounded-xl transition border border-gray-700 cursor-pointer">
@@ -2886,10 +3027,10 @@
     </div>
   </div>
 
-  <!-- MODAL: ENVIAR REPORTE POR WHATSAPP Y ASOCIAR NÚMERO -->
+  <!-- MODAL: ENVIAR REPORTE POR WHATSAPP Y VINCULAR EMISOR POR QR -->
   <div id="modal-enviar-reporte-whatsapp"
     class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
-    <div class="bg-graphite border border-emerald-500/40 rounded-3xl max-w-xl w-full p-6 relative space-y-4 shadow-2xl shadow-emerald-950/40">
+    <div class="bg-graphite border border-emerald-500/40 rounded-3xl max-w-xl w-full p-6 relative space-y-4 shadow-2xl shadow-emerald-950/40 max-h-[92vh] overflow-y-auto">
       
       <!-- Header -->
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
@@ -2899,82 +3040,258 @@
           </div>
           <div>
             <h3 class="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
-              Reporte Ejecutivo WhatsApp
+              WhatsApp & Centro de Alarmas
               <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold uppercase">Oficial</span>
             </h3>
-            <p class="text-[11px] text-gray-400">Asocia y envía el reporte instantáneo a Gerencia o Jefatura</p>
+            <p class="text-[11px] text-gray-400">Enlace por QR para emisión de alarmas automáticas y envío de reportes</p>
           </div>
         </div>
         <button type="button" onclick="cerrarModalReporteWhatsApp()"
           class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer transition">&times;</button>
       </div>
 
-      <!-- Contactos / Números Pre-asociados -->
-      <div class="space-y-1.5">
-        <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Destinatarios Guardados / Frecuentes:</label>
-        <div id="modal-wa-contactos-list" class="flex flex-wrap gap-2">
-          <!-- Dinámico: Chips de Gerencia, Jefe, etc. -->
-        </div>
+      <!-- Tabs de WhatsApp -->
+      <div class="flex items-center gap-2 border-b border-gray-800 pb-2">
+        <button type="button" id="tab-wa-btn-reporte" onclick="cambiarTabWhatsApp('reporte')"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-black transition cursor-pointer bg-emerald-500 text-carbon shadow-md flex items-center gap-1.5">
+          <span>📤</span> Reporte Ejecutivo
+        </button>
+        <button type="button" id="tab-wa-btn-qr" onclick="cambiarTabWhatsApp('qr')"
+          class="px-3.5 py-1.5 rounded-xl text-xs font-black transition cursor-pointer text-gray-400 hover:text-white hover:bg-carbon flex items-center gap-1.5">
+          <span>📱</span> Vincular Emisor por Código QR
+        </button>
       </div>
 
-      <!-- Input Número con Checkbox de Asociación -->
-      <div class="bg-carbon/70 p-3.5 rounded-2xl border border-gray-800 space-y-2.5">
-        <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Número de WhatsApp (con código de país ej: +51):</label>
-        <div class="flex gap-2">
-          <div class="relative flex-1">
-            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-emerald-400 text-sm">📞</span>
-            <input type="tel" id="modal-wa-input-telefono" placeholder="+51 998 887 766"
-              oninput="onTelefonoWhatsAppChange()"
-              class="w-full bg-graphite border border-gray-700 rounded-xl pl-9 pr-3 py-2.5 text-white font-mono font-bold text-sm focus:border-emerald-500 focus:outline-none transition">
+      <!-- PESTAÑA 1: REPORTE EJECUTIVO -->
+      <div id="tab-wa-vista-reporte" class="space-y-4">
+        <!-- Contactos / Números Pre-asociados -->
+        <div class="space-y-1.5">
+          <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Destinatarios Guardados / Frecuentes:</label>
+          <div id="modal-wa-contactos-list" class="flex flex-wrap gap-2">
+            <!-- Dinámico: Chips de Gerencia, Jefe, etc. -->
           </div>
-          <button type="button" onclick="guardarAsociacionWhatsAppDirecta()"
-            title="Guardar y asociar este número como oficial de Gerencia"
-            class="px-3 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-emerald-400 hover:text-emerald-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
-            <span>💾</span> Asociar
+        </div>
+
+        <!-- Input Número con Checkbox de Asociación -->
+        <div class="bg-carbon/70 p-3.5 rounded-2xl border border-gray-800 space-y-2.5">
+          <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Número de WhatsApp Destino (con código de país ej: +51):</label>
+          <div class="flex gap-2">
+            <div class="relative flex-1">
+              <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-emerald-400 text-sm">📞</span>
+              <input type="tel" id="modal-wa-input-telefono" placeholder="+51 998 887 766"
+                oninput="onTelefonoWhatsAppChange()"
+                class="w-full bg-graphite border border-gray-700 rounded-xl pl-9 pr-3 py-2.5 text-white font-mono font-bold text-sm focus:border-emerald-500 focus:outline-none transition">
+            </div>
+            <button type="button" onclick="guardarAsociacionWhatsAppDirecta()"
+              title="Guardar y asociar este número como oficial de Gerencia"
+              class="px-3 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-emerald-400 hover:text-emerald-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+              <span>💾</span> Asociar
+            </button>
+          </div>
+          
+          <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-gray-300 hover:text-white pt-1">
+            <input type="checkbox" id="modal-wa-check-asociar" checked
+              class="w-4 h-4 rounded border-gray-700 text-emerald-500 focus:ring-0 bg-graphite cursor-pointer">
+            <span>💾 Recordar y asociar este número como predeterminado de Gerencia</span>
+          </label>
+        </div>
+
+        <!-- Preview del mensaje -->
+        <div class="space-y-1.5">
+          <div class="flex items-center justify-between">
+            <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Vista Previa del Mensaje (Formato WhatsApp):</label>
+            <span class="text-[10px] text-gray-400">Generado en tiempo real</span>
+          </div>
+          <div class="relative">
+            <textarea id="modal-wa-preview-text" readonly rows="8"
+              class="w-full bg-[#0d1418] border border-emerald-950/80 rounded-2xl p-3 text-emerald-200/90 font-mono text-xs leading-relaxed resize-none focus:outline-none select-text shadow-inner">
+Cargando reporte de flota...
+            </textarea>
+            <div class="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] bg-emerald-950/90 border border-emerald-800 text-emerald-300 px-2 py-0.5 rounded-md">
+              <span>⚡ ACR Flota360</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Footer Buttons Reporte -->
+        <div class="pt-2 flex flex-col sm:flex-row gap-2">
+          <button type="button" onclick="enviarMensajeWhatsAppModal()"
+            class="flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-carbon font-black text-xs uppercase rounded-xl transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer">
+            <span class="text-base">🚀</span>
+            <span>Abrir WhatsApp & Enviar</span>
+          </button>
+          <button type="button" onclick="copiarTextoWhatsAppModal()"
+            class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-xs uppercase rounded-xl transition border border-gray-700 flex items-center justify-center gap-1.5 cursor-pointer">
+            <span>📋</span>
+            <span>Copiar Texto</span>
+          </button>
+          <button type="button" onclick="cerrarModalReporteWhatsApp()"
+            class="py-3 px-4 bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white font-bold text-xs uppercase rounded-xl transition border border-gray-800 cursor-pointer">
+            Cerrar
           </button>
         </div>
-        
-        <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-gray-300 hover:text-white pt-1">
-          <input type="checkbox" id="modal-wa-check-asociar" checked
-            class="w-4 h-4 rounded border-gray-700 text-emerald-500 focus:ring-0 bg-graphite cursor-pointer">
-          <span>💾 Recordar y asociar este número como predeterminado de Gerencia</span>
-        </label>
       </div>
 
-      <!-- Preview del mensaje -->
-      <div class="space-y-1.5">
-        <div class="flex items-center justify-between">
-          <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Vista Previa del Mensaje (Formato WhatsApp):</label>
-          <span class="text-[10px] text-gray-400">Generado en tiempo real</span>
-        </div>
-        <div class="relative">
-          <textarea id="modal-wa-preview-text" readonly rows="8"
-            class="w-full bg-[#0d1418] border border-emerald-950/80 rounded-2xl p-3 text-emerald-200/90 font-mono text-xs leading-relaxed resize-none focus:outline-none select-text shadow-inner">
-Cargando reporte de flota...
-          </textarea>
-          <div class="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] bg-emerald-950/90 border border-emerald-800 text-emerald-300 px-2 py-0.5 rounded-md">
-            <span>⚡ ACR Flota360</span>
+      <!-- PESTAÑA 2: VINCULAR NÚMERO EMISOR POR CÓDIGO QR -->
+      <div id="tab-wa-vista-qr" class="hidden space-y-4 text-xs">
+        <!-- Estado de Conexión del Emisor -->
+        <div id="wa-qr-status-card" class="bg-carbon/90 p-4 rounded-2xl border border-gray-800 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold uppercase text-gray-300 tracking-wider">Estado del Gateway Emisor:</span>
+            <span id="wa-qr-badge-estado" class="px-2.5 py-1 rounded-full font-black text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+              <span>CONECTADO & ENLAZADO</span>
+            </span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-3 text-gray-300">
+            <div class="bg-graphite/70 p-2.5 rounded-xl border border-gray-800">
+              <span class="text-[10px] text-gray-500 uppercase block font-bold">Número Emisor Vinculado:</span>
+              <span id="wa-qr-telefono-vinculado" class="font-mono font-black text-white text-sm">+51 924 120 551</span>
+            </div>
+            <div class="bg-graphite/70 p-2.5 rounded-xl border border-gray-800">
+              <span class="text-[10px] text-gray-500 uppercase block font-bold">Cliente / Dispositivo:</span>
+              <span id="wa-qr-dispositivo-vinculado" class="font-bold text-emerald-300 text-xs">WhatsApp Multi-Device</span>
+            </div>
           </div>
         </div>
+
+        <!-- Visualizador de Código QR (WhatsApp Web Style) -->
+        <div id="wa-qr-scanner-box" class="bg-carbon/95 p-5 rounded-2xl border-2 border-dashed border-emerald-500/40 flex flex-col items-center justify-center text-center space-y-3">
+          <div class="text-[11px] font-bold text-gray-300">
+            Escanea este código con WhatsApp en el celular que emitirá las alertas:
+          </div>
+
+          <!-- Contenedor Gráfico QR -->
+          <div class="relative p-3 bg-white rounded-2xl shadow-xl flex items-center justify-center">
+            <svg id="wa-qr-svg" class="w-48 h-48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- Matriz QR estilizada -->
+              <rect width="100" height="100" fill="white"/>
+              <!-- Corner TL -->
+              <rect x="10" y="10" width="24" height="24" fill="#0B141A" rx="3"/>
+              <rect x="14" y="14" width="16" height="16" fill="white" rx="2"/>
+              <rect x="18" y="18" width="8" height="8" fill="#0B141A" rx="1"/>
+              <!-- Corner TR -->
+              <rect x="66" y="10" width="24" height="24" fill="#0B141A" rx="3"/>
+              <rect x="70" y="14" width="16" height="16" fill="white" rx="2"/>
+              <rect x="74" y="18" width="8" height="8" fill="#0B141A" rx="1"/>
+              <!-- Corner BL -->
+              <rect x="10" y="66" width="24" height="24" fill="#0B141A" rx="3"/>
+              <rect x="14" y="70" width="16" height="16" fill="white" rx="2"/>
+              <rect x="18" y="74" width="8" height="8" fill="#0B141A" rx="1"/>
+              <!-- Data Patterns -->
+              <rect x="38" y="12" width="6" height="6" fill="#0B141A"/>
+              <rect x="48" y="12" width="6" height="6" fill="#0B141A"/>
+              <rect x="38" y="24" width="6" height="6" fill="#0B141A"/>
+              <rect x="52" y="24" width="8" height="6" fill="#0B141A"/>
+              <rect x="12" y="42" width="6" height="6" fill="#0B141A"/>
+              <rect x="24" y="42" width="8" height="6" fill="#0B141A"/>
+              <rect x="38" y="38" width="24" height="24" fill="#25D366" rx="4"/>
+              <rect x="70" y="42" width="8" height="6" fill="#0B141A"/>
+              <rect x="82" y="42" width="6" height="6" fill="#0B141A"/>
+              <rect x="40" y="68" width="6" height="6" fill="#0B141A"/>
+              <rect x="52" y="68" width="6" height="6" fill="#0B141A"/>
+              <rect x="40" y="80" width="8" height="6" fill="#0B141A"/>
+              <rect x="54" y="80" width="6" height="6" fill="#0B141A"/>
+              <rect x="70" y="68" width="8" height="6" fill="#0B141A"/>
+              <rect x="82" y="74" width="6" height="12" fill="#0B141A"/>
+              <!-- WhatsApp Icon In Center -->
+              <circle cx="50" cy="50" r="9" fill="white"/>
+              <path d="M50 43C46.13 43 43 46.13 43 50C43 51.3 43.35 52.52 43.96 53.57L43 57L46.56 56.07C47.57 56.63 48.75 57 50 57C53.87 57 57 53.87 57 50C57 46.13 53.87 43 50 43ZM53.64 53.25C53.48 53.71 52.83 54.08 52.27 54.2C51.89 54.28 51.39 54.34 49.71 53.64C47.57 52.75 46.19 50.57 46.08 50.43C45.98 50.29 45.2 49.25 45.2 48.17C45.2 47.09 45.75 46.56 45.97 46.33C46.19 46.11 46.45 46.06 46.63 46.06C46.77 46.06 46.91 46.06 47.04 46.07C47.2 46.08 47.38 46.03 47.54 46.41C47.7 46.79 48.09 47.74 48.14 47.84C48.19 47.95 48.22 48.06 48.14 48.2C48.06 48.35 48.03 48.42 47.92 48.55C47.81 48.68 47.69 48.83 47.58 48.95C47.46 49.07 47.34 49.2 47.48 49.44C47.62 49.67 48.1 50.45 48.81 51.08C49.72 51.89 50.47 52.15 50.71 52.27C50.95 52.39 51.1 52.36 51.24 52.2C51.38 52.04 51.85 51.49 52.01 51.25C52.17 51.01 52.33 51.05 52.54 51.13C52.75 51.21 53.88 51.77 54.11 51.88C54.34 52 54.49 52.06 54.55 52.16C54.61 52.26 54.61 52.79 54.45 53.25Z" fill="#25D366"/>
+            </svg>
+          </div>
+
+          <!-- Pasos de Escaneo -->
+          <div class="text-left text-[11px] text-gray-400 space-y-1 max-w-sm">
+            <div><span class="text-emerald-400 font-bold">1.</span> Abra WhatsApp en el celular emisor.</div>
+            <div><span class="text-emerald-400 font-bold">2.</span> Toque <b>Dispositivos vinculados</b> > <b>Vincular un dispositivo</b>.</div>
+            <div><span class="text-emerald-400 font-bold">3.</span> Apunte la cámara hacia este código QR para emparejar.</div>
+          </div>
+
+          <!-- Formulario de Emparejamiento Rápido -->
+          <div class="w-full max-w-md pt-2 border-t border-gray-800 space-y-2">
+            <label class="block text-left text-[11px] font-bold text-gray-300 uppercase">
+              Número de Celular Emisor a Enlazar:
+            </label>
+            <div class="flex gap-2">
+              <input type="tel" id="wa-qr-input-nuevo-tel" placeholder="+51 924 120 551" value="+51 924 120 551"
+                class="flex-1 bg-graphite border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold text-xs focus:border-emerald-500 focus:outline-none">
+              <button type="button" onclick="vincularEmisorWhatsAppSubmit()"
+                class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-carbon font-black text-xs uppercase rounded-xl transition cursor-pointer shadow-md">
+                🔗 Vincular
+              </button>
+              <button type="button" onclick="desvincularEmisorWhatsAppSubmit()"
+                class="px-3 py-2 bg-rose-950/80 hover:bg-rose-700 text-rose-300 rounded-xl text-xs font-bold transition border border-rose-800 cursor-pointer"
+                title="Desvincular emisor actual">
+                Desvincular
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alarmas Automáticas y Detección de GPS Apagado -->
+        <div class="bg-carbon/70 p-4 rounded-2xl border border-gray-800 space-y-2.5">
+          <span class="text-[11px] font-black uppercase text-machinery tracking-wider block">
+            🛡️ Canal Activo de Monitoreo & Detección de Seguridad:
+          </span>
+
+          <div class="space-y-2 text-gray-300 text-xs">
+            <div class="flex items-center justify-between p-2 rounded-xl bg-graphite border border-gray-800">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🚨</span>
+                <div>
+                  <span class="font-bold text-white block">Alerta de GPS Apagado o Desconectado en Turno</span>
+                  <span class="text-[10px] text-gray-400">Detecta si el operador apagó el GPS para evitar ser rastreado</span>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800">ACTIVO</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-xl bg-graphite border border-gray-800">
+              <div class="flex items-center gap-2">
+                <span class="text-base">🛠️</span>
+                <div>
+                  <span class="font-bold text-white block">Mantenimientos Próximos (&lt; 25h) y Vencidos</span>
+                  <span class="text-[10px] text-gray-400">Aviso automático para preparación de filtros y lubricantes</span>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800">ACTIVO</span>
+            </div>
+
+            <div class="flex items-center justify-between p-2 rounded-xl bg-graphite border border-gray-800">
+              <div class="flex items-center gap-2">
+                <span class="text-base">📑</span>
+                <div>
+                  <span class="font-bold text-white block">Vencimiento de SOAT y Revisión Técnica</span>
+                  <span class="text-[10px] text-gray-400">Aviso preventivo legal a los 15 días de vencimiento</span>
+                </div>
+              </div>
+              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800">ACTIVO</span>
+            </div>
+          </div>
+
+          <!-- Botón de Simulación Inmediata de Alarma de GPS -->
+          <div class="pt-2 flex flex-col sm:flex-row gap-2">
+            <button type="button" onclick="probarAlertaGpsApagadoModal()"
+              class="flex-1 py-2.5 px-3 bg-rose-950 hover:bg-rose-900 border border-rose-700 text-rose-200 rounded-xl font-black text-xs transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+              <span>🚨</span>
+              <span>Simular Alerta: Unidad Apagó GPS en Operación</span>
+            </button>
+            <button type="button" onclick="probarWhatsAppTest()"
+              class="py-2.5 px-3 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-xl font-bold text-xs transition border border-gray-700 cursor-pointer">
+              🔔 Probar Alarma
+            </button>
+          </div>
+        </div>
+
+        <div class="pt-2 flex justify-end">
+          <button type="button" onclick="cerrarModalReporteWhatsApp()"
+            class="py-2.5 px-4 bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white font-bold text-xs uppercase rounded-xl transition border border-gray-800 cursor-pointer">
+            Cerrar
+          </button>
+        </div>
       </div>
 
-      <!-- Footer Buttons -->
-      <div class="pt-2 flex flex-col sm:flex-row gap-2">
-        <button type="button" onclick="enviarMensajeWhatsAppModal()"
-          class="flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-carbon font-black text-xs uppercase rounded-xl transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer">
-          <span class="text-base">🚀</span>
-          <span>Abrir WhatsApp & Enviar</span>
-        </button>
-        <button type="button" onclick="copiarTextoWhatsAppModal()"
-          class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-xs uppercase rounded-xl transition border border-gray-700 flex items-center justify-center gap-1.5 cursor-pointer">
-          <span>📋</span>
-          <span>Copiar Texto</span>
-        </button>
-        <button type="button" onclick="cerrarModalReporteWhatsApp()"
-          class="py-3 px-4 bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white font-bold text-xs uppercase rounded-xl transition border border-gray-800 cursor-pointer">
-          Cerrar
-        </button>
-      </div>
     </div>
   </div>
 
@@ -3321,6 +3638,11 @@ Cargando reporte de flota...
         cargarModuloCombustible();
       }
 
+      if (tabKey === 'almacen') {
+        cargarTablaRepuestos();
+        cargarKardexAlmacen();
+      }
+
       // 7. Sincronizar URL hash
       if (window.location.hash !== '#' + tabKey) {
         history.replaceState(null, '', '#' + tabKey);
@@ -3355,6 +3677,7 @@ Cargando reporte de flota...
       await cargarDashboard();
       await cargarNotificaciones();
       cargarTablaRepuestos();
+      cargarKardexAlmacen();
       cargarTablaProveedores();
 
       // Cerrar dropdown de notificaciones al hacer clic fuera
@@ -3442,7 +3765,8 @@ Cargando reporte de flota...
         'revision_tecnica': { icon: '📄', bg: 'bg-purple-950/60 border-purple-800 text-purple-300', tag: 'Rev. Técnica' },
         'soat_poliza': { icon: '📑', bg: 'bg-blue-950/60 border-blue-800 text-blue-300', tag: 'SOAT / Seguro' },
         'incongruencia_datos': { icon: '🚨', bg: 'bg-rose-950/80 border-rose-700 text-rose-200', tag: 'Incongruencia' },
-        'incidencia_falla': { icon: '⚠️', bg: 'bg-amber-950/70 border-amber-800 text-amber-300', tag: 'Falla Campo' }
+        'incidencia_falla': { icon: '⚠️', bg: 'bg-amber-950/70 border-amber-800 text-amber-300', tag: 'Falla Campo' },
+        'gps_apagado_sabotaje': { icon: '🚨', bg: 'bg-red-950 border-red-600 text-red-200 font-black animate-pulse', tag: 'GPS APAGADO / SABOTAJE' }
       };
 
       container.innerHTML = notificacionesCache.map(n => {
@@ -5905,18 +6229,224 @@ Cargando reporte de flota...
       }
     }
 
+    // ==========================================
+    // KARDEX Y MOVIMIENTOS DE ALMACÉN
+    // ==========================================
+    let kardexCache = [];
+    let kardexFiltroTipo = '';
+
+    function cambiarSubTabAlmacen(tab) {
+      const btnCat = document.getElementById('tab-almacen-btn-catalogo');
+      const btnKard = document.getElementById('tab-almacen-btn-kardex');
+      const vCat = document.getElementById('vista-almacen-catalogo');
+      const vKard = document.getElementById('vista-almacen-kardex');
+
+      if (tab === 'kardex') {
+        btnKard.className = 'px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer bg-emerald-500 text-carbon shadow-md flex items-center gap-1.5';
+        btnCat.className = 'px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer text-gray-400 hover:text-white hover:bg-carbon flex items-center gap-1.5';
+        vCat.classList.add('hidden');
+        vKard.classList.remove('hidden');
+        cargarKardexAlmacen();
+      } else {
+        btnCat.className = 'px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer bg-emerald-500 text-carbon shadow-md flex items-center gap-1.5';
+        btnKard.className = 'px-4 py-2 rounded-xl text-xs font-black transition cursor-pointer text-gray-400 hover:text-white hover:bg-carbon flex items-center gap-1.5';
+        vKard.classList.add('hidden');
+        vCat.classList.remove('hidden');
+        cargarTablaRepuestos();
+      }
+    }
+
+    async function cargarKardexAlmacen() {
+      try {
+        const resp = await fetch('/api/v1/heavy/repuestos/movimientos');
+        if (!resp.ok) return;
+        kardexCache = await resp.json();
+        filtrarKardexPorTipo(kardexFiltroTipo);
+      } catch (err) {
+        console.error('Error al cargar kardex:', err);
+      }
+    }
+
+    function filtrarKardexPorTipo(tipo) {
+      kardexFiltroTipo = tipo;
+      const btnTodos = document.getElementById('btn-kardex-filtro-todos');
+      const btnSal = document.getElementById('btn-kardex-filtro-salidas');
+      const btnEnt = document.getElementById('btn-kardex-filtro-entradas');
+
+      if (btnTodos) btnTodos.className = !tipo ? 'px-3 py-1.5 bg-gray-700 text-white rounded-lg text-xs font-bold transition' : 'px-3 py-1.5 bg-graphite text-gray-400 hover:text-white rounded-lg text-xs font-bold transition';
+      if (btnSal) btnSal.className = tipo === 'SALIDA' ? 'px-3 py-1.5 bg-rose-600 text-white rounded-lg text-xs font-bold transition shadow-sm' : 'px-3 py-1.5 bg-graphite text-rose-300 hover:bg-rose-950/80 border border-gray-700 rounded-lg text-xs font-bold transition';
+      if (btnEnt) btnEnt.className = tipo === 'ENTRADA' ? 'px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold transition shadow-sm' : 'px-3 py-1.5 bg-graphite text-emerald-300 hover:bg-emerald-950/80 border border-gray-700 rounded-lg text-xs font-bold transition';
+
+      let filtrados = kardexCache || [];
+      if (tipo) {
+        filtrados = filtrados.filter(m => (m.tipo_movimiento || '').toUpperCase() === tipo.toUpperCase());
+      }
+      renderTablaKardex(filtrados);
+    }
+
+    function renderTablaKardex(lista) {
+      const tbody = document.getElementById('tabla-kardex-body');
+      const labelReg = document.getElementById('kardex-total-registros');
+      if (labelReg) labelReg.textContent = `${lista.length} movimientos registrados`;
+      if (!tbody) return;
+      tbody.innerHTML = '';
+
+      if (!lista || lista.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="11" class="py-10 text-center text-gray-500 font-medium">
+              <div class="text-3xl mb-2">📋</div>
+              <p class="font-bold text-gray-300">No hay movimientos registrados aún en el Kardex.</p>
+              <p class="text-xs text-gray-500 mt-1">Utilice el botón "Salida a Máquina (Vale)" para registrar el despacho de repuestos a un equipo.</p>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      lista.forEach((m, idx) => {
+        const esSalida = (m.tipo_movimiento || '').toUpperCase() === 'SALIDA';
+        const tipoBadge = esSalida
+          ? '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-rose-950 text-rose-300 border border-rose-800">📤 SALIDA</span>'
+          : '<span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-300 border border-emerald-800">📥 ENTRADA</span>';
+
+        const fechaStr = m.creado_en ? new Date(m.creado_en).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' }) : '-';
+
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-graphiteLight/50 transition';
+        tr.innerHTML = `
+          <td class="py-3 px-4 text-center font-mono text-gray-500">${idx + 1}</td>
+          <td class="py-3 px-4 font-mono font-bold text-gray-200 whitespace-nowrap">${fechaStr}</td>
+          <td class="py-3 px-4 font-mono font-bold text-machinery whitespace-nowrap">${m.numero_vale || '-'}</td>
+          <td class="py-3 px-4 text-center">${tipoBadge}</td>
+          <td class="py-3 px-4">
+            <div class="font-bold text-white text-xs">${m.repuesto_nombre || 'Repuesto'}</div>
+            <div class="font-mono text-[10px] text-gray-400">${m.repuesto_codigo || ''}</div>
+          </td>
+          <td class="py-3 px-4 text-center font-mono font-bold ${esSalida ? 'text-rose-400' : 'text-emerald-400'} text-sm">
+            ${esSalida ? '-' : '+'}${m.cantidad} und
+          </td>
+          <td class="py-3 px-4">
+            ${m.equipo_codigo ? `<span class="px-2 py-0.5 rounded text-[10px] font-mono font-black bg-carbon text-machinery border border-gray-700">${m.equipo_codigo}</span>` : '<span class="text-gray-500 text-xs">-</span>'}
+          </td>
+          <td class="py-3 px-4 text-xs font-bold text-gray-300">${m.personal_receptor || '-'}</td>
+          <td class="py-3 px-4 text-xs text-gray-400 max-w-[160px] truncate" title="${m.motivo || ''}">${m.motivo || '-'}</td>
+          <td class="py-3 px-4 text-right font-mono font-black ${esSalida ? 'text-white' : 'text-emerald-400'} text-xs">S/ ${(m.costo_total || 0).toFixed(2)}</td>
+          <td class="py-3 px-4 text-center">
+            <button onclick="verDetalleValeAlmacen(${m.id})" class="px-2 py-1 bg-graphiteLight hover:bg-gray-700 text-gray-300 rounded text-[10px] font-bold border border-gray-700 transition cursor-pointer" title="Ver comprobante de vale">
+              🧾 Vale
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function verDetalleValeAlmacen(movId) {
+      const m = (kardexCache || []).find(x => x.id === movId);
+      if (!m) return;
+      const fechaStr = m.creado_en ? new Date(m.creado_en).toLocaleString('es-PE') : '-';
+      alert(
+        `📋 VALE DE ALMACÉN: ${m.numero_vale || 'VAL-00'}\n` +
+        `----------------------------------------\n` +
+        `• Tipo de Operación: ${m.tipo_movimiento}\n` +
+        `• Fecha y Hora: ${fechaStr}\n` +
+        `• Repuesto: ${m.repuesto_nombre} (${m.repuesto_codigo})\n` +
+        `• Cantidad: ${m.cantidad} unidades\n` +
+        `• Unidad / Máquina: ${m.equipo_codigo || 'No asignada'}\n` +
+        `• Personal / Mecánico: ${m.personal_receptor || '-'}\n` +
+        `• Motivo: ${m.motivo || '-'}\n` +
+        `• Total Valorizado: S/ ${(m.costo_total || 0).toFixed(2)}\n` +
+        `• Observaciones: ${m.observaciones || 'Conforme'}`
+      );
+    }
+
+    function poblarEquiposDestinoAjuste() {
+      const selEq = document.getElementById('ajuste-equipo-id');
+      if (!selEq) return;
+      const equipos = flotaCache || [];
+      if (equipos.length === 0) {
+        selEq.innerHTML = '<option value="">Sin maquinaria registrada</option>';
+      } else {
+        selEq.innerHTML = equipos.map(e => `
+          <option value="${e.id}">${e.codigo_interno} — ${e.marca} ${e.modelo} (${e.placa || 'Sin Placa'})</option>
+        `).join('');
+      }
+    }
+
+    function abrirModalAjusteDirecto(tipo) {
+      if (!repuestosCache || repuestosCache.length === 0) {
+        alert('Primero debe registrar al menos un repuesto en el catálogo.');
+        return;
+      }
+      const selRep = document.getElementById('ajuste-select-repuesto');
+      if (selRep) {
+        selRep.innerHTML = repuestosCache.map(r => `
+          <option value="${r.id}">${r.codigo_parte} — ${r.nombre} (Stock: ${r.stock_actual} und | S/ ${Number(r.precio_unitario||0).toFixed(2)})</option>
+        `).join('');
+      }
+
+      poblarEquiposDestinoAjuste();
+
+      document.getElementById('ajuste-repuesto-id').value = '';
+      document.getElementById('box-ajuste-select-repuesto').classList.remove('hidden');
+      document.getElementById('box-ajuste-repuesto-info').classList.remove('hidden');
+
+      alCambiarRepuestoSelect(repuestosCache[0].id);
+      seleccionarTipoMovimiento(tipo || 'salida');
+
+      document.getElementById('ajuste-cantidad').value = '1';
+      document.getElementById('ajuste-numero-vale').value = `VAL-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(100+Math.random()*900)}`;
+      calcularTotalAjuste();
+
+      const errBox = document.getElementById('ajuste-error');
+      if (errBox) errBox.classList.add('hidden');
+
+      const modal = document.getElementById('modal-ajuste-stock');
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+    }
+
+    function alCambiarRepuestoSelect(id) {
+      const r = repuestosCache.find(x => x.id === Number(id));
+      if (!r) return;
+      document.getElementById('ajuste-repuesto-id').value = r.id;
+      document.getElementById('ajuste-repuesto-codigo').textContent = r.codigo_parte;
+      document.getElementById('ajuste-repuesto-nombre').textContent = r.nombre;
+      document.getElementById('ajuste-repuesto-precio-sub').textContent = `Precio: S/ ${(r.precio_unitario || 0).toFixed(2)} c/u`;
+      document.getElementById('ajuste-repuesto-stock-badge').textContent = `${r.stock_actual} und`;
+      calcularTotalAjuste();
+    }
+
+    function calcularTotalAjuste() {
+      const repId = document.getElementById('ajuste-repuesto-id')?.value;
+      const cant = parseInt(document.getElementById('ajuste-cantidad')?.value) || 0;
+      const r = repuestosCache.find(x => x.id === Number(repId));
+      const precio = r ? Number(r.precio_unitario || 0) : 0;
+      const tot = cant * precio;
+      const b = document.getElementById('ajuste-total-soles-badge');
+      if (b) b.textContent = `S/ ${tot.toFixed(2)}`;
+    }
+
     function abrirModalAjusteStock(id, tipo) {
       const r = repuestosCache.find(x => x.id === id);
       if (!r) return;
 
+      poblarEquiposDestinoAjuste();
+
       document.getElementById('ajuste-repuesto-id').value = r.id;
+      document.getElementById('box-ajuste-select-repuesto').classList.add('hidden');
+      document.getElementById('box-ajuste-repuesto-info').classList.remove('hidden');
+
       document.getElementById('ajuste-repuesto-codigo').textContent = r.codigo_parte;
       document.getElementById('ajuste-repuesto-nombre').textContent = r.nombre;
+      document.getElementById('ajuste-repuesto-precio-sub').textContent = `Precio: S/ ${(r.precio_unitario || 0).toFixed(2)} c/u`;
       document.getElementById('ajuste-repuesto-stock-badge').textContent = `${r.stock_actual} und`;
-      document.getElementById('ajuste-cantidad').value = '';
-      document.getElementById('ajuste-motivo').value = '';
+      document.getElementById('ajuste-cantidad').value = '1';
+      document.getElementById('ajuste-numero-vale').value = `VAL-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${r.id}`;
 
-      seleccionarTipoMovimiento(tipo || 'entrada');
+      seleccionarTipoMovimiento(tipo || 'salida');
+      calcularTotalAjuste();
 
       const errBox = document.getElementById('ajuste-error');
       if (errBox) errBox.classList.add('hidden');
@@ -5938,51 +6468,90 @@ Cargando reporte de flota...
       document.getElementById('ajuste-tipo-movimiento').value = tipo;
       const btnEntrada = document.getElementById('btn-mov-entrada');
       const btnSalida = document.getElementById('btn-mov-salida');
+      const secSalida = document.getElementById('seccion-campos-salida');
+      const secEntrada = document.getElementById('seccion-campos-entrada');
+      const labelSubmit = document.getElementById('label-submit-ajuste');
+      const btnSubmit = document.getElementById('btn-submit-ajuste');
 
       if (tipo === 'entrada') {
         btnEntrada.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-emerald-950 text-emerald-300 border-emerald-600 shadow-md';
         btnSalida.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white';
-        document.getElementById('ajuste-repuesto-subtitulo').textContent = 'Ingreso de compras o recepción de proveedor';
+        document.getElementById('ajuste-modal-titulo').textContent = 'Ingreso de Repuestos (Compra / Reposición)';
+        document.getElementById('ajuste-repuesto-subtitulo').textContent = 'Entrada de compras, reposición de stock y factura de proveedor';
+        if (secSalida) secSalida.classList.add('hidden');
+        if (secEntrada) secEntrada.classList.remove('hidden');
+        if (labelSubmit) labelSubmit.textContent = 'Registrar Ingreso a Almacén';
+        if (btnSubmit) btnSubmit.className = 'flex-1 py-3 bg-emerald-500 hover:bg-emerald-400 text-carbon text-xs font-black uppercase rounded-xl transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-1.5 cursor-pointer';
       } else {
         btnSalida.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-rose-950 text-rose-300 border-rose-600 shadow-md';
         btnEntrada.className = 'py-2.5 px-3 rounded-xl font-black text-xs transition border flex items-center justify-center gap-1.5 bg-carbon text-gray-400 border-gray-700 hover:text-white';
-        document.getElementById('ajuste-repuesto-subtitulo').textContent = 'Salida / consumo para mantenimiento preventivo a máquina';
+        document.getElementById('ajuste-modal-titulo').textContent = 'Vale de Salida de Almacén (Despacho a Máquina)';
+        document.getElementById('ajuste-repuesto-subtitulo').textContent = 'Salida de repuesto, asignación a unidad y generación de Vale de Almacén';
+        if (secEntrada) secEntrada.classList.add('hidden');
+        if (secSalida) secSalida.classList.remove('hidden');
+        if (labelSubmit) labelSubmit.textContent = 'Generar Vale de Salida & Despachar';
+        if (btnSubmit) btnSubmit.className = 'flex-1 py-3 bg-rose-600 hover:bg-rose-500 text-white text-xs font-black uppercase rounded-xl transition shadow-lg shadow-rose-900/40 flex items-center justify-center gap-1.5 cursor-pointer';
       }
     }
 
     async function guardarAjusteStockSubmit(e) {
       e.preventDefault();
-      const id = document.getElementById('ajuste-repuesto-id').value;
+      const repId = Number(document.getElementById('ajuste-repuesto-id').value);
       const tipo = document.getElementById('ajuste-tipo-movimiento').value;
       const cant = parseInt(document.getElementById('ajuste-cantidad').value) || 0;
-      const motivo = document.getElementById('ajuste-motivo').value.trim() || 'Ajuste de stock en taller';
       const errBox = document.getElementById('ajuste-error');
 
+      if (!repId) {
+        if (errBox) { errBox.textContent = 'Seleccione un repuesto.'; errBox.classList.remove('hidden'); }
+        return;
+      }
       if (cant <= 0) {
-        if (errBox) {
-          errBox.textContent = 'Ingrese una cantidad mayor a 0.';
-          errBox.classList.remove('hidden');
-        }
+        if (errBox) { errBox.textContent = 'Ingrese una cantidad mayor a 0.'; errBox.classList.remove('hidden'); }
         return;
       }
 
-      const delta = (tipo === 'salida') ? -cant : cant;
-
       try {
-        const resp = await fetch(`/api/v1/heavy/repuestos/${id}/ajustar-stock`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ cantidad: delta, motivo: motivo })
-        });
+        let resp;
+        if (tipo === 'salida') {
+          const payload = {
+            repuesto_id: repId,
+            cantidad: cant,
+            equipo_id: Number(document.getElementById('ajuste-equipo-id')?.value) || null,
+            personal_receptor: document.getElementById('ajuste-personal-receptor')?.value.trim() || 'Mecánico de Taller',
+            motivo: document.getElementById('ajuste-motivo-servicio')?.value || 'Mantenimiento Preventivo',
+            numero_vale: document.getElementById('ajuste-numero-vale')?.value.trim() || null,
+            observaciones: document.getElementById('ajuste-observaciones')?.value.trim() || null
+          };
+          resp = await fetch('/api/v1/heavy/repuestos/salida', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        } else {
+          const payload = {
+            repuesto_id: repId,
+            cantidad: cant,
+            proveedor: document.getElementById('ajuste-proveedor')?.value.trim() || null,
+            numero_guia: document.getElementById('ajuste-numero-vale')?.value.trim() || null,
+            costo_unitario: parseFloat(document.getElementById('ajuste-precio-unitario')?.value) || null,
+            observaciones: document.getElementById('ajuste-observaciones')?.value.trim() || null
+          };
+          resp = await fetch('/api/v1/heavy/repuestos/entrada', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+        }
 
         if (!resp.ok) {
           const errData = await resp.json().catch(() => ({}));
-          throw new Error(errData.detail || 'Error al ajustar stock');
+          throw new Error(errData.detail || 'Error al registrar movimiento de almacén');
         }
 
         const res = await resp.json();
         cerrarModalAjusteStock();
         await cargarTablaRepuestos();
+        await cargarKardexAlmacen();
         alert(`✅ ${res.mensaje}`);
 
       } catch (err) {
@@ -5992,6 +6561,122 @@ Cargando reporte de flota...
         } else {
           alert(`❌ Error: ${err.message}`);
         }
+      }
+    }
+
+    // ==========================================
+    // WHATSAPP GATEWAY QR & ALARMAS GPS
+    // ==========================================
+    function cambiarTabWhatsApp(tab) {
+      const btnRep = document.getElementById('tab-wa-btn-reporte');
+      const btnQr = document.getElementById('tab-wa-btn-qr');
+      const vRep = document.getElementById('tab-wa-vista-reporte');
+      const vQr = document.getElementById('tab-wa-vista-qr');
+
+      if (tab === 'qr') {
+        btnQr.className = 'px-3.5 py-1.5 rounded-xl text-xs font-black transition cursor-pointer bg-emerald-500 text-carbon shadow-md flex items-center gap-1.5';
+        btnRep.className = 'px-3.5 py-1.5 rounded-xl text-xs font-black transition cursor-pointer text-gray-400 hover:text-white hover:bg-carbon flex items-center gap-1.5';
+        vRep.classList.add('hidden');
+        vQr.classList.remove('hidden');
+        cargarEstadoWhatsAppQR();
+      } else {
+        btnRep.className = 'px-3.5 py-1.5 rounded-xl text-xs font-black transition cursor-pointer bg-emerald-500 text-carbon shadow-md flex items-center gap-1.5';
+        btnQr.className = 'px-3.5 py-1.5 rounded-xl text-xs font-black transition cursor-pointer text-gray-400 hover:text-white hover:bg-carbon flex items-center gap-1.5';
+        vQr.classList.add('hidden');
+        vRep.classList.remove('hidden');
+      }
+    }
+
+    async function cargarEstadoWhatsAppQR() {
+      try {
+        const resp = await fetch('/api/v1/heavy/notificaciones/whatsapp-qr');
+        if (!resp.ok) return;
+        const data = await resp.json();
+
+        const badge = document.getElementById('wa-qr-badge-estado');
+        const telSpan = document.getElementById('wa-qr-telefono-vinculado');
+        const dispSpan = document.getElementById('wa-qr-dispositivo-vinculado');
+        const inputTel = document.getElementById('wa-qr-input-nuevo-tel');
+
+        if (telSpan) telSpan.textContent = data.telefono_emisor || '-';
+        if (dispSpan) dispSpan.textContent = data.dispositivo || 'WhatsApp Multi-Device Gateway';
+        if (inputTel && data.telefono_emisor) inputTel.value = data.telefono_emisor;
+
+        if (badge) {
+          if (data.estado === 'CONECTADO') {
+            badge.className = 'px-2.5 py-1 rounded-full font-black text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center gap-1.5';
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> <span>CONECTADO & ENLAZADO</span>';
+          } else {
+            badge.className = 'px-2.5 py-1 rounded-full font-black text-[11px] bg-amber-950 text-amber-400 border border-amber-700 flex items-center gap-1.5';
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> <span>ESPERANDO ESCANEO QR</span>';
+          }
+        }
+      } catch (err) {
+        console.error('Error al cargar estado WhatsApp QR:', err);
+      }
+    }
+
+    async function vincularEmisorWhatsAppSubmit() {
+      const tel = document.getElementById('wa-qr-input-nuevo-tel')?.value.trim();
+      if (!tel || tel.length < 8) {
+        alert('Por favor ingrese un número de teléfono válido con código de país (ej: +51 924 120 551).');
+        return;
+      }
+      try {
+        const resp = await fetch('/api/v1/heavy/notificaciones/whatsapp-qr/vincular', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telefono: tel })
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          alert(`✅ Número ${tel} vinculado con éxito como Gateway emisor de alarmas por WhatsApp.`);
+          await cargarEstadoWhatsAppQR();
+        } else {
+          alert('Error: ' + (res.detail || 'No se pudo vincular'));
+        }
+      } catch (e) {
+        alert('Error conectando con el servidor.');
+      }
+    }
+
+    async function desvincularEmisorWhatsAppSubmit() {
+      if (!confirm('¿Desea desvincular el teléfono emisor de WhatsApp? Se requerirá escanear nuevamente el código QR.')) return;
+      try {
+        const resp = await fetch('/api/v1/heavy/notificaciones/whatsapp-qr/desvincular', { method: 'POST' });
+        if (resp.ok) {
+          alert('Dispositivo desvinculado.');
+          await cargarEstadoWhatsAppQR();
+        }
+      } catch (e) {
+        alert('Error al desvincular.');
+      }
+    }
+
+    async function probarAlertaGpsApagadoModal(equipoCodigo) {
+      try {
+        const payload = {
+          equipo_codigo: equipoCodigo || (flotaCache && flotaCache.length > 0 ? flotaCache[0].codigo_interno : 'CAT-336'),
+          motivo: 'Unidad apagó el GPS durante su tiempo de uso o trabajo para evitar detección'
+        };
+        const resp = await fetch('/api/v1/heavy/notificaciones/alerta-gps-apagado', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const res = await resp.json();
+        if (resp.ok) {
+          alert(`🚨 ${res.mensaje}\n\nSe ha disparado la notificación crítica y registrado en el canal de WhatsApp.`);
+          await cargarNotificaciones();
+          if (res.whatsapp_link) {
+            window.open(res.whatsapp_link, '_blank');
+          }
+        } else {
+          alert('Error al simular alerta GPS: ' + (res.detail || 'desconocido'));
+        }
+      } catch (err) {
+        console.error('Error:', err);
+        alert('Error al reportar alerta GPS.');
       }
     }
 

@@ -380,6 +380,43 @@ class MantenimientoRepuesto(Base):
 
 
 # ==========================================
+# 10.B. KARDEX Y MOVIMIENTOS DE ALMACÉN
+# ==========================================
+class TipoMovimientoAlmacen(str, enum.Enum):
+    SALIDA = "SALIDA"      # Despacho para mantenimiento preventivo, correctivo o repuesto
+    ENTRADA = "ENTRADA"    # Ingreso por compra / reposición
+    AJUSTE = "AJUSTE"      # Ajuste de inventario
+
+
+class MovimientoAlmacen(Base):
+    __tablename__ = "movimientos_almacen"
+
+    id = Column(Integer, primary_key=True, index=True)
+    repuesto_id = Column(Integer, ForeignKey("inventario_repuestos.id", ondelete="CASCADE"), nullable=False)
+    tipo_movimiento = Column(String(20), default=TipoMovimientoAlmacen.SALIDA.value, nullable=False)
+    cantidad = Column(Integer, nullable=False)
+    stock_anterior = Column(Integer, default=0, nullable=False)
+    stock_nuevo = Column(Integer, default=0, nullable=False)
+
+    # Destino del Repuesto (Para Salidas a Maquinaria)
+    equipo_id = Column(Integer, ForeignKey("maquinaria_equipos.id", ondelete="SET NULL"), nullable=True)
+    equipo_codigo = Column(String(50), nullable=True)
+    personal_receptor = Column(String(150), nullable=True)   # Mecánico / Técnico receptor
+    motivo = Column(String(120), nullable=True)              # Preventivo, Correctivo, Emergencia
+    numero_vale = Column(String(60), nullable=True)           # N° Vale de Salida u OT
+
+    costo_unitario = Column(Float, default=0.0, nullable=False)
+    costo_total = Column(Float, default=0.0, nullable=False)
+    observaciones = Column(Text, nullable=True)
+
+    creado_en = Column(DateTime, default=datetime.utcnow, index=True)
+
+    # Relaciones
+    repuesto = relationship("InventarioRepuesto", backref="movimientos")
+    equipo = relationship("MaquinariaEquipo")
+
+
+# ==========================================
 # 11. NOTIFICACIONES Y ALERTAS
 # ==========================================
 class TipoNotificacion(str, enum.Enum):
@@ -390,6 +427,7 @@ class TipoNotificacion(str, enum.Enum):
     SOAT_POLIZA = "soat_poliza"                           # SOAT o póliza por vencer / vencida
     INCONGRUENCIA_DATOS = "incongruencia_datos"           # Lectura menor a la anterior, salto anómalo
     INCIDENCIA_FALLA = "incidencia_falla"                 # Operador reportó falla en checklist
+    GPS_APAGADO_SABOTAJE = "gps_apagado_sabotaje"         # Señal GPS apagada o desconectada durante turno activo
 
 
 class NotificacionAlerta(Base):

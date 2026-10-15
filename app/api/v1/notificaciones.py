@@ -143,3 +143,73 @@ def enviar_whatsapp_prueba(db: Session = Depends(get_db)):
         "whatsapp_link": link,
         "mensaje": "Mensaje de prueba generado correctamente."
     }
+
+
+class VincularWhatsAppQRRequest(BaseModel):
+    telefono: str
+    dispositivo: Optional[str] = "WhatsApp Multi-Device Gateway"
+
+
+class ReportarGpsApagadoRequest(BaseModel):
+    equipo_id: Optional[int] = None
+    equipo_codigo: Optional[str] = None
+    motivo: Optional[str] = None
+
+
+@router.get("/whatsapp-qr")
+def obtener_estado_whatsapp_qr(db: Session = Depends(get_db)):
+    """Retorna el estado de vinculación del emisor WhatsApp y datos del código QR."""
+    return NotificationService.obtener_estado_whatsapp_qr(db)
+
+
+@router.post("/whatsapp-qr/vincular")
+def vincular_whatsapp_qr(req: VincularWhatsAppQRRequest, db: Session = Depends(get_db)):
+    """Vincula el número emisor oficial tras escanear el código QR."""
+    if not req.telefono or len(req.telefono.strip()) < 8:
+        raise HTTPException(status_code=400, detail="Debe ingresar un número de teléfono válido para vincular.")
+    return NotificationService.vincular_whatsapp_qr(db, req.telefono, req.dispositivo)
+
+
+@router.post("/whatsapp-qr/desvincular")
+def desvincular_whatsapp_qr(db: Session = Depends(get_db)):
+    """Desvincula la sesión activa del número emisor de WhatsApp."""
+    return NotificationService.desvincular_whatsapp_qr(db)
+
+
+@router.post("/alerta-gps-apagado")
+def reportar_alerta_gps_apagado(req: ReportarGpsApagadoRequest, db: Session = Depends(get_db)):
+    """
+    Dispara manualmente o vía telemetría una alarma crítica de GPS Apagado / Desconectado
+    durante el horario de trabajo de una maquinaria o unidad.
+    """
+    from app.models.heavytrack import MaquinariaEquipo, Personal
+
+    equipo = None
+    if req.equipo_id:
+        equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == req.equipo_id).first()
+    elif req.equipo_codigo:
+        equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.codigo_interno == req.equipo_codigo.strip().upper()).first()
+
+    if not equipo:
+        equipo = db.query(MaquinariaEquipo).first()
+
+    if not equipo:
+        raise HTTPException(status_code=404, detail="No hay equipos registrados en el sistema.")
+
+    operador = equipo.operador_asignado
+    motivo = req.motivo or "Pérdida súbita o apagado voluntario de señal satelital GPS durante turno operativo"
+
+    notif = NotificationService.notificar_gps_apagado_sabotaje(
+        db=db,
+        equipo=equipo,
+        operador=operador,
+        motivo_sospecha=motivo
+    )
+
+    return {
+        "success": True,
+        "mensaje": f"🚨 Alerta de GPS Apagado registrada para {equipo.codigo_interno}.",
+        "notificacion_id": notif.id,
+        "titulo": notif.titulo,
+        "whatsapp_link": notif.whatsapp_link
+    }

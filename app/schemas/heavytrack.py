@@ -426,6 +426,48 @@ class InventarioRepuestoResponse(InventarioRepuestoBase):
         from_attributes = True
 
 
+class SalidaRepuestoRequest(BaseModel):
+    repuesto_id: int
+    cantidad: int
+    equipo_id: Optional[int] = None
+    equipo_codigo: Optional[str] = None
+    personal_receptor: Optional[str] = None
+    motivo: Optional[str] = "Mantenimiento Preventivo"
+    numero_vale: Optional[str] = None
+    observaciones: Optional[str] = None
+
+
+class EntradaRepuestoRequest(BaseModel):
+    repuesto_id: int
+    cantidad: int
+    costo_unitario: Optional[float] = None
+    proveedor: Optional[str] = None
+    numero_guia: Optional[str] = None
+    observaciones: Optional[str] = None
+
+
+class MovimientoAlmacenResponse(BaseModel):
+    id: int
+    repuesto_id: int
+    repuesto_codigo: Optional[str] = None
+    repuesto_nombre: Optional[str] = None
+    tipo_movimiento: str
+    cantidad: int
+    stock_anterior: int
+    stock_nuevo: int
+    equipo_codigo: Optional[str] = None
+    personal_receptor: Optional[str] = None
+    motivo: Optional[str] = None
+    numero_vale: Optional[str] = None
+    costo_unitario: float = 0.0
+    costo_total: float = 0.0
+    observaciones: Optional[str] = None
+    creado_en: datetime
+
+    class Config:
+        from_attributes = True
+
+
 # ==========================================
 # PROVEEDORES
 # ==========================================

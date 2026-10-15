@@ -50,9 +50,75 @@ def seed_flota_inicial(db: Session):
         except Exception:
             db.rollback()
 
-    return
+    # 2. Inicialización de Repuestos Críticos si el almacén está vacío
+    if db.query(InventarioRepuesto).count() == 0:
+        repuestos_demo = [
+            InventarioRepuesto(
+                codigo_parte="CAT-1R-0716",
+                nombre="Filtro de Combustible Primario CAT 336",
+                categoria="Filtros",
+                stock_actual=14,
+                stock_minimo=4,
+                precio_unitario=185.0,
+                ubicacion_almacen="Almacén Quellaveco - Bahía 2"
+            ),
+            InventarioRepuesto(
+                codigo_parte="VOL-21707134",
+                nombre="Filtro de Aceite de Motor Volvo D13",
+                categoria="Filtros",
+                stock_actual=3,
+                stock_minimo=5,
+                precio_unitario=240.0,
+                ubicacion_almacen="Taller Central Moquegua"
+            ),
+            InventarioRepuesto(
+                codigo_parte="LUB-15W40-DRUM",
+                nombre="Aceite Mineral 15W40 Cilindro 55 Galones",
+                categoria="Lubricantes",
+                stock_actual=8,
+                stock_minimo=2,
+                precio_unitario=3450.0,
+                ubicacion_almacen="Patio de Lubricantes"
+            ),
+            InventarioRepuesto(
+                codigo_parte="HYD-HOSE-08",
+                nombre="Manguera Hidráulica 1/2 pulg 5000 PSI",
+                categoria="Hidráulico",
+                stock_actual=12,
+                stock_minimo=3,
+                precio_unitario=320.0,
+                ubicacion_almacen="Bahía Hidráulica - Gaveta 4"
+            ),
+            InventarioRepuesto(
+                codigo_parte="CAT-CUT-966",
+                nombre="Cuchilla de Desgaste Frontal CAT 966H",
+                categoria="Desgaste",
+                stock_actual=2,
+                stock_minimo=2,
+                precio_unitario=1850.0,
+                ubicacion_almacen="Patio Central Repuestos"
+            ),
+        ]
+        db.add_all(repuestos_demo)
+        db.commit()
 
-    hoy = date.today()
+    # 3. Configuración inicial de Gateway WhatsApp y Enlace Emisor
+    from app.models.heavytrack import AjusteSistema
+    ajustes_defaults = [
+        ("whatsapp_emisor_estado", "CONECTADO", "Estado de conexión del número emisor WhatsApp"),
+        ("whatsapp_emisor_telefono", "+51 924 120 551", "Teléfono emisor oficial vinculado vía QR"),
+        ("whatsapp_emisor_nombre", "ACR Flota 360° Bot Oficial", "Nombre del dispositivo emisor de alertas"),
+        ("whatsapp_emisor_dispositivo", "WhatsApp Multi-Device Gateway Web", "Tipo de cliente WhatsApp conectado"),
+        ("whatsapp_auto_envio", "1", "Envío desatendido de alertas activado"),
+        ("whatsapp_alerta_gps_desconexion", "1", "Alerta automática si se apaga el GPS en turno")
+    ]
+    for clave, valor, desc in ajustes_defaults:
+        item = db.query(AjusteSistema).filter(AjusteSistema.clave == clave).first()
+        if not item:
+            db.add(AjusteSistema(clave=clave, valor=valor, descripcion=desc))
+    db.commit()
+
+    return
 
     # 1. Proyectos de Construcción / Minería
     p1 = Proyecto(

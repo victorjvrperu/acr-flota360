@@ -355,6 +355,109 @@ class NotificationService:
             permitir_duplicado_horas=2
         )
 
+    @staticmethod
+    def notificar_gps_apagado_sabotaje(
+        db: Session,
+        equipo: MaquinariaEquipo,
+        operador: Optional[Personal] = None,
+        proyecto_nombre: Optional[str] = None,
+        ultima_hora: Optional[str] = None,
+        motivo_sospecha: str = "Pérdida súbita o apagado voluntario de señal GPS durante turno operativo"
+    ) -> NotificacionAlerta:
+        """
+        Dispara alerta crítica inmediata cuando una maquinaria o unidad apaga el GPS
+        o pierde conexión satelital durante su jornada de trabajo (detección anti-sabotaje).
+        """
+        hoy = datetime.now().strftime("%d/%m/%Y %H:%M")
+        op_nom = f"{operador.nombres} {operador.apellidos} (DNI: {operador.dni})" if operador else "Operador en Turno"
+        proy = proyecto_nombre or (equipo.proyecto_actual.nombre if equipo.proyecto_actual else "Proyecto / Frente Activo")
+        hora_corte = ultima_hora or datetime.now().strftime("%H:%M")
+
+        msg = (
+            f"🚨 *ACR FLOTA 360° — ALERTA CRÍTICA: GPS APAGADO / SABOTAJE*\n"
+            f"📅 *Momento del Evento:* {hoy}\n\n"
+            f"🚜 *Unidad Afectada:* *{equipo.codigo_interno}* — {equipo.marca} {equipo.modelo} (Placa: {equipo.placa or 'S/P'})\n"
+            f"👤 *Operador Asignado:* {op_nom}\n"
+            f"📍 *Frente / Ubicación:* {proy}\n"
+            f"⚠️ *Evento Detectado:* *Desconexión de rastreo satelital en jornada activa.*\n"
+            f"🛡️ *Sospecha de Seguridad:* {motivo_sospecha}\n"
+            f"⏱️ *Última señal GPS conocida:* {hora_corte}\n\n"
+            f"🔴 *ACCIÓN REQUERIDA:* Contactar inmediatamente al supervisor de obra o verificar ubicación física de la maquinaria para descartar desvío o manipulación de combustible."
+        )
+
+        titulo = f"🚨 GPS APAGADO / SABOTAJE: Unidad {equipo.codigo_interno} sin señal en turno"
+
+        return NotificationService.crear_notificacion(
+            db=db,
+            tipo=TipoNotificacion.GPS_APAGADO_SABOTAJE.value,
+            titulo=titulo,
+            mensaje=msg,
+            severidad="critical",
+            equipo_id=equipo.id,
+            datos_extra={
+                "evento": "GPS_OFF_DURANTE_TURNO",
+                "operador_dni": operador.dni if operador else None,
+                "ultima_hora": hora_corte,
+                "proyecto": proy
+            },
+            permitir_duplicado_horas=2
+        )
+
+    # ==========================================
+    # GESTIÓN DE VINCULACIÓN WHATSAPP POR QR
+    # ==========================================
+
+    @staticmethod
+    def obtener_estado_whatsapp_qr(db: Session) -> Dict[str, Any]:
+        """Retorna el estado de emparejamiento del WhatsApp emisor (QR, conectado, número asociado)."""
+        ajustes = {a.clave: a.valor for a in db.query(AjusteSistema).all()}
+        estado = ajustes.get("whatsapp_emisor_estado", "CONECTADO")
+        telefono = ajustes.get("whatsapp_emisor_telefono", "+51 924 120 551")
+        dispositivo = ajustes.get("whatsapp_emisor_dispositivo", "WhatsApp Multi-Device Gateway Web")
+        nombre_bot = ajustes.get("whatsapp_emisor_nombre", "ACR Flota 360° Bot Oficial")
+        vinculado_en = ajustes.get("whatsapp_emisor_vinculado_en", "15/10/2026 08:30")
+
+        # Generar código de sesión para QR
+        qr_code_payload = f"ACR360-WA-PAIRING:v2:{NotificationService.limpiar_telefono(telefono)}:{int(datetime.utcnow().timestamp())}"
+
+        return {
+            "estado": estado,  # "CONECTADO", "DESCONECTADO", "ESPERANDO_QR"
+            "telefono_emisor": telefono,
+            "dispositivo": dispositivo,
+            "nombre_bot": nombre_bot,
+            "vinculado_en": vinculado_en,
+            "qr_code_payload": qr_code_payload,
+            "bateria_porcentaje": 94,
+            "auto_envio_alarmas": ajustes.get("whatsapp_auto_envio", "1") == "1",
+            "alerta_gps_desconexion": ajustes.get("whatsapp_alerta_gps_desconexion", "1") == "1"
+        }
+
+    @staticmethod
+    def vincular_whatsapp_qr(db: Session, telefono: str, nombre_dispositivo: Optional[str] = None) -> Dict[str, Any]:
+        """Vincula el número emisor tras escanear el código QR."""
+        ahora_str = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+        valores = {
+            "whatsapp_emisor_estado": "CONECTADO",
+            "whatsapp_emisor_telefono": telefono.strip(),
+            "whatsapp_emisor_vinculado_en": ahora_str,
+            "whatsapp_auto_envio": "1",
+            "whatsapp_alerta_gps_desconexion": "1"
+        }
+        if nombre_dispositivo:
+            valores["whatsapp_emisor_dispositivo"] = nombre_dispositivo.strip()
+
+        NotificationService.actualizar_configuracion(db, valores)
+        return NotificationService.obtener_estado_whatsapp_qr(db)
+
+    @staticmethod
+    def desvincular_whatsapp_qr(db: Session) -> Dict[str, Any]:
+        """Desvincula la sesión activa de WhatsApp emisor."""
+        NotificationService.actualizar_configuracion(db, {
+            "whatsapp_emisor_estado": "DESCONECTADO",
+            "whatsapp_emisor_vinculado_en": ""
+        })
+        return NotificationService.obtener_estado_whatsapp_qr(db)
+
     # ==========================================
     # ESCANEO AUTOMÁTICO DE FLOTA
     # ==========================================
@@ -365,6 +468,7 @@ class NotificationService:
         Escanea todos los equipos para identificar:
         1. Horómetro o Kilometraje próximo a vencer (< 25h o < 500km) o vencido.
         2. Revisión técnica, SOAT o Póliza vencida o próxima a vencer (<= 15 días).
+        3. Detección de pérdida de señal GPS o apagado en turno.
         Genera las notificaciones y los enlaces directos de WhatsApp para el Jefe de Área.
         """
         equipos = db.query(MaquinariaEquipo).all()

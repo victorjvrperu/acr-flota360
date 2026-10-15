@@ -15,7 +15,7 @@ from app.models.heavytrack import (
     MaquinariaEquipo, Proyecto, Personal, OrdenMantenimiento,
     InventarioRepuesto, Proveedor, TurnoOperacion, ControlCombustible,
     EstadoOperativo, EstadoOrdenMantenimiento, RolPersonal, AjusteSistema,
-    TipoOrdenMantenimiento
+    TipoOrdenMantenimiento, MovimientoAlmacen, TipoMovimientoAlmacen
 )
 from app.schemas.heavytrack import (
     MaquinariaEquipoCreate, MaquinariaEquipoResponse,
@@ -25,6 +25,7 @@ from app.schemas.heavytrack import (
     OrdenMantenimientoCreate, OrdenMantenimientoResponse,
     InventarioRepuestoCreate, InventarioRepuestoResponse,
     InventarioRepuestoUpdate, AjusteStockRepuestoRequest,
+    SalidaRepuestoRequest, EntradaRepuestoRequest, MovimientoAlmacenResponse,
     ProveedorCreate, ProveedorResponse,
     TelemetriaGPSRequest, ActualizarCombustibleTurno,
     ConfigurarMantenimientoEquipoRequest, ActualizarPagoCombustibleRequest,
@@ -961,6 +962,180 @@ def eliminar_repuesto(repuesto_id: int, db: Session = Depends(get_db)):
     db.delete(repuesto)
     db.commit()
     return {"success": True, "mensaje": f"Repuesto {repuesto.codigo_parte} eliminado exitosamente."}
+
+
+@router.get("/repuestos/movimientos", response_model=List[MovimientoAlmacenResponse])
+def listar_movimientos_almacen(
+    repuesto_id: Optional[int] = None,
+    tipo: Optional[str] = None,
+    limit: int = 100,
+    db: Session = Depends(get_db)
+):
+    """Retorna el Kardex e historial de salidas y entradas de repuestos de almacén."""
+    query = db.query(MovimientoAlmacen)
+    if repuesto_id:
+        query = query.filter(MovimientoAlmacen.repuesto_id == repuesto_id)
+    if tipo:
+        query = query.filter(MovimientoAlmacen.tipo_movimiento == tipo.upper())
+    
+    movs = query.order_by(MovimientoAlmacen.id.desc()).limit(limit).all()
+    resultado = []
+    for m in movs:
+        rep = db.query(InventarioRepuesto).filter(InventarioRepuesto.id == m.repuesto_id).first()
+        resultado.append(MovimientoAlmacenResponse(
+            id=m.id,
+            repuesto_id=m.repuesto_id,
+            repuesto_codigo=rep.codigo_parte if rep else (m.repuesto.codigo_parte if m.repuesto else None),
+            repuesto_nombre=rep.nombre if rep else (m.repuesto.nombre if m.repuesto else None),
+            tipo_movimiento=m.tipo_movimiento,
+            cantidad=m.cantidad,
+            stock_anterior=m.stock_anterior,
+            stock_nuevo=m.stock_nuevo,
+            equipo_codigo=m.equipo_codigo,
+            personal_receptor=m.personal_receptor,
+            motivo=m.motivo,
+            numero_vale=m.numero_vale,
+            costo_unitario=m.costo_unitario,
+            costo_total=m.costo_total,
+            observaciones=m.observaciones,
+            creado_en=m.creado_en
+        ))
+    return resultado
+
+
+@router.post("/repuestos/salida")
+def registrar_salida_repuesto(payload: SalidaRepuestoRequest, db: Session = Depends(get_db)):
+    """
+    Registra formalmente la salida/despacho de un repuesto para una máquina o mantenimiento.
+    Descuenta el stock, genera el Vale de Salida y registra el movimiento en el Kardex.
+    """
+    repuesto = db.query(InventarioRepuesto).filter(InventarioRepuesto.id == payload.repuesto_id).first()
+    if not repuesto:
+        raise HTTPException(status_code=404, detail="Repuesto no encontrado.")
+
+    if payload.cantidad <= 0:
+        raise HTTPException(status_code=400, detail="La cantidad debe ser mayor a 0.")
+
+    if repuesto.stock_actual < payload.cantidad:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Stock insuficiente para '{repuesto.codigo_parte}'. Disponible: {repuesto.stock_actual} und, solicitado: {payload.cantidad} und."
+        )
+
+    # Identificar equipo asignado si se envió ID o código
+    equipo_cod = payload.equipo_codigo
+    eq_id = payload.equipo_id
+    if eq_id and not equipo_cod:
+        eq = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == eq_id).first()
+        if eq:
+            equipo_cod = eq.codigo_interno
+    elif equipo_cod and not eq_id:
+        eq = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.codigo_interno == equipo_cod).first()
+        if eq:
+            eq_id = eq.id
+
+    stock_ant = repuesto.stock_actual
+    stock_nuev = stock_ant - payload.cantidad
+    repuesto.stock_actual = stock_nuev
+
+    # Generar N° de Vale automático si no se ingresó
+    ahora = datetime.utcnow()
+    num_vale = payload.numero_vale or f"VAL-{ahora.strftime('%y%m%d')}-{repuesto.id:02d}{payload.cantidad}"
+
+    costo_unit = float(repuesto.precio_unitario or 0.0)
+    costo_tot = round(costo_unit * payload.cantidad, 2)
+
+    mov = MovimientoAlmacen(
+        repuesto_id=repuesto.id,
+        tipo_movimiento=TipoMovimientoAlmacen.SALIDA.value,
+        cantidad=payload.cantidad,
+        stock_anterior=stock_ant,
+        stock_nuevo=stock_nuev,
+        equipo_id=eq_id,
+        equipo_codigo=equipo_cod or "SIN ASIGNAR",
+        personal_receptor=payload.personal_receptor or "Mecánico de Taller",
+        motivo=payload.motivo or "Mantenimiento Preventivo",
+        numero_vale=num_vale,
+        costo_unitario=costo_unit,
+        costo_total=costo_tot,
+        observaciones=payload.observaciones,
+        creado_en=ahora
+    )
+    db.add(mov)
+
+    # Si el stock cae por debajo del mínimo, generar alerta automática
+    if stock_nuev <= repuesto.stock_minimo:
+        from app.models.heavytrack import NotificacionAlerta, TipoNotificacion
+        db.add(NotificacionAlerta(
+            tipo=TipoNotificacion.MANTENIMIENTO_PROXIMO.value,
+            titulo=f"Stock Crítico en Almacén: {repuesto.codigo_parte} ({stock_nuev} und restantes)",
+            mensaje=f"⚠️ El repuesto *{repuesto.codigo_parte}* ({repuesto.nombre}) se encuentra en nivel crítico ({stock_nuev} und restantes, mínimo: {repuesto.stock_minimo}). Reponer stock con proveedor.",
+            severidad="warning",
+            leido=False
+        ))
+
+    db.commit()
+    db.refresh(mov)
+
+    return {
+        "success": True,
+        "mensaje": f"Vale de Salida {num_vale} generado. Se despacharon {payload.cantidad} und de {repuesto.codigo_parte} a {equipo_cod or 'Taller'}.",
+        "vale_numero": num_vale,
+        "stock_restante": repuesto.stock_actual,
+        "costo_total": costo_tot,
+        "movimiento_id": mov.id
+    }
+
+
+@router.post("/repuestos/entrada")
+def registrar_entrada_repuesto(payload: EntradaRepuestoRequest, db: Session = Depends(get_db)):
+    """
+    Registra formalmente el ingreso de repuestos al almacén por compra o reposición.
+    """
+    repuesto = db.query(InventarioRepuesto).filter(InventarioRepuesto.id == payload.repuesto_id).first()
+    if not repuesto:
+        raise HTTPException(status_code=404, detail="Repuesto no encontrado.")
+
+    if payload.cantidad <= 0:
+        raise HTTPException(status_code=400, detail="La cantidad ingresada debe ser mayor a 0.")
+
+    stock_ant = repuesto.stock_actual
+    stock_nuev = stock_ant + payload.cantidad
+    repuesto.stock_actual = stock_nuev
+
+    if payload.costo_unitario and payload.costo_unitario > 0:
+        repuesto.precio_unitario = float(payload.costo_unitario)
+
+    ahora = datetime.utcnow()
+    num_vale = payload.numero_guia or f"ING-{ahora.strftime('%y%m%d')}-{repuesto.id:02d}"
+    costo_unit = float(repuesto.precio_unitario or 0.0)
+    costo_tot = round(costo_unit * payload.cantidad, 2)
+
+    mov = MovimientoAlmacen(
+        repuesto_id=repuesto.id,
+        tipo_movimiento=TipoMovimientoAlmacen.ENTRADA.value,
+        cantidad=payload.cantidad,
+        stock_anterior=stock_ant,
+        stock_nuevo=stock_nuev,
+        personal_receptor=payload.proveedor or "Recepción Almacén Central",
+        motivo="Ingreso por Compra / Reposición",
+        numero_vale=num_vale,
+        costo_unitario=costo_unit,
+        costo_total=costo_tot,
+        observaciones=payload.observaciones,
+        creado_en=ahora
+    )
+    db.add(mov)
+    db.commit()
+    db.refresh(mov)
+
+    return {
+        "success": True,
+        "mensaje": f"Ingreso registrado ({num_vale}). Stock actualizado a {repuesto.stock_actual} und.",
+        "vale_numero": num_vale,
+        "stock_actual": repuesto.stock_actual,
+        "movimiento_id": mov.id
+    }
 
 
 @router.get("/proveedores", response_model=List[ProveedorResponse])
