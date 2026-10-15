@@ -68,80 +68,16 @@ def main():
             env=env, stdin=subprocess.DEVNULL, check=True
         )
 
-        build_script = f"""
-set -e
-echo "🔧 Extrayendo proyecto móvil en servidor..."
-mkdir -p /home/bodylab/acr-mobile-build
-tar -xzf /tmp/acr_mobile_build.tar.gz -C /home/bodylab/acr-mobile-build
+        remote_sh_local = os.path.join(repo_root, "scripts", "remote_build.sh")
+        print("🚀 Transfiriendo script de compilación y proyecto al servidor...")
+        subprocess.run(
+            ["scp", "-O"] + ssh_opts + [remote_sh_local, f"{SERVER_USER}@{server_ip}:/tmp/remote_build.sh"],
+            env=env, stdin=subprocess.DEVNULL, check=True
+        )
 
-cd /home/bodylab/acr-mobile-build
-
-export ANDROID_HOME=/home/bodylab/android-sdk
-export PATH=$ANDROID_HOME/cmdline-tools/latest/bin:$PATH
-
-echo "📦 Instalando dependencias de Capacitor..."
-if [ ! -d "node_modules" ]; then
-    npm install --silent
-fi
-
-echo "🤖 Agregando o sincronizando plataforma Android..."
-if [ ! -d "android" ]; then
-    npx cap add android
-fi
-npx cap sync android
-
-echo "🎨 Copiando recursos oficiales con logo ACR 360 (adaptive icons, drawable, values, mipmaps)..."
-cp -rf res/* android/app/src/main/res/ 2>/dev/null || true
-
-echo "🛡️ Configurando permisos de Cámara, GPS y Red en AndroidManifest.xml..."
-MANIFEST="android/app/src/main/AndroidManifest.xml"
-if [ -f "$MANIFEST" ]; then
-    # Inyectar usesCleartextTraffic si no está
-    if ! grep -q 'android:usesCleartextTraffic="true"' "$MANIFEST"; then
-        sed -i 's/<application/<application android:usesCleartextTraffic="true"/g' "$MANIFEST"
-    fi
-    # Inyectar permisos esenciales
-    for perm in "android.permission.INTERNET" "android.permission.ACCESS_NETWORK_STATE" "android.permission.CAMERA" "android.permission.ACCESS_FINE_LOCATION" "android.permission.ACCESS_COARSE_LOCATION"; do
-        if ! grep -q "$perm" "$MANIFEST"; then
-            sed -i "/<manifest/a \    <uses-permission android:name=\\"$perm\\" />" "$MANIFEST"
-        fi
-    done
-fi
-
-echo "🔐 Preparando certificado y clave de firma ACR Flota 360..."
-KEYSTORE="/home/bodylab/acr-mobile-build/acr-release.keystore"
-if [ ! -f "$KEYSTORE" ]; then
-    keytool -genkeypair -v -keystore "$KEYSTORE" -alias acrkey -keyalg RSA -keysize 2048 -validity 10000 -storepass acrflota360 -keypass acrflota360 -dname "CN=ACR Operadores, OU=Operaciones, O=ACR Flota 360, L=Lima, ST=Lima, C=PE"
-fi
-
-echo "⚙️ Compilando APK con Gradle..."
-cd android
-chmod +x gradlew
-./gradlew assembleDebug --no-daemon
-
-APK_OUT="app/build/outputs/apk/debug/app-debug.apk"
-if [ ! -f "$APK_OUT" ]; then
-    echo "❌ Error: No se generó el archivo APK"
-    exit 1
-fi
-
-echo "✍️ Re-firmando APK con identidad corporativa ACR Operadores..."
-jarsigner -verbose -sigalg SHA256withRSA -digestalg SHA-256 -keystore "$KEYSTORE" -storepass acrflota360 -keypass acrflota360 "$APK_OUT" acrkey 2>/dev/null || true
-
-echo "📥 Publicando APK en servidor web..."
-echo "{SUDO_PASS}" | sudo -S mkdir -p /var/www/acr-flota360/app/static/downloads
-echo "{SUDO_PASS}" | sudo -S cp -f "$APK_OUT" /var/www/acr-flota360/app/static/downloads/acr-operadores.apk
-echo "{SUDO_PASS}" | sudo -S chmod 644 /var/www/acr-flota360/app/static/downloads/acr-operadores.apk
-
-mkdir -p /home/bodylab/maquinaria/app/static/downloads 2>/dev/null || true
-cp -f "$APK_OUT" /home/bodylab/maquinaria/app/static/downloads/acr-operadores.apk 2>/dev/null || true
-
-cp "$APK_OUT" /tmp/acr-operadores.apk
-echo "✅ APK Compilado y listo en /tmp/acr-operadores.apk"
-"""
         print("🔨 Ejecutando compilación nativa en el servidor (esto toma ~2 minutos)...")
         subprocess.run(
-            ["ssh"] + ssh_opts + [f"{SERVER_USER}@{server_ip}", build_script],
+            ["ssh"] + ssh_opts + [f"{SERVER_USER}@{server_ip}", f"chmod +x /tmp/remote_build.sh && /tmp/remote_build.sh '{SUDO_PASS}'"],
             env=env, stdin=subprocess.DEVNULL, check=True
         )
 
