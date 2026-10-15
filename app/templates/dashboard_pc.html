@@ -666,13 +666,12 @@
                 Control de Horómetros & Parte Diario
               </h3>
               <span
-                class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-300 border border-emerald-700">
-                Oficial Flota 360°
+                class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-amber-950/80 text-amber-300 border border-amber-700 flex items-center gap-1">
+                <span>🚜</span> Exclusivo Maquinaria Pesada (Horómetros)
               </span>
             </div>
             <p class="text-xs text-gray-400 mt-1">
-              Monitoreo diario de horómetros (h), cálculo automático de horas efectivas, consumo de combustible (Gal/h)
-              y exportación oficial
+              Monitoreo diario exclusivo de horómetros (h) para maquinaria pesada, cálculo de horas efectivas, rendimiento operativo (Gal/h) y exportación oficial
             </p>
           </div>
 
@@ -4046,14 +4045,16 @@ Cargando reporte de flota...
         selProy.value = valActual;
       }
 
-      // Equipos
+      // Equipos (Exclusivo Maquinaria Pesada con Horómetro)
       const selEq = document.getElementById('filtro-h-equipo');
       if (selEq && equiposCache && equiposCache.length > 0) {
         const valActual = selEq.value;
-        selEq.innerHTML = '<option value="">🚜 Todos los Equipos</option>';
-        equiposCache.forEach(e => {
-          selEq.innerHTML += `<option value="${e.id}">${e.codigo_interno} - ${e.marca} ${e.modelo}</option>`;
-        });
+        selEq.innerHTML = '<option value="">🚜 Toda la Maquinaria Pesada</option>';
+        equiposCache
+          .filter(e => (e.tipo_control || 'HOROMETRO').toUpperCase() !== 'KILOMETRAJE')
+          .forEach(e => {
+            selEq.innerHTML += `<option value="${e.id}">${e.codigo_interno} - ${e.marca} ${e.modelo}</option>`;
+          });
         selEq.value = valActual;
       }
 
@@ -4097,7 +4098,8 @@ Cargando reporte de flota...
       const fHasta = document.getElementById('filtro-h-hasta')?.value;
       const q = (document.getElementById('filtro-h-busqueda')?.value || '').toLowerCase().trim();
 
-      let filtrados = horometrosCache || [];
+      // Exclusivo para maquinaria pesada (excluir vehículos con kilometraje/odómetro)
+      let filtrados = (horometrosCache || []).filter(t => (t.equipo_tipo_control || 'HOROMETRO').toUpperCase() !== 'KILOMETRAJE');
 
       if (proyId) {
         filtrados = filtrados.filter(t => t.proyecto_id === parseInt(proyId));
@@ -4139,9 +4141,9 @@ Cargando reporte de flota...
         tbody.innerHTML = `
           <tr>
             <td colspan="12" class="py-12 text-center text-gray-400">
-              <div class="text-3xl mb-2">⏱️</div>
-              <p class="font-bold text-gray-300">No se encontraron partes de horómetro con los filtros seleccionados.</p>
-              <p class="text-xs text-gray-500 mt-1">Modifique el rango de fechas o los filtros para visualizar registros.</p>
+              <div class="text-3xl mb-2">🚜</div>
+              <p class="font-bold text-gray-300">No se encontraron partes diarios de maquinaria pesada con horómetro.</p>
+              <p class="text-xs text-gray-500 mt-1">Los vehículos de transporte y livianos (odómetro/km) se registran en Bitácora de Operaciones.</p>
             </td>
           </tr>
         `;
