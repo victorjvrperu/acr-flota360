@@ -38,9 +38,9 @@ class HeavyTrackService:
             actual = float(equipo.odometro_actual or 0.0)
             proximo = float(equipo.odometro_proximo_servicio or 0.0)
             if proximo <= 0:
-                # Si no se configuró, usar el horometro_proximo_servicio si es de magnitud de odómetro (>1000) o actual + 5000
+                # Si no se configuró odometro_proximo_servicio, pero se especificó en horometro_proximo_servicio
                 proximo = float(equipo.horometro_proximo_servicio or 0.0)
-                if proximo < actual:
+                if proximo <= 0:
                     proximo = actual + float(equipo.odometro_intervalo_servicio or 5000.0)
             restantes = round(proximo - actual, 1)
 
@@ -138,29 +138,43 @@ class HeavyTrackService:
             db.add(turno)
 
             # Si abasteció combustible en el check-in, registrar automáticamente en control_combustible
-            if getattr(turno_in, "abastecio_combustible", False) and getattr(turno_in, "foto_combustible", None):
-                galones_in = getattr(turno_in, "combustible_galones", 0.0) or 0.0
+            galones_in = getattr(turno_in, "combustible_galones", 0.0) or 0.0
+            abastecio = getattr(turno_in, "abastecio_combustible", False) or (galones_in > 0)
+            if abastecio and galones_in > 0:
                 precio_in = getattr(turno_in, "combustible_precio_galon", 0.0) or 0.0
                 if precio_in <= 0:
                     aj_precio = db.query(AjusteSistema).filter(AjusteSistema.clave == "precio_combustible_zona").first()
                     precio_in = float(aj_precio.valor) if aj_precio and aj_precio.valor else 17.50
-                    turno.combustible_precio_galon = precio_in
+                turno.combustible_galones = galones_in
+                turno.combustible_precio_galon = precio_in
                 total_in = getattr(turno_in, "combustible_total_soles", 0.0) or round(galones_in * precio_in, 2)
                 turno.combustible_total_soles = total_in
+                turno.abastecio_combustible = True
 
-                comb_rec = ControlCombustible(
-                    uuid_local=f"comb-{turno_in.uuid_local}",
-                    equipo_id=turno_in.equipo_id,
-                    operador_id=turno_in.operador_id,
-                    proyecto_id=turno_in.proyecto_id,
-                    horometro_tanqueo=turno_in.horometro_inicio,
-                    galones_cargados=galones_in,
-                    precio_por_galon=precio_in,
-                    foto_comprobante=turno_in.foto_combustible,
-                    costo_total=total_in,
-                    estado_sync=EstadoSync.SINCRONIZADO.value
-                )
-                db.add(comb_rec)
+                uuid_c = f"comb-{turno_in.uuid_local}"
+                comb_rec = db.query(ControlCombustible).filter(ControlCombustible.uuid_local == uuid_c).first()
+                if not comb_rec:
+                    eq_actual = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == turno_in.equipo_id).first()
+                    lect_tanqueo = getattr(turno_in, "kilometraje_inicio", 0.0) if (eq_actual and (eq_actual.tipo_control or '').upper() == 'KILOMETRAJE') else (turno_in.horometro_inicio or 0.0)
+                    comb_rec = ControlCombustible(
+                        uuid_local=uuid_c,
+                        equipo_id=turno_in.equipo_id,
+                        operador_id=turno_in.operador_id,
+                        proyecto_id=turno_in.proyecto_id,
+                        horometro_tanqueo=lect_tanqueo,
+                        galones_cargados=galones_in,
+                        precio_por_galon=precio_in,
+                        foto_comprobante=getattr(turno_in, "foto_combustible", None) or "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+                        costo_total=total_in,
+                        estado_pago="pendiente",
+                        estado_sync=EstadoSync.SINCRONIZADO.value,
+                        fecha_hora=datetime.utcnow()
+                    )
+                    db.add(comb_rec)
+                else:
+                    comb_rec.galones_cargados = galones_in
+                    comb_rec.precio_por_galon = precio_in
+                    comb_rec.costo_total = total_in
 
             # Actualizar equipo y asignación dinámica de operador
             equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == turno_in.equipo_id).first()
@@ -249,6 +263,35 @@ class HeavyTrackService:
                     estado="abierto"
                 )
                 db.add(inc_rec)
+
+            # Si se registró abastecimiento de combustible al cierre del turno
+            gal_out = getattr(out, "combustible_galones", 0.0) or 0.0
+            if gal_out > 0 or getattr(out, "abastecio_combustible", False):
+                uuid_cout = f"comb-checkout-{out.uuid_local}"
+                comb_rec = db.query(ControlCombustible).filter(ControlCombustible.uuid_local == uuid_cout).first()
+                if not comb_rec:
+                    precio_c = float(getattr(out, "combustible_precio_galon", 0.0) or 0.0)
+                    if precio_c <= 0:
+                        aj_p = db.query(AjusteSistema).filter(AjusteSistema.clave == "precio_combustible_zona").first()
+                        precio_c = float(aj_p.valor) if aj_p and aj_p.valor else 17.50
+                    costo_c = round(gal_out * precio_c, 2)
+                    eq_act = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == turno.equipo_id).first()
+                    lect_t = getattr(out, "kilometraje_fin", 0.0) if (eq_act and (eq_act.tipo_control or '').upper() == 'KILOMETRAJE') else (out.horometro_fin or 0.0)
+                    comb_rec = ControlCombustible(
+                        uuid_local=uuid_cout,
+                        equipo_id=turno.equipo_id,
+                        operador_id=turno.operador_id,
+                        proyecto_id=turno.proyecto_id,
+                        horometro_tanqueo=lect_t,
+                        galones_cargados=gal_out,
+                        precio_por_galon=precio_c,
+                        foto_comprobante=getattr(out, "foto_combustible", None) or "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+                        costo_total=costo_c,
+                        estado_pago="pendiente",
+                        estado_sync=EstadoSync.SINCRONIZADO.value,
+                        fecha_hora=datetime.utcnow()
+                    )
+                    db.add(comb_rec)
 
                 # Notificar incidencia al Jefe de Área
                 try:

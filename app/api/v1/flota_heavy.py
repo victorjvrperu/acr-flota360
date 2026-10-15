@@ -79,6 +79,11 @@ def crear_equipo(equipo_in: MaquinariaEquipoCreate, db: Session = Depends(get_db
     datos = equipo_in.model_dump()
     datos["codigo_interno"] = datos["codigo_interno"].upper().strip()
     nuevo = MaquinariaEquipo(**datos)
+    if (nuevo.tipo_control or '').upper() == 'KILOMETRAJE':
+        if not nuevo.odometro_proximo_servicio or nuevo.odometro_proximo_servicio <= 0:
+            if nuevo.horometro_proximo_servicio and nuevo.horometro_proximo_servicio > 1000:
+                nuevo.odometro_proximo_servicio = nuevo.horometro_proximo_servicio
+
     db.add(nuevo)
     db.commit()
     db.refresh(nuevo)
@@ -100,7 +105,10 @@ def actualizar_equipo(equipo_id: int, payload: dict, db: Session = Depends(get_d
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
     DATE_FIELDS = {"poliza_vencimiento", "soat_vencimiento", "revision_tecnica_vencimiento"}
-    FLOAT_FIELDS = {"horometro_actual", "odometro_actual", "horometro_proximo_servicio", "intervalo_servicio"}
+    FLOAT_FIELDS = {
+        "horometro_actual", "odometro_actual", "horometro_proximo_servicio",
+        "intervalo_servicio", "odometro_proximo_servicio", "odometro_intervalo_servicio"
+    }
 
     for key, value in payload.items():
         if hasattr(equipo, key) and key != "id":
@@ -146,6 +154,12 @@ def actualizar_equipo(equipo_id: int, payload: dict, db: Session = Depends(get_d
                 value = val_str if val_str else None
 
             setattr(equipo, key, value)
+
+    # Sincronización inteligente para unidades por Kilometraje
+    if (equipo.tipo_control or '').upper() == 'KILOMETRAJE':
+        if not equipo.odometro_proximo_servicio or equipo.odometro_proximo_servicio <= 0:
+            if equipo.horometro_proximo_servicio and equipo.horometro_proximo_servicio > 1000:
+                equipo.odometro_proximo_servicio = equipo.horometro_proximo_servicio
 
     db.commit()
     db.refresh(equipo)
@@ -422,16 +436,32 @@ def configurar_mantenimiento_equipo(
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-    if payload.intervalo_servicio is not None and payload.intervalo_servicio > 0:
-        equipo.intervalo_servicio = float(payload.intervalo_servicio)
+    es_km = (equipo.tipo_control or '').upper() == 'KILOMETRAJE'
+    if es_km:
+        interv = payload.odometro_intervalo_servicio or payload.intervalo_servicio
+        if interv is not None and interv > 0:
+            equipo.odometro_intervalo_servicio = float(interv)
+        
+        prox = payload.odometro_proximo_servicio or payload.horometro_proximo_servicio
+        if prox is not None:
+            equipo.odometro_proximo_servicio = float(prox)
+        elif interv is not None:
+            equipo.odometro_proximo_servicio = round((equipo.odometro_actual or 0.0) + equipo.odometro_intervalo_servicio, 1)
 
-    if payload.horometro_proximo_servicio is not None:
-        equipo.horometro_proximo_servicio = float(payload.horometro_proximo_servicio)
-    elif payload.intervalo_servicio is not None:
-        equipo.horometro_proximo_servicio = round((equipo.horometro_actual or 0.0) + equipo.intervalo_servicio, 1)
+        act = payload.odometro_actual or payload.horometro_actual
+        if act is not None and act >= 0:
+            equipo.odometro_actual = float(act)
+    else:
+        if payload.intervalo_servicio is not None and payload.intervalo_servicio > 0:
+            equipo.intervalo_servicio = float(payload.intervalo_servicio)
 
-    if payload.horometro_actual is not None and payload.horometro_actual >= 0:
-        equipo.horometro_actual = float(payload.horometro_actual)
+        if payload.horometro_proximo_servicio is not None:
+            equipo.horometro_proximo_servicio = float(payload.horometro_proximo_servicio)
+        elif payload.intervalo_servicio is not None:
+            equipo.horometro_proximo_servicio = round((equipo.horometro_actual or 0.0) + equipo.intervalo_servicio, 1)
+
+        if payload.horometro_actual is not None and payload.horometro_actual >= 0:
+            equipo.horometro_actual = float(payload.horometro_actual)
 
     color, horas_restantes = HeavyTrackService.calcular_semaforo_equipo(equipo)
     if color in ["rojo", "amarillo"]:

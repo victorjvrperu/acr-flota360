@@ -3363,19 +3363,23 @@ Cargando reporte de flota...
       const campoH = document.getElementById(`${modal}-campo-horometro`);
       const campoHProx = document.getElementById(`${modal}-campo-horometro-prox`);
       const campoKm = document.getElementById(`${modal}-campo-km`);
+      const lblProx = campoHProx ? campoHProx.querySelector('label') : null;
 
       if (val === 'HOROMETRO') {
         if (campoH) campoH.style.opacity = '1';
         if (campoHProx) campoHProx.style.opacity = '1';
-        if (campoKm) campoKm.style.opacity = '0.5';
+        if (campoKm) campoKm.style.opacity = '0.4';
+        if (lblProx) lblProx.textContent = 'Próx. Servicio (h) *';
       } else if (val === 'KILOMETRAJE') {
-        if (campoH) campoH.style.opacity = '0.5';
-        if (campoHProx) campoHProx.style.opacity = '0.5';
+        if (campoH) campoH.style.opacity = '0.4';
+        if (campoHProx) campoHProx.style.opacity = '1';
         if (campoKm) campoKm.style.opacity = '1';
+        if (lblProx) lblProx.textContent = 'Próx. Mantenimiento (Km) *';
       } else {
         if (campoH) campoH.style.opacity = '1';
         if (campoHProx) campoHProx.style.opacity = '1';
         if (campoKm) campoKm.style.opacity = '1';
+        if (lblProx) lblProx.textContent = 'Próx. Servicio (h / Km) *';
       }
     }
 
@@ -3563,6 +3567,14 @@ Cargando reporte de flota...
     async function registrarEquipoSubmit(e) {
       e.preventDefault();
       const form = e.target;
+      const proxVal = parseFloat(form.horometro_proximo_servicio.value) || 0.0;
+      let horomProx = proxVal;
+      let odomProx = 5000.0;
+      if (form.tipo_control.value === 'KILOMETRAJE') {
+        odomProx = proxVal > 0 ? proxVal : 5000.0;
+        horomProx = 0.0;
+      }
+
       const payload = {
         nombre: form.nombre.value.trim(),
         codigo_interno: form.codigo_interno.value.trim().toUpperCase(),
@@ -3574,9 +3586,11 @@ Cargando reporte de flota...
         placa: form.placa.value.trim().toUpperCase() || null,
         anio: 2023,
         horometro_actual: parseFloat(form.horometro_actual.value) || 0.0,
-        horometro_proximo_servicio: parseFloat(form.horometro_proximo_servicio.value) || 250.0,
+        horometro_proximo_servicio: horomProx,
         odometro_actual: parseFloat(form.odometro_actual.value) || 0.0,
+        odometro_proximo_servicio: odomProx,
         intervalo_servicio: 250.0,
+        odometro_intervalo_servicio: 5000.0,
         poliza_seguro: form.poliza_seguro.value.trim() || null,
         poliza_vencimiento: form.poliza_vencimiento.value || null,
         soat_numero: form.soat_numero.value.trim() || null,
@@ -3630,7 +3644,13 @@ Cargando reporte de flota...
       form.tipo_control.value = eq.tipo_control || 'HOROMETRO';
       form.tipo.value = eq.tipo || 'pesada';
       form.horometro_actual.value = eq.horometro_actual ?? 0.0;
-      form.horometro_proximo_servicio.value = eq.horometro_proximo_servicio ?? 250.0;
+      if (eq.tipo_control === 'KILOMETRAJE') {
+        form.horometro_proximo_servicio.value = (eq.odometro_proximo_servicio && Number(eq.odometro_proximo_servicio) > 0)
+          ? eq.odometro_proximo_servicio 
+          : ((eq.horometro_proximo_servicio && Number(eq.horometro_proximo_servicio) > 1000) ? eq.horometro_proximo_servicio : 5000.0);
+      } else {
+        form.horometro_proximo_servicio.value = eq.horometro_proximo_servicio ?? 250.0;
+      }
       form.odometro_actual.value = eq.odometro_actual ?? 0.0;
       form.poliza_seguro.value = eq.poliza_seguro || '';
       form.poliza_vencimiento.value = eq.poliza_vencimiento ? eq.poliza_vencimiento.split('T')[0] : '';
@@ -3717,6 +3737,14 @@ Cargando reporte de flota...
       const form = e.target;
       const equipoId = parseInt(form.equipo_id.value);
       const eqExistente = equiposCache.find(e => e.id === equipoId);
+      const proxVal = parseFloat(form.horometro_proximo_servicio.value) || 0.0;
+      let horomProx = proxVal;
+      let odomProx = (eqExistente && eqExistente.odometro_proximo_servicio) ? eqExistente.odometro_proximo_servicio : 5000.0;
+      if (form.tipo_control.value === 'KILOMETRAJE') {
+        odomProx = proxVal;
+        horomProx = 0.0;
+      }
+
       const payload = {
         nombre: form.nombre.value.trim(),
         codigo_interno: form.codigo_interno.value.trim().toUpperCase(),
@@ -3727,8 +3755,9 @@ Cargando reporte de flota...
         tipo_control: form.tipo_control.value,
         tipo: form.tipo.value,
         horometro_actual: parseFloat(form.horometro_actual.value) || 0.0,
-        horometro_proximo_servicio: parseFloat(form.horometro_proximo_servicio.value) || 0.0,
+        horometro_proximo_servicio: horomProx,
         odometro_actual: parseFloat(form.odometro_actual.value) || 0.0,
+        odometro_proximo_servicio: odomProx,
         poliza_seguro: form.poliza_seguro.value.trim() || null,
         poliza_vencimiento: form.poliza_vencimiento.value || null,
         soat_numero: form.soat_numero.value.trim() || null,
@@ -5760,6 +5789,10 @@ Cargando reporte de flota...
       win.document.write(`<body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh;"><img src="${fotoBase64}" style="max-width:95%;max-height:95%;border-radius:12px;box-shadow:0 0 30px rgba(0,0,0,0.8);" /></body>`);
     }
 
+    function round1(num) {
+      return Math.round((Number(num) || 0) * 10) / 10;
+    }
+
     // ==========================================
     // MÓDULO: MANTENIMIENTO PREVENTIVO & ÓRDENES
     // ==========================================
@@ -5785,9 +5818,17 @@ Cargando reporte de flota...
           const actual = esKm ? (Number(e.odometro_actual) || 0) : (Number(e.horometro_actual) || 0);
           const intervalo = esKm ? (Number(e.odometro_intervalo_servicio) || 5000) : (Number(e.intervalo_servicio) || 250);
           
-          let prox = esKm ? (Number(e.odometro_proximo_servicio) || 0) : (Number(e.horometro_proximo_servicio) || 0);
-          if (prox <= 0) {
-            prox = actual + intervalo;
+          let prox = 0;
+          if (esKm) {
+            if (e.odometro_proximo_servicio && Number(e.odometro_proximo_servicio) > 0) {
+              prox = Number(e.odometro_proximo_servicio);
+            } else if (e.horometro_proximo_servicio && Number(e.horometro_proximo_servicio) > 1000) {
+              prox = Number(e.horometro_proximo_servicio);
+            } else {
+              prox = actual + intervalo;
+            }
+          } else {
+            prox = (Number(e.horometro_proximo_servicio) > 0) ? Number(e.horometro_proximo_servicio) : (actual + intervalo);
           }
           const restantes = round1(prox - actual);
 
@@ -5972,17 +6013,30 @@ Cargando reporte de flota...
       document.getElementById('modal-mant-codigo').textContent = eq.codigo_interno;
       document.getElementById('modal-mant-nombre').textContent = eq.nombre || `${eq.marca || ''} ${eq.modelo || ''}`;
 
-      const actual = Number(eq.horometro_actual) || 0;
-      document.getElementById('modal-mant-actual').textContent = `${actual.toFixed(1)} h`;
+      const esKm = (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE';
+      const unit = esKm ? 'Km' : 'h';
+      const actual = esKm ? (Number(eq.odometro_actual) || 0) : (Number(eq.horometro_actual) || 0);
+      document.getElementById('modal-mant-actual').textContent = `${actual.toFixed(1)} ${unit}`;
 
-      const intervalo = eq.intervalo_servicio || 250;
+      const intervalo = esKm ? (eq.odometro_intervalo_servicio || 5000) : (eq.intervalo_servicio || 250);
       document.getElementById('modal-mant-intervalo').value = intervalo;
 
-      const prox = eq.horometro_proximo_servicio || (actual + intervalo);
+      let prox = 0;
+      if (esKm) {
+        if (eq.odometro_proximo_servicio && Number(eq.odometro_proximo_servicio) > 0) {
+          prox = Number(eq.odometro_proximo_servicio);
+        } else if (eq.horometro_proximo_servicio && Number(eq.horometro_proximo_servicio) > 1000) {
+          prox = Number(eq.horometro_proximo_servicio);
+        } else {
+          prox = actual + intervalo;
+        }
+      } else {
+        prox = (Number(eq.horometro_proximo_servicio) > 0) ? Number(eq.horometro_proximo_servicio) : (actual + intervalo);
+      }
       document.getElementById('modal-mant-proximo').value = prox;
 
       const selEstado = document.getElementById('modal-mant-estado');
-      if (selEstado) selEstado.value = eq.estado || 'operativo';
+      if (selEstado) selEstado.value = eq.estado_operativo || eq.estado || 'operativo';
 
       const errBox = document.getElementById('modal-mant-error');
       if (errBox) errBox.classList.add('hidden');
@@ -5993,7 +6047,7 @@ Cargando reporte de flota...
     }
 
     function recalcularProximoServicioModal() {
-      const actualStr = document.getElementById('modal-mant-actual').textContent.replace(' h', '');
+      const actualStr = document.getElementById('modal-mant-actual').textContent.replace(/[^\d.]/g, '');
       const actual = parseFloat(actualStr) || 0;
       const intervalo = parseFloat(document.getElementById('modal-mant-intervalo').value) || 0;
       if (intervalo > 0) {
@@ -6024,6 +6078,8 @@ Cargando reporte de flota...
           body: JSON.stringify({
             intervalo_servicio: intervalo,
             horometro_proximo_servicio: proximo,
+            odometro_intervalo_servicio: intervalo,
+            odometro_proximo_servicio: proximo,
             estado: estado
           })
         });
