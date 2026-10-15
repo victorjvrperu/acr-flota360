@@ -41,6 +41,11 @@ def main():
         "tar",
         "--exclude=.git",
         "--exclude=.venv",
+        "--exclude=*.db",
+        "--exclude=*.db-journal",
+        "--exclude=*.db-wal",
+        "--exclude=*.db-shm",
+        "--exclude=*.sqlite*",
         "--exclude=*.db.backup",
         "--exclude=*.backup",
         "--exclude=*.bak",
@@ -78,8 +83,10 @@ def main():
 
             remote_cmds = f"""
 set -e
-echo "{SUDO_PASS}" | sudo -S tar -xzf /tmp/acr_flota360_deploy.tar.gz -C {server_dir} --no-overwrite-dir 2>/dev/null || true
-echo "{SUDO_PASS}" | sudo -S tar -xzf /tmp/acr_flota360_deploy.tar.gz -C {server_dir}
+echo "{SUDO_PASS}" | sudo -S tar -xzf /tmp/acr_flota360_deploy.tar.gz -C {server_dir} --exclude="*.db*" --exclude="*.sqlite*" --no-overwrite-dir 2>/dev/null || true
+echo "{SUDO_PASS}" | sudo -S tar -xzf /tmp/acr_flota360_deploy.tar.gz -C {server_dir} --exclude="*.db*" --exclude="*.sqlite*"
+echo "{SUDO_PASS}" | sudo -S chown -R bodylab:bodylab {server_dir} 2>/dev/null || true
+echo "{SUDO_PASS}" | sudo -S chmod 666 /var/www/acr-flota360/acr_flota360.db 2>/dev/null || true
 echo "{SUDO_PASS}" | sudo -S systemctl restart {service_name}
 sleep 2
 echo "✅ {service_name} reiniciado"
