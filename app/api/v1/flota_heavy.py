@@ -99,7 +99,7 @@ def actualizar_equipo(equipo_id: int, payload: dict, db: Session = Depends(get_d
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
 
-    DATE_FIELDS = {"poliza_vencimiento", "soat_vencimiento"}
+    DATE_FIELDS = {"poliza_vencimiento", "soat_vencimiento", "revision_tecnica_vencimiento"}
     FLOAT_FIELDS = {"horometro_actual", "odometro_actual", "horometro_proximo_servicio", "intervalo_servicio"}
 
     for key, value in payload.items():
@@ -141,7 +141,7 @@ def actualizar_equipo(equipo_id: int, payload: dict, db: Session = Depends(get_d
             elif key == "placa" and value is not None:
                 val_str = str(value).strip().upper()
                 value = val_str if val_str else None
-            elif key in ("serie_chasis", "poliza_seguro", "soat_numero", "nombre", "marca", "modelo") and value is not None:
+            elif key in ("serie_chasis", "poliza_seguro", "soat_numero", "revision_tecnica_numero", "nombre", "marca", "modelo") and value is not None:
                 val_str = str(value).strip()
                 value = val_str if val_str else None
 

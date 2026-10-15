@@ -1624,12 +1624,12 @@
           </div>
         </div>
 
-        <!-- 3. PÓLIZA Y SOAT -->
+        <!-- 3. PÓLIZA, SOAT Y REVISIÓN TÉCNICA -->
         <div class="bg-carbon/70 p-3.5 rounded-xl border border-gray-800 space-y-3">
           <div class="text-[11px] font-black uppercase text-machinery tracking-wider flex items-center gap-1.5">
-            <span>🛡️</span> 3. Documentación (Póliza & SOAT)
+            <span>🛡️</span> 3. Documentación (Póliza, SOAT & Revisión Técnica)
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div class="bg-graphite/50 p-2.5 rounded-lg border border-gray-800 space-y-2">
               <div class="font-bold text-gray-300 uppercase text-[11px] flex items-center gap-1">
                 <span>📄</span> Póliza de Seguro
@@ -1658,6 +1658,22 @@
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento SOAT</label>
                 <input type="date" name="soat_vencimiento"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+              </div>
+            </div>
+
+            <div class="bg-graphite/50 p-2.5 rounded-lg border border-gray-800 space-y-2">
+              <div class="font-bold text-gray-300 uppercase text-[11px] flex items-center gap-1">
+                <span>🔧</span> Revisión Técnica
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">N° Certificado RT</label>
+                <input type="text" name="revision_tecnica_numero" placeholder="Ej: RT-CITV-2026-441"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">Próx. Revisión Técnica (Venc.)</label>
+                <input type="date" name="revision_tecnica_vencimiento"
                   class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
               </div>
             </div>
@@ -1796,12 +1812,12 @@
           </div>
         </div>
 
-        <!-- 3. PÓLIZA Y SOAT -->
+        <!-- 3. PÓLIZA, SOAT Y REVISIÓN TÉCNICA -->
         <div class="bg-carbon/70 p-3.5 rounded-xl border border-gray-800 space-y-3">
           <div class="text-[11px] font-black uppercase text-machinery tracking-wider flex items-center gap-1.5">
-            <span>🛡️</span> 3. Documentación (Póliza & SOAT)
+            <span>🛡️</span> 3. Documentación (Póliza, SOAT & Revisión Técnica)
           </div>
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div class="bg-graphite/50 p-2.5 rounded-lg border border-gray-800 space-y-2">
               <div class="font-bold text-gray-300 uppercase text-[11px] flex items-center gap-1">
                 <span>📄</span> Póliza de Seguro
@@ -1830,6 +1846,22 @@
               <div>
                 <label class="block text-[10px] text-gray-400 mb-0.5">Fecha de Vencimiento SOAT</label>
                 <input type="date" name="soat_vencimiento"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
+              </div>
+            </div>
+
+            <div class="bg-graphite/50 p-2.5 rounded-lg border border-gray-800 space-y-2">
+              <div class="font-bold text-gray-300 uppercase text-[11px] flex items-center gap-1">
+                <span>🔧</span> Revisión Técnica
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">N° Certificado RT</label>
+                <input type="text" name="revision_tecnica_numero" placeholder="Ej: RT-CITV-2026-441"
+                  class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white font-mono focus:border-machinery focus:outline-none">
+              </div>
+              <div>
+                <label class="block text-[10px] text-gray-400 mb-0.5">Próx. Revisión Técnica (Venc.)</label>
+                <input type="date" name="revision_tecnica_vencimiento"
                   class="w-full bg-graphite border border-gray-700 rounded px-2 py-1.5 text-white focus:border-machinery focus:outline-none">
               </div>
             </div>
@@ -3400,6 +3432,7 @@ Cargando reporte de flota...
 
         const polizaBadge = formatVencimientoBadge('Póliza', eq.poliza_seguro, eq.poliza_vencimiento);
         const soatBadge = formatVencimientoBadge('SOAT', eq.soat_numero, eq.soat_vencimiento);
+        const revTecBadge = formatVencimientoBadge('Rev. Téc', eq.revision_tecnica_numero, eq.revision_tecnica_vencimiento);
 
         const nombreEquipo = eq.nombre || `${eq.marca} ${eq.modelo}`;
         const nombreEscapado = nombreEquipo.replace(/'/g, "\\'");
@@ -3434,6 +3467,7 @@ Cargando reporte de flota...
             <div class="space-y-0.5">
               ${polizaBadge}
               ${soatBadge}
+              ${revTecBadge}
             </div>
           </td>
           <td class="py-3 px-4">${semaforoBadges[eq.semaforo_mantenimiento] || semaforoBadges.verde}</td>
@@ -3547,6 +3581,8 @@ Cargando reporte de flota...
         poliza_vencimiento: form.poliza_vencimiento.value || null,
         soat_numero: form.soat_numero.value.trim() || null,
         soat_vencimiento: form.soat_vencimiento.value || null,
+        revision_tecnica_numero: form.revision_tecnica_numero ? (form.revision_tecnica_numero.value.trim() || null) : null,
+        revision_tecnica_vencimiento: form.revision_tecnica_vencimiento ? (form.revision_tecnica_vencimiento.value || null) : null,
         proyecto_actual_id: null,
         operador_asignado_id: null,
         estado_operativo: "operativo"
@@ -3600,6 +3636,8 @@ Cargando reporte de flota...
       form.poliza_vencimiento.value = eq.poliza_vencimiento ? eq.poliza_vencimiento.split('T')[0] : '';
       form.soat_numero.value = eq.soat_numero || '';
       form.soat_vencimiento.value = eq.soat_vencimiento ? eq.soat_vencimiento.split('T')[0] : '';
+      if (form.revision_tecnica_numero) form.revision_tecnica_numero.value = eq.revision_tecnica_numero || '';
+      if (form.revision_tecnica_vencimiento) form.revision_tecnica_vencimiento.value = eq.revision_tecnica_vencimiento ? eq.revision_tecnica_vencimiento.split('T')[0] : '';
       form.estado_operativo.value = eq.estado_operativo || 'operativo';
 
       // Resetear avisos rojos previos
@@ -3695,6 +3733,8 @@ Cargando reporte de flota...
         poliza_vencimiento: form.poliza_vencimiento.value || null,
         soat_numero: form.soat_numero.value.trim() || null,
         soat_vencimiento: form.soat_vencimiento.value || null,
+        revision_tecnica_numero: form.revision_tecnica_numero ? (form.revision_tecnica_numero.value.trim() || null) : null,
+        revision_tecnica_vencimiento: form.revision_tecnica_vencimiento ? (form.revision_tecnica_vencimiento.value || null) : null,
         estado_operativo: form.estado_operativo.value,
         proyecto_actual_id: eqExistente ? eqExistente.proyecto_actual_id : null,
         operador_asignado_id: eqExistente ? eqExistente.operador_asignado_id : null
