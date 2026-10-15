@@ -278,13 +278,20 @@
         </button>
         <!-- Botón Reporte PDF Oficial -->
         <a href="/api/v1/heavy/reportes/pdf" target="_blank"
-          class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-semibold text-gray-200 flex items-center gap-1.5 transition">
+          class="px-3 py-2 bg-graphiteLight hover:bg-gray-700 border border-gray-700 rounded-lg text-xs font-semibold text-gray-200 flex items-center gap-1.5 transition cursor-pointer"
+          title="Descargar Reporte Ejecutivo en PDF">
           <svg class="w-4 h-4 text-machinery" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
               d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
           PDF
         </a>
+        <!-- Botón Reporte WhatsApp Oficial con Asociación de Número -->
+        <button onclick="abrirModalReporteWhatsApp()"
+          class="px-3 py-2 bg-emerald-600/90 hover:bg-emerald-500 text-white rounded-lg text-xs font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer"
+          title="Enviar Resumen Ejecutivo por WhatsApp a Gerencia o Contactos Asociados">
+          <span>📲</span> WhatsApp
+        </button>
         <!-- Perfil Usuario Administrador -->
         <div class="flex items-center gap-2 bg-carbon border border-gray-700 px-3 py-1.5 rounded-xl text-xs">
           <span class="text-base">🛡️</span>
@@ -2357,6 +2364,98 @@
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ENVIAR REPORTE POR WHATSAPP Y ASOCIAR NÚMERO -->
+  <div id="modal-enviar-reporte-whatsapp"
+    class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
+    <div class="bg-graphite border border-emerald-500/40 rounded-3xl max-w-xl w-full p-6 relative space-y-4 shadow-2xl shadow-emerald-950/40">
+      
+      <!-- Header -->
+      <div class="flex items-center justify-between border-b border-gray-800 pb-3">
+        <div class="flex items-center gap-3">
+          <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl text-emerald-400">
+            📲
+          </div>
+          <div>
+            <h3 class="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
+              Reporte Ejecutivo WhatsApp
+              <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold uppercase">Oficial</span>
+            </h3>
+            <p class="text-[11px] text-gray-400">Asocia y envía el reporte instantáneo a Gerencia o Jefatura</p>
+          </div>
+        </div>
+        <button type="button" onclick="cerrarModalReporteWhatsApp()"
+          class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer transition">&times;</button>
+      </div>
+
+      <!-- Contactos / Números Pre-asociados -->
+      <div class="space-y-1.5">
+        <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Destinatarios Guardados / Frecuentes:</label>
+        <div id="modal-wa-contactos-list" class="flex flex-wrap gap-2">
+          <!-- Dinámico: Chips de Gerencia, Jefe, etc. -->
+        </div>
+      </div>
+
+      <!-- Input Número con Checkbox de Asociación -->
+      <div class="bg-carbon/70 p-3.5 rounded-2xl border border-gray-800 space-y-2.5">
+        <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Número de WhatsApp (con código de país ej: +51):</label>
+        <div class="flex gap-2">
+          <div class="relative flex-1">
+            <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-emerald-400 text-sm">📞</span>
+            <input type="tel" id="modal-wa-input-telefono" placeholder="+51 998 887 766"
+              oninput="onTelefonoWhatsAppChange()"
+              class="w-full bg-graphite border border-gray-700 rounded-xl pl-9 pr-3 py-2.5 text-white font-mono font-bold text-sm focus:border-emerald-500 focus:outline-none transition">
+          </div>
+          <button type="button" onclick="guardarAsociacionWhatsAppDirecta()"
+            title="Guardar y asociar este número como oficial de Gerencia"
+            class="px-3 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 text-emerald-400 hover:text-emerald-300 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer">
+            <span>💾</span> Asociar
+          </button>
+        </div>
+        
+        <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-gray-300 hover:text-white pt-1">
+          <input type="checkbox" id="modal-wa-check-asociar" checked
+            class="w-4 h-4 rounded border-gray-700 text-emerald-500 focus:ring-0 bg-graphite cursor-pointer">
+          <span>💾 Recordar y asociar este número como predeterminado de Gerencia</span>
+        </label>
+      </div>
+
+      <!-- Preview del mensaje -->
+      <div class="space-y-1.5">
+        <div class="flex items-center justify-between">
+          <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Vista Previa del Mensaje (Formato WhatsApp):</label>
+          <span class="text-[10px] text-gray-400">Generado en tiempo real</span>
+        </div>
+        <div class="relative">
+          <textarea id="modal-wa-preview-text" readonly rows="8"
+            class="w-full bg-[#0d1418] border border-emerald-950/80 rounded-2xl p-3 text-emerald-200/90 font-mono text-xs leading-relaxed resize-none focus:outline-none select-text shadow-inner">
+Cargando reporte de flota...
+          </textarea>
+          <div class="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] bg-emerald-950/90 border border-emerald-800 text-emerald-300 px-2 py-0.5 rounded-md">
+            <span>⚡ ACR Flota360</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer Buttons -->
+      <div class="pt-2 flex flex-col sm:flex-row gap-2">
+        <button type="button" onclick="enviarMensajeWhatsAppModal()"
+          class="flex-1 py-3 px-4 bg-emerald-500 hover:bg-emerald-400 text-carbon font-black text-xs uppercase rounded-xl transition shadow-lg shadow-emerald-500/25 flex items-center justify-center gap-2 cursor-pointer">
+          <span class="text-base">🚀</span>
+          <span>Abrir WhatsApp & Enviar</span>
+        </button>
+        <button type="button" onclick="copiarTextoWhatsAppModal()"
+          class="py-3 px-4 bg-gray-800 hover:bg-gray-700 text-gray-200 font-bold text-xs uppercase rounded-xl transition border border-gray-700 flex items-center justify-center gap-1.5 cursor-pointer">
+          <span>📋</span>
+          <span>Copiar Texto</span>
+        </button>
+        <button type="button" onclick="cerrarModalReporteWhatsApp()"
+          class="py-3 px-4 bg-gray-900 hover:bg-gray-800 text-gray-400 hover:text-white font-bold text-xs uppercase rounded-xl transition border border-gray-800 cursor-pointer">
+          Cerrar
+        </button>
+      </div>
     </div>
   </div>
 
@@ -5040,16 +5139,172 @@
       }
     }
 
-    async function enviarWhatsAppGerencia() {
-      const tel = prompt("Número de WhatsApp de Gerencia (ej: +51 998 887 766):", "+51998887766");
-      if (!tel) return;
+    // ==========================================
+    // MODAL Y ASOCIACIÓN DE WHATSAPP PARA REPORTES
+    // ==========================================
+    let _cacheReporteWhatsApp = null;
+    let _debounceWaTimeout = null;
+
+    async function abrirModalReporteWhatsApp() {
+      const modal = document.getElementById('modal-enviar-reporte-whatsapp');
+      if (!modal) return;
+      modal.classList.remove('hidden');
+      modal.classList.add('flex');
+
+      const inputTel = document.getElementById('modal-wa-input-telefono');
+      const previewText = document.getElementById('modal-wa-preview-text');
+      const containerChips = document.getElementById('modal-wa-contactos-list');
+
+      previewText.value = "⏳ Cargando reporte oficial de flota y estado operativo...";
+
       try {
-        const res = await fetch(`/api/v1/heavy/reportes/whatsapp-gerencia?telefono=${encodeURIComponent(tel)}`);
-        const data = await res.json();
-        window.open(data.whatsapp_link, '_blank');
+        // Cargar números asociados y contactos
+        const resContactos = await fetch('/api/v1/heavy/reportes/whatsapp-telefonos');
+        const dataContactos = await resContactos.json();
+
+        // Renderizar chips de contactos
+        if (containerChips && dataContactos.contactos) {
+          containerChips.innerHTML = dataContactos.contactos.map((c, idx) => `
+            <button type="button" onclick="seleccionarContactoWhatsApp('${c.telefono}', ${c.rol === 'gerencia'})"
+              class="px-2.5 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
+                idx === 0 
+                  ? 'bg-emerald-950/80 border-emerald-500/60 text-emerald-300 hover:bg-emerald-900' 
+                  : 'bg-graphiteLight/60 border-gray-700 text-gray-300 hover:text-white hover:border-gray-500'
+              }">
+              <span>${c.nombre}</span>
+              <span class="font-mono text-[11px] text-gray-400">(${c.telefono || 'Sin núm'})</span>
+            </button>
+          `).join('');
+        }
+
+        // Si el input está vacío, colocar el número de Gerencia asociado
+        if (inputTel && (!inputTel.value || inputTel.value.trim() === '')) {
+          inputTel.value = dataContactos.gerencia_telefono || '+51998887766';
+        }
+
+        // Cargar vista previa del mensaje
+        await cargarVistaPreviaWhatsApp(inputTel.value);
+
       } catch (err) {
-        alert("Error al preparar el mensaje de WhatsApp.");
+        console.error("Error al abrir modal WhatsApp:", err);
+        previewText.value = "Error al obtener datos para el reporte de WhatsApp.";
       }
+    }
+
+    function cerrarModalReporteWhatsApp() {
+      const modal = document.getElementById('modal-enviar-reporte-whatsapp');
+      if (!modal) return;
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+    }
+
+    function seleccionarContactoWhatsApp(telefono, esGerencia) {
+      if (!telefono) return;
+      const inputTel = document.getElementById('modal-wa-input-telefono');
+      if (inputTel) {
+        inputTel.value = telefono;
+        const checkAsociar = document.getElementById('modal-wa-check-asociar');
+        if (checkAsociar) {
+          checkAsociar.checked = esGerencia;
+        }
+        cargarVistaPreviaWhatsApp(telefono);
+      }
+    }
+
+    function onTelefonoWhatsAppChange() {
+      clearTimeout(_debounceWaTimeout);
+      _debounceWaTimeout = setTimeout(() => {
+        const tel = document.getElementById('modal-wa-input-telefono')?.value || '';
+        cargarVistaPreviaWhatsApp(tel);
+      }, 500);
+    }
+
+    async function cargarVistaPreviaWhatsApp(telefono) {
+      const previewText = document.getElementById('modal-wa-preview-text');
+      try {
+        const queryTel = telefono ? `?telefono=${encodeURIComponent(telefono)}` : '';
+        const res = await fetch(`/api/v1/heavy/reportes/whatsapp-gerencia${queryTel}`);
+        const data = await res.json();
+        _cacheReporteWhatsApp = data;
+        if (previewText) {
+          previewText.value = data.mensaje || "Sin mensaje disponible.";
+        }
+      } catch (err) {
+        console.error("Error cargando preview WhatsApp:", err);
+      }
+    }
+
+    async function guardarAsociacionWhatsAppDirecta() {
+      const inputTel = document.getElementById('modal-wa-input-telefono');
+      const tel = inputTel ? inputTel.value.trim() : '';
+      if (!tel) {
+        alert("Por favor ingrese un número de teléfono válido con código de país (ej: +51 998 887 766).");
+        return;
+      }
+      try {
+        const res = await fetch('/api/v1/heavy/reportes/whatsapp-telefono', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telefono: tel, tipo: 'gerencia' })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert(`✅ Número ${tel} asociado permanentemente como WhatsApp oficial de Gerencia.`);
+          abrirModalReporteWhatsApp(); // refresca chips
+        } else {
+          alert("Error al asociar el número: " + (data.detail || "intente nuevamente."));
+        }
+      } catch (err) {
+        alert("Error de conexión al asociar el número.");
+      }
+    }
+
+    async function enviarMensajeWhatsAppModal() {
+      const inputTel = document.getElementById('modal-wa-input-telefono');
+      const checkAsociar = document.getElementById('modal-wa-check-asociar');
+      const tel = inputTel ? inputTel.value.trim() : '';
+      const asociar = checkAsociar ? checkAsociar.checked : false;
+
+      if (!tel) {
+        alert("Por favor ingrese un número de teléfono de WhatsApp de destino.");
+        return;
+      }
+
+      try {
+        const query = `?telefono=${encodeURIComponent(tel)}&asociar=${asociar}`;
+        const res = await fetch(`/api/v1/heavy/reportes/whatsapp-gerencia${query}`);
+        const data = await res.json();
+
+        if (data.whatsapp_link) {
+          window.open(data.whatsapp_link, '_blank');
+          cerrarModalReporteWhatsApp();
+        } else {
+          alert("No se pudo generar el enlace de WhatsApp.");
+        }
+      } catch (err) {
+        console.error("Error enviando WhatsApp:", err);
+        alert("Ocurrió un error al preparar el envío por WhatsApp.");
+      }
+    }
+
+    async function copiarTextoWhatsAppModal() {
+      const previewText = document.getElementById('modal-wa-preview-text');
+      if (!previewText || !previewText.value) return;
+
+      try {
+        await navigator.clipboard.writeText(previewText.value);
+        alert("📋 Reporte copiado al portapapeles. Listo para pegar en WhatsApp o correo.");
+      } catch (err) {
+        // Fallback
+        previewText.select();
+        document.execCommand('copy');
+        alert("📋 Reporte copiado al portapapeles.");
+      }
+    }
+
+    // Compatibilidad para botones existentes que llamaban a enviarWhatsAppGerencia
+    async function enviarWhatsAppGerencia() {
+      abrirModalReporteWhatsApp();
     }
 
     // ==========================================

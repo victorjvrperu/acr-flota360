@@ -18,23 +18,31 @@ from app.services.heavytrack_service import HeavyTrackService
 class ReportService:
 
     @staticmethod
-    def generar_mensaje_whatsapp_gerencia(db: Session, telefono_destino: str = "+51998887766") -> dict:
+    def generar_mensaje_whatsapp_gerencia(db: Session, telefono_destino: Optional[str] = None) -> dict:
         """
         Construye el resumen ejecutivo formateado para envío por WhatsApp a Gerencia
         con enlaces al reporte detallado y KPIs clave.
         """
+        from app.models.heavytrack import AjusteSistema
+        if not telefono_destino or not telefono_destino.strip():
+            aj = db.query(AjusteSistema).filter(AjusteSistema.clave == "whatsapp_gerencia_telefono").first()
+            telefono_destino = aj.valor if aj and aj.valor else "+51998887766"
+
         resumen = HeavyTrackService.obtener_resumen_dashboard(db)
         hoy_str = datetime.utcnow().strftime("%d/%m/%Y %H:%M")
 
-        # Equipos con alertas < 25h
+        # Equipos con alertas de semáforo
         equipos = db.query(MaquinariaEquipo).all()
         alertas_txt = []
         for eq in equipos:
-            color, horas_rest = HeavyTrackService.calcular_semaforo_equipo(eq)
+            color, rest = HeavyTrackService.calcular_semaforo_equipo(eq)
+            tipo_c = (eq.tipo_control or "HOROMETRO").upper()
+            unit = "km" if tipo_c == "KILOMETRAJE" else "h"
+            nom_eq = eq.nombre or f"{eq.marca or ''} {eq.modelo or ''}".strip() or "Equipo"
             if color == "rojo":
-                alertas_txt.append(f"  🔴 *{eq.codigo_interno}* ({eq.marca} {eq.modelo}): Mantenimiento VENCIDO hace {abs(horas_rest)}h.")
+                alertas_txt.append(f"  🔴 *{eq.codigo_interno}* ({nom_eq}): Mantenimiento *VENCIDO* hace {abs(rest):.1f} {unit}.")
             elif color == "amarillo":
-                alertas_txt.append(f"  🟡 *{eq.codigo_interno}* ({eq.marca} {eq.modelo}): Faltan *{horas_rest}h* para servicio de 250h.")
+                alertas_txt.append(f"  🟡 *{eq.codigo_interno}* ({nom_eq}): Próximo a servicio. Faltan *{rest:.1f} {unit}*.")
 
         alertas_str = "\n".join(alertas_txt) if alertas_txt else "  ✅ Ninguna alerta crítica. Flota 100% al día."
 
@@ -42,31 +50,34 @@ class ReportService:
         proyectos_txt = []
         for p in resumen["horas_por_proyecto"]:
             proyectos_txt.append(f"  • *{p['codigo']}* ({p['nombre']}): {p['horas']} horas.")
-        proyectos_str = "\n".join(proyectos_txt)
+        proyectos_str = "\n".join(proyectos_txt) if proyectos_txt else "  • En Base / Taller Central"
 
         mensaje = (
-            f"🚜 *HEAVYTRACK ENTERPRISE — REPORTE EJECUTIVO A GERENCIA*\n"
+            f"🚜 *ACR FLOTA 360° — INFORME EJECUTIVO*\n"
             f"📅 *Corte:* {hoy_str}\n\n"
             f"📊 *KPIs GLOBALES DE FLOTA:*\n"
             f"• *Horas Totales Trabajadas:* {resumen['horas_totales_trabajadas']} h\n"
             f"• *Equipos Operativos:* {resumen['semaforo_flota']['verde']} de {resumen['total_equipos']}\n"
-            f"• *Equipos en Taller / Críticos:* {resumen['equipos_en_taller']} unidades\n"
+            f"• *Equipos en Mantenimiento:* {resumen['equipos_en_taller']} unidades\n"
             f"• *Combustible Mes:* {resumen['galones_combustible_mes']} Gal (S/ {resumen['costo_combustible_mes']:,.2f})\n\n"
-            f"⚠️ *ALERTAS DE MANTENIMIENTO PREVENTIVO (< 25h):*\n"
+            f"🚦 *ESTADO DE SEMÁFOROS Y MANTENIMIENTO:*\n"
             f"{alertas_str}\n\n"
-            f"🏗️ *AVANCE POR FRENTE DE OBRA:*\n"
+            f"🏗️ *ACTIVIDAD POR FRENTE DE OBRA:*\n"
             f"{proyectos_str}\n\n"
-            f"📄 *Reporte Completo en PDF:* http://localhost:8000/api/v1/heavy/reportes/pdf\n"
-            f"🔒 *Acceso Gerencial:* http://localhost:8000"
+            f"📄 *Reporte Imprimible / PDF:* http://100.84.247.4:8000/api/v1/heavy/reportes/pdf\n"
+            f"🔒 *Plataforma:* ACR Flota 360° Cloud"
         )
 
         # Enlace directo de WhatsApp Web / App
+        tel_clean = telefono_destino.replace('+', '').replace(' ', '').replace('-', '')
         encoded_msg = urllib.parse.quote(mensaje)
-        whatsapp_url = f"https://api.whatsapp.com/send?phone={telefono_destino.replace('+', '').replace(' ', '')}&text={encoded_msg}"
+        whatsapp_url = f"https://api.whatsapp.com/send?phone={tel_clean}&text={encoded_msg}"
 
         return {
+            "mensaje": mensaje,
             "mensaje_texto": mensaje,
             "telefono_destino": telefono_destino,
+            "telefono_clean": tel_clean,
             "whatsapp_link": whatsapp_url,
             "timestamp": hoy_str
         }

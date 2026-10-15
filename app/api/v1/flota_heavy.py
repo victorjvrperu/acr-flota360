@@ -1047,11 +1047,103 @@ def descargar_reporte_pdf(db: Session = Depends(get_db)):
     return HTMLResponse(content=html)
 
 
+class AsociarTelefonoWhatsAppRequest(BaseModel):
+    telefono: str
+    tipo: str = "gerencia"  # "gerencia" o "jefe"
+
+
 @router.get("/reportes/whatsapp-gerencia")
-def obtener_resumen_whatsapp_gerencia(telefono: Optional[str] = "+51998887766", db: Session = Depends(get_db)):
-    """Retorna el mensaje con formato enriquecido para WhatsApp y enlace directo."""
+def obtener_resumen_whatsapp_gerencia(
+    telefono: Optional[str] = None,
+    asociar: bool = False,
+    db: Session = Depends(get_db)
+):
+    """
+    Retorna el mensaje con formato enriquecido para WhatsApp y enlace directo.
+    Si se marca 'asociar=True', persiste este número como predeterminado de Gerencia.
+    """
     from app.services.report_service import ReportService
+    from app.models.heavytrack import AjusteSistema
+
+    if telefono and asociar and telefono.strip():
+        tel_limpio = telefono.strip()
+        aj = db.query(AjusteSistema).filter(AjusteSistema.clave == "whatsapp_gerencia_telefono").first()
+        if not aj:
+            aj = AjusteSistema(clave="whatsapp_gerencia_telefono", valor=tel_limpio, descripcion="Número de WhatsApp predeterminado para reportes de Gerencia")
+            db.add(aj)
+        else:
+            aj.valor = tel_limpio
+            aj.actualizado_en = datetime.utcnow()
+        db.commit()
+
     return ReportService.generar_mensaje_whatsapp_gerencia(db, telefono)
+
+
+@router.get("/reportes/whatsapp-telefonos")
+def obtener_telefonos_whatsapp(db: Session = Depends(get_db)):
+    """
+    Retorna los teléfonos de WhatsApp asociados para Gerencia, Jefatura y contactos clave.
+    """
+    from app.models.heavytrack import AjusteSistema, Personal, RolPersonal
+
+    aj_ger = db.query(AjusteSistema).filter(AjusteSistema.clave == "whatsapp_gerencia_telefono").first()
+    aj_jefe = db.query(AjusteSistema).filter(AjusteSistema.clave == "whatsapp_jefe_telefono").first()
+
+    ger_tel = aj_ger.valor if aj_ger and aj_ger.valor else "+51998887766"
+    jefe_tel = aj_jefe.valor if aj_jefe and aj_jefe.valor else ""
+
+    contactos = [
+        {"nombre": "👑 Gerencia General", "telefono": ger_tel, "rol": "gerencia", "predeterminado": True}
+    ]
+    if jefe_tel:
+        contactos.append({"nombre": "🛠️ Jefe de Mantenimiento / Taller", "telefono": jefe_tel, "rol": "jefe", "predeterminado": False})
+
+    # Otros directivos y staff
+    directivos = db.query(Personal).filter(
+        Personal.rol.in_([RolPersonal.GERENCIA.value, RolPersonal.JEFE_MANTENIMIENTO.value, RolPersonal.SISTEMAS_ADMIN.value]),
+        Personal.estado == "activo",
+        Personal.telefono.isnot(None)
+    ).all()
+
+    for d in directivos:
+        if d.telefono and d.telefono.strip() and d.telefono.strip() not in [c["telefono"] for c in contactos]:
+            contactos.append({
+                "nombre": f"👤 {d.nombres} {d.apellidos} ({d.rol})",
+                "telefono": d.telefono.strip(),
+                "rol": d.rol,
+                "predeterminado": False
+            })
+
+    return {
+        "gerencia_telefono": ger_tel,
+        "jefe_telefono": jefe_tel,
+        "contactos": contactos
+    }
+
+
+@router.post("/reportes/whatsapp-telefono")
+def asociar_telefono_whatsapp(payload: AsociarTelefonoWhatsAppRequest, db: Session = Depends(get_db)):
+    """
+    Asocia y guarda de forma persistente un número de WhatsApp para envío de reportes.
+    """
+    from app.models.heavytrack import AjusteSistema
+    clave = "whatsapp_gerencia_telefono" if payload.tipo == "gerencia" else "whatsapp_jefe_telefono"
+    desc = "Número de WhatsApp predeterminado para reportes de Gerencia" if payload.tipo == "gerencia" else "Número de WhatsApp del Jefe de Mantenimiento"
+
+    aj = db.query(AjusteSistema).filter(AjusteSistema.clave == clave).first()
+    if not aj:
+        aj = AjusteSistema(clave=clave, valor=payload.telefono.strip(), descripcion=desc)
+        db.add(aj)
+    else:
+        aj.valor = payload.telefono.strip()
+        aj.actualizado_en = datetime.utcnow()
+    db.commit()
+
+    return {
+        "success": True,
+        "mensaje": f"Número {payload.telefono} asociado exitosamente como predeterminado para {payload.tipo.upper()}.",
+        "telefono": payload.telefono.strip()
+    }
 
 
 @router.get("/telemetria/mapa")
