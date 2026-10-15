@@ -193,6 +193,7 @@ class ConfigurarMantenimientoEquipoRequest(BaseModel):
     horometro_actual: Optional[float] = None
     odometro_proximo_servicio: Optional[float] = None
     odometro_intervalo_servicio: Optional[float] = None
+    estado: Optional[str] = None
 
 
 class MantenimientoEfectuadoRequest(BaseModel):

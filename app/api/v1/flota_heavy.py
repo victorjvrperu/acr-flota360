@@ -465,11 +465,14 @@ def configurar_mantenimiento_equipo(
         if payload.horometro_actual is not None and payload.horometro_actual >= 0:
             equipo.horometro_actual = float(payload.horometro_actual)
 
-    color, horas_restantes = HeavyTrackService.calcular_semaforo_equipo(equipo)
-    if color in ["rojo", "amarillo"]:
-        equipo.estado_operativo = EstadoOperativo.CRITICO.value
+    if payload.estado and payload.estado in [EstadoOperativo.EN_MANTENIMIENTO.value, EstadoOperativo.INACTIVO.value, "en_mantenimiento", "inactivo"]:
+        equipo.estado_operativo = payload.estado
     else:
-        equipo.estado_operativo = EstadoOperativo.OPERATIVO.value
+        color, horas_restantes = HeavyTrackService.calcular_semaforo_equipo(equipo)
+        if color in ["rojo", "amarillo"]:
+            equipo.estado_operativo = EstadoOperativo.CRITICO.value
+        else:
+            equipo.estado_operativo = EstadoOperativo.OPERATIVO.value
 
     db.commit()
     db.refresh(equipo)

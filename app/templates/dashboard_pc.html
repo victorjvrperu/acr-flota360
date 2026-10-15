@@ -2159,8 +2159,8 @@
             ⚙️
           </div>
           <div>
-            <h3 class="text-base font-black text-white uppercase">Intervalo de Mantenimiento</h3>
-            <p class="text-[11px] text-gray-400">Configuración técnica por máquina (horas)</p>
+            <h3 id="modal-mant-titulo" class="text-base font-black text-white uppercase">Intervalo de Mantenimiento</h3>
+            <p id="modal-mant-subtitulo" class="text-[11px] text-gray-400">Configuración técnica por máquina (horas)</p>
           </div>
         </div>
         <button type="button" onclick="cerrarModalConfigMantenimiento()"
@@ -2169,7 +2169,7 @@
 
       <div class="bg-carbon/90 rounded-2xl p-3.5 border border-gray-800 space-y-1.5 text-xs">
         <div class="flex justify-between items-center">
-          <span class="text-gray-400">Máquina:</span>
+          <span id="modal-mant-label-codigo" class="text-gray-400">Máquina:</span>
           <span id="modal-mant-codigo" class="font-mono font-bold text-machinery">-</span>
         </div>
         <div class="flex justify-between items-center">
@@ -2177,7 +2177,7 @@
           <span id="modal-mant-nombre" class="font-bold text-white">-</span>
         </div>
         <div class="flex justify-between items-center">
-          <span class="text-gray-400">Horómetro Actual Registrado:</span>
+          <span id="modal-mant-label-actual" class="text-gray-400">Horómetro Actual Registrado:</span>
           <span id="modal-mant-actual" class="font-mono font-black text-amber-400 text-sm">0.0 h</span>
         </div>
       </div>
@@ -2186,22 +2186,22 @@
         <input type="hidden" id="modal-mant-equipo-id">
 
         <div>
-          <label class="block font-bold text-gray-300 uppercase mb-1">
+          <label id="modal-mant-label-pregunta" class="block font-bold text-gray-300 uppercase mb-1">
             ¿Cada cuántas horas se realiza mantenimiento? *
           </label>
           <div class="relative">
-            <input type="number" step="10" min="10" max="2000" id="modal-mant-intervalo" required placeholder="Ej: 250"
+            <input type="number" step="10" min="10" max="200000" id="modal-mant-intervalo" required placeholder="Ej: 250"
               oninput="recalcularProximoServicioModal()"
               class="w-full bg-carbon border-2 border-gray-700 focus:border-amber-400 text-white font-mono font-black text-xl text-center rounded-xl py-2.5 px-3 focus:outline-none">
-            <span class="absolute right-4 top-3 text-gray-400 font-bold">Horas</span>
+            <span id="modal-mant-unidad-intervalo" class="absolute right-4 top-3 text-gray-400 font-bold">Horas</span>
           </div>
-          <span class="text-[10px] text-gray-400 mt-1 block">Estándar en maquinaria pesada: 250h (preventivo básico) o
+          <span id="modal-mant-nota-ayuda" class="text-[10px] text-gray-400 mt-1 block">Estándar en maquinaria pesada: 250h (preventivo básico) o
             500h (mayor).</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-gray-300 uppercase mb-1">Horóm. Próx. Servicio *</label>
+            <label id="modal-mant-label-proximo" class="block font-bold text-gray-300 uppercase mb-1">Horóm. Próx. Servicio *</label>
             <input type="number" step="0.1" id="modal-mant-proximo" required
               class="w-full bg-carbon border border-gray-700 focus:border-machinery text-amber-400 font-mono font-bold text-sm text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
@@ -7886,9 +7886,53 @@ Cargando reporte de flota...
       const esKm = (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE';
       const unit = esKm ? 'Km' : 'h';
       const actual = esKm ? (Number(eq.odometro_actual) || 0) : (Number(eq.horometro_actual) || 0);
-      document.getElementById('modal-mant-actual').textContent = `${actual.toFixed(1)} ${unit}`;
 
-      const intervalo = esKm ? (eq.odometro_intervalo_servicio || 5000) : (eq.intervalo_servicio || 250);
+      // Adaptar textos y etiquetas según tipo de control (Kilometraje vs Horómetro)
+      const lblCodigo = document.getElementById('modal-mant-label-codigo');
+      const subTitulo = document.getElementById('modal-mant-subtitulo');
+      const lblActual = document.getElementById('modal-mant-label-actual');
+      const lblPregunta = document.getElementById('modal-mant-label-pregunta');
+      const inpIntervalo = document.getElementById('modal-mant-intervalo');
+      const unidadIntervalo = document.getElementById('modal-mant-unidad-intervalo');
+      const notaAyuda = document.getElementById('modal-mant-nota-ayuda');
+      const lblProximo = document.getElementById('modal-mant-label-proximo');
+      const inpProximo = document.getElementById('modal-mant-proximo');
+
+      if (esKm) {
+        if (lblCodigo) lblCodigo.textContent = 'Vehículo / Unidad:';
+        if (subTitulo) subTitulo.textContent = 'Configuración técnica por vehículo (Kilometraje)';
+        if (lblActual) lblActual.textContent = 'Kilometraje Actual Registrado:';
+        if (lblPregunta) lblPregunta.textContent = '¿Cada cuántos kilómetros se realiza mantenimiento? *';
+        if (unidadIntervalo) unidadIntervalo.textContent = 'Km';
+        if (inpIntervalo) {
+          inpIntervalo.min = "500";
+          inpIntervalo.max = "100000";
+          inpIntervalo.step = "500";
+          inpIntervalo.placeholder = "Ej: 5000";
+        }
+        if (notaAyuda) notaAyuda.textContent = 'Estándar en vehículos livianos: cada 5,000 km (preventivo básico) o 10,000 km (mayor).';
+        if (lblProximo) lblProximo.textContent = 'Km Próx. Servicio *';
+        if (inpProximo) inpProximo.step = "1";
+        document.getElementById('modal-mant-actual').textContent = `${actual.toFixed(0)} Km`;
+      } else {
+        if (lblCodigo) lblCodigo.textContent = 'Máquina:';
+        if (subTitulo) subTitulo.textContent = 'Configuración técnica por máquina (horas)';
+        if (lblActual) lblActual.textContent = 'Horómetro Actual Registrado:';
+        if (lblPregunta) lblPregunta.textContent = '¿Cada cuántas horas se realiza mantenimiento? *';
+        if (unidadIntervalo) unidadIntervalo.textContent = 'Horas';
+        if (inpIntervalo) {
+          inpIntervalo.min = "10";
+          inpIntervalo.max = "2000";
+          inpIntervalo.step = "10";
+          inpIntervalo.placeholder = "Ej: 250";
+        }
+        if (notaAyuda) notaAyuda.textContent = 'Estándar en maquinaria pesada: 250h (preventivo básico) o 500h (mayor).';
+        if (lblProximo) lblProximo.textContent = 'Horóm. Próx. Servicio *';
+        if (inpProximo) inpProximo.step = "0.1";
+        document.getElementById('modal-mant-actual').textContent = `${actual.toFixed(1)} h`;
+      }
+
+      const intervalo = esKm ? (eq.odometro_intervalo_servicio || eq.intervalo_servicio || 5000) : (eq.intervalo_servicio || 250);
       document.getElementById('modal-mant-intervalo').value = intervalo;
 
       let prox = 0;
@@ -7898,12 +7942,13 @@ Cargando reporte de flota...
         } else if (eq.horometro_proximo_servicio && Number(eq.horometro_proximo_servicio) > 1000) {
           prox = Number(eq.horometro_proximo_servicio);
         } else {
-          prox = actual + intervalo;
+          prox = Math.round(actual + intervalo);
         }
+        document.getElementById('modal-mant-proximo').value = Math.round(prox);
       } else {
         prox = (Number(eq.horometro_proximo_servicio) > 0) ? Number(eq.horometro_proximo_servicio) : (actual + intervalo);
+        document.getElementById('modal-mant-proximo').value = Number(prox).toFixed(1);
       }
-      document.getElementById('modal-mant-proximo').value = prox;
 
       const selEstado = document.getElementById('modal-mant-estado');
       if (selEstado) selEstado.value = eq.estado_operativo || eq.estado || 'operativo';
@@ -7921,7 +7966,10 @@ Cargando reporte de flota...
       const actual = parseFloat(actualStr) || 0;
       const intervalo = parseFloat(document.getElementById('modal-mant-intervalo').value) || 0;
       if (intervalo > 0) {
-        document.getElementById('modal-mant-proximo').value = (actual + intervalo).toFixed(1);
+        const equipoId = parseInt(document.getElementById('modal-mant-equipo-id').value);
+        const eq = equiposCache.find(e => e.id === equipoId);
+        const esKm = eq && (eq.tipo_control || '').toUpperCase() === 'KILOMETRAJE';
+        document.getElementById('modal-mant-proximo').value = esKm ? Math.round(actual + intervalo) : (actual + intervalo).toFixed(1);
       }
     }
 
