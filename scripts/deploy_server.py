@@ -11,8 +11,24 @@ import tempfile
 import sys
 
 SERVER_USER = "bodylab"
-SERVER_IP = "192.168.1.92"
+LAN_IP = "192.168.1.92"
+TAILSCALE_IP = "100.84.247.4"
 SUDO_PASS = "Kamita12"
+
+
+def get_server_ip() -> str:
+    """Detecta automáticamente si el servidor responde por LAN o por Tailscale."""
+    # Verificar LAN rápido (1 segundo)
+    try:
+        ret = subprocess.run(
+            ["ping", "-c", "1", "-W", "1000", LAN_IP],
+            stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+        )
+        if ret.returncode == 0:
+            return LAN_IP
+    except Exception:
+        pass
+    return TAILSCALE_IP
 
 # Ambos servicios y directorios
 DEPLOY_TARGETS = [
@@ -58,6 +74,9 @@ def main():
     subprocess.run(tar_cmd, check=True)
     print(f"✅ Archivo creado ({os.path.getsize(tar_path) // 1024} KB)")
 
+    server_ip = get_server_ip()
+    print(f"🌐 Servidor destino detectado: {server_ip}")
+
     with tempfile.NamedTemporaryFile(mode="w", delete=False) as f:
         f.write(f"#!/bin/sh\necho \"{SUDO_PASS}\"\n")
         askpass_path = f.name
@@ -66,13 +85,14 @@ def main():
     env = os.environ.copy()
     env["SSH_ASKPASS"] = askpass_path
     env["SSH_ASKPASS_REQUIRE"] = "force"
-    ssh_opts = ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", "-o", "LogLevel=ERROR"]
+    env["DISPLAY"] = ":0"
+    ssh_opts = ["-o", "StrictHostKeyChecking=no", "-o", "UserKnownHostsFile=/dev/null", "-o", "LogLevel=ERROR", "-o", "BatchMode=no"]
 
     try:
-        print(f"🚀 Enviando a {SERVER_USER}@{SERVER_IP}...")
+        print(f"🚀 Enviando a {SERVER_USER}@{server_ip}...")
         subprocess.run(
-            ["scp"] + ssh_opts + [tar_path, f"{SERVER_USER}@{SERVER_IP}:/tmp/acr_flota360_deploy.tar.gz"],
-            env=env, check=True
+            ["scp", "-O"] + ssh_opts + [tar_path, f"{SERVER_USER}@{server_ip}:/tmp/acr_flota360_deploy.tar.gz"],
+            env=env, stdin=subprocess.DEVNULL, check=True
         )
 
         for target in DEPLOY_TARGETS:
@@ -92,14 +112,14 @@ sleep 2
 echo "✅ {service_name} reiniciado"
 """
             subprocess.run(
-                ["ssh"] + ssh_opts + [f"{SERVER_USER}@{SERVER_IP}", remote_cmds],
-                env=env, check=True
+                ["ssh"] + ssh_opts + [f"{SERVER_USER}@{server_ip}", remote_cmds],
+                env=env, stdin=subprocess.DEVNULL, check=True
             )
-            print(f"   ✅ http://{SERVER_IP}:{port} actualizado")
+            print(f"   ✅ http://{server_ip}:{port} actualizado")
 
         print(f"\n🎉 ¡Despliegue exitoso en ambos servicios!")
-        print(f"   • Puerto 8000 (maquinaria.service): http://{SERVER_IP}:8000")
-        print(f"   • Puerto 8001 (acr-flota360.service / producción): http://{SERVER_IP}:8001")
+        print(f"   • Puerto 8000 (maquinaria.service): http://{server_ip}:8000")
+        print(f"   • Puerto 8001 (acr-flota360.service / producción): http://{server_ip}:8001")
     finally:
         if os.path.exists(askpass_path):
             os.unlink(askpass_path)
