@@ -90,6 +90,9 @@ if [ ! -d "android" ]; then
 fi
 npx cap sync android
 
+echo "🎨 Copiando iconos oficiales con logo ACR 360 en todos los tamaños (mdpi, hdpi, xhdpi, xxhdpi, xxxhdpi)..."
+cp -rf res/mipmap-* android/app/src/main/res/ 2>/dev/null || true
+
 echo "🛡️ Configurando permisos de Cámara, GPS y Red en AndroidManifest.xml..."
 MANIFEST="android/app/src/main/AndroidManifest.xml"
 if [ -f "$MANIFEST" ]; then
