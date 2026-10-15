@@ -111,11 +111,23 @@ def guardar_configuracion_notificaciones(
     return NotificationService.actualizar_configuracion(db, datos)
 
 
+class TestWhatsAppRequest(BaseModel):
+    telefono: Optional[str] = None
+
+
 @router.post("/test-whatsapp")
-def enviar_whatsapp_prueba(db: Session = Depends(get_db)):
-    """Envía un mensaje de prueba al celular del Jefe de Área."""
+def enviar_whatsapp_prueba(req: Optional[TestWhatsAppRequest] = None, db: Session = Depends(get_db)):
+    """Envía un mensaje de prueba al celular del Jefe de Área o al teléfono especificado."""
     config = NotificationService.obtener_configuracion(db)
-    tel_jefe = config["whatsapp_jefe_telefono"]
+    
+    tel_destino = (req.telefono.strip() if (req and req.telefono and req.telefono.strip()) else None)
+    if not tel_destino:
+        tel_destino = config.get("whatsapp_jefe_telefono") or "+51 987 654 321"
+
+    # Si se especificó un teléfono real, guardarlo permanentemente como el número oficial de recepción
+    if req and req.telefono and req.telefono.strip():
+        NotificationService.actualizar_configuracion(db, {"whatsapp_jefe_telefono": tel_destino})
+
     hoy = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
 
     mensaje = (
@@ -131,17 +143,17 @@ def enviar_whatsapp_prueba(db: Session = Depends(get_db)):
     )
 
     enviado_api = False
-    if config["whatsapp_api_url"]:
-        enviado_api = NotificationService.enviar_whatsapp_directo_api(tel_jefe, mensaje, db)
+    if config.get("whatsapp_api_url"):
+        enviado_api = NotificationService.enviar_whatsapp_directo_api(tel_destino, mensaje, db)
 
-    link = NotificationService.generar_link_whatsapp(tel_jefe, mensaje)
+    link = NotificationService.generar_link_whatsapp(tel_destino, mensaje)
 
     return {
         "success": True,
-        "telefono": tel_jefe,
+        "telefono": tel_destino,
         "enviado_por_api": enviado_api,
         "whatsapp_link": link,
-        "mensaje": "Mensaje de prueba generado correctamente."
+        "mensaje": f"Mensaje de prueba enviado a {tel_destino}."
     }
 
 

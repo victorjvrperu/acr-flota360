@@ -3172,18 +3172,31 @@ Cargando reporte de flota...
           </div>
 
           <!-- Estado Conectado (Visible solo cuando ya está enlazado) -->
-          <div id="wa-qr-connected-card" class="hidden w-full bg-emerald-950/60 border border-emerald-700/80 rounded-2xl p-4 text-center space-y-2">
+          <div id="wa-qr-connected-card" class="hidden w-full bg-emerald-950/60 border border-emerald-700/80 rounded-2xl p-4 text-center space-y-3">
             <div class="text-2xl">🟢</div>
             <div class="text-sm font-black text-emerald-300 uppercase">Gateway de WhatsApp Enlazado & Operativo</div>
             <p class="text-[11px] text-gray-300">El número emisor oficial está conectado 24/7 en el servidor para alertas de fallas, OTs y reportes.</p>
-            <div class="pt-2 flex justify-center gap-2 flex-wrap">
-              <button type="button" onclick="enviarWhatsAppPruebaModal()"
-                class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-carbon font-black text-xs uppercase rounded-xl transition shadow-lg shadow-emerald-500/20 cursor-pointer flex items-center gap-1.5">
-                <span>🚀</span> Enviar WhatsApp de Prueba
-              </button>
+
+            <!-- Campo para ingresar / editar el número que recibirá las alertas y pruebas -->
+            <div class="bg-carbon/90 p-3 rounded-xl border border-gray-700/80 text-left space-y-2 mt-2">
+              <label class="block text-[11px] font-bold text-gray-200 uppercase">
+                📱 Tu Número de Celular para Recibir Alertas y Pruebas:
+              </label>
+              <div class="flex gap-2">
+                <input type="tel" id="wa-qr-input-destinatario-prueba" placeholder="+51 9XX XXX XXX"
+                  class="flex-1 bg-graphite border border-gray-600 rounded-xl px-3 py-2 text-white font-mono font-bold text-xs focus:border-emerald-500 focus:outline-none">
+                <button type="button" onclick="enviarWhatsAppPruebaModal()"
+                  class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-carbon font-black text-xs uppercase rounded-xl transition shadow-lg shadow-emerald-500/20 cursor-pointer flex items-center gap-1.5 shrink-0">
+                  <span>🚀</span> Enviar Prueba
+                </button>
+              </div>
+              <p class="text-[10px] text-gray-400">Ingresa tu número (ej: +51 9XXXXXXXX). Al enviar la prueba se guardará permanentemente como tu teléfono de recepción.</p>
+            </div>
+
+            <div class="pt-1 flex justify-center">
               <button type="button" onclick="desvincularEmisorWhatsAppSubmit()"
-                class="px-3.5 py-2 bg-rose-950/80 hover:bg-rose-700 text-rose-300 rounded-xl text-xs font-bold transition border border-rose-800 cursor-pointer flex items-center gap-1">
-                <span>🔄</span> Desvincular / Nuevo QR
+                class="px-3.5 py-1.5 bg-rose-950/60 hover:bg-rose-700 text-rose-300 rounded-xl text-[11px] font-bold transition border border-rose-800 cursor-pointer flex items-center gap-1">
+                <span>🔄</span> Desvincular Emisor / Nuevo QR
               </button>
             </div>
           </div>
@@ -6626,6 +6639,11 @@ Cargando reporte de flota...
         if (telSpan) telSpan.textContent = data.telefono_emisor || 'Pendiente de escaneo';
         if (dispSpan) dispSpan.textContent = data.dispositivo || 'ACR Baileys Gateway';
 
+        const inputDest = document.getElementById('wa-qr-input-destinatario-prueba');
+        if (inputDest && !inputDest.value && data.whatsapp_jefe_telefono && data.whatsapp_jefe_telefono !== '+51 987 654 321') {
+          inputDest.value = data.whatsapp_jefe_telefono;
+        }
+
         if (data.estado === 'CONECTADO') {
           if (badge) {
             badge.className = 'px-2.5 py-1 rounded-full font-black text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center gap-1.5';
@@ -6681,12 +6699,26 @@ Cargando reporte de flota...
     }
 
     async function enviarWhatsAppPruebaModal() {
+      const inputDest = document.getElementById('wa-qr-input-destinatario-prueba');
+      let tel = inputDest?.value?.trim();
+
+      if (!tel || tel === '+51 987 654 321') {
+        tel = prompt('Ingresa TU número de WhatsApp para enviarte el mensaje de prueba (ej: +51 9XXXXXXXX):', '');
+        if (!tel || !tel.trim()) return;
+        tel = tel.trim();
+        if (inputDest) inputDest.value = tel;
+      }
+
       try {
-        const resp = await fetch('/api/v1/heavy/notificaciones/test-whatsapp', { method: 'POST' });
+        const resp = await fetch('/api/v1/heavy/notificaciones/test-whatsapp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ telefono: tel })
+        });
         const res = await resp.json();
         if (resp.ok) {
           if (res.enviado_por_api) {
-            alert(`🚀 ¡Mensaje de prueba enviado exitosamente por el Bot oficial al número ${res.telefono}!`);
+            alert(`🚀 ¡Mensaje de prueba enviado exitosamente por el Bot oficial a TU número (${res.telefono})!\n\nRevisa tu WhatsApp ahora.`);
           } else {
             alert(`✅ Enlace generado para ${res.telefono}. Abriendo WhatsApp...`);
             if (res.whatsapp_link) window.open(res.whatsapp_link, '_blank');

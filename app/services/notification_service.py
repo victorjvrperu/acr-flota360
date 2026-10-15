@@ -460,6 +460,7 @@ class NotificationService:
             "qr_code_base64": qr_code_base64,
             "gateway_url": gateway_base,
             "bateria_porcentaje": 98,
+            "whatsapp_jefe_telefono": ajustes.get("whatsapp_jefe_telefono") or "",
             "auto_envio_alarmas": ajustes.get("whatsapp_auto_envio", "1") == "1",
             "alerta_gps_desconexion": ajustes.get("whatsapp_alerta_gps_desconexion", "1") == "1"
         }
