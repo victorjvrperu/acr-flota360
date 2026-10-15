@@ -214,6 +214,15 @@
           <span>Sistema Cloud Sync</span>
         </div>
 
+        <!-- Descarga APK Android Oficial -->
+        <a href="/static/downloads/acr-operadores.apk" download="acr-operadores.apk"
+          class="flex items-center gap-1.5 bg-machinery/15 hover:bg-machinery/25 text-machinery border border-machinery/40 px-3 py-1.5 rounded-full text-xs font-bold transition shadow-sm"
+          title="Descargar APK oficial para instalar en teléfonos de operadores">
+          <span>📲</span>
+          <span class="hidden md:inline">Descargar App Operadores</span>
+          <span class="text-[10px] bg-machinery text-carbon px-1.5 py-0.5 rounded font-black">APK</span>
+        </a>
+
         <!-- Centro de Notificaciones & Alertas WhatsApp -->
         <div class="relative">
           <button id="btn-campana-notificaciones" onclick="togglePanelNotificaciones(event)"
@@ -671,7 +680,8 @@
               </span>
             </div>
             <p class="text-xs text-gray-400 mt-1">
-              Monitoreo diario exclusivo de horómetros (h) para maquinaria pesada, cálculo de horas efectivas, rendimiento operativo (Gal/h) y exportación oficial
+              Monitoreo diario exclusivo de horómetros (h) para maquinaria pesada, cálculo de horas efectivas,
+              rendimiento operativo (Gal/h) y exportación oficial
             </p>
           </div>
 
@@ -960,12 +970,14 @@
               <h3 class="text-lg font-black text-white uppercase tracking-wide">
                 Almacén de Repuestos & Filtros Críticos
               </h3>
-              <span class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+              <span
+                class="px-2.5 py-0.5 rounded text-[10px] font-black uppercase bg-emerald-950/80 text-emerald-400 border border-emerald-800">
                 📦 Inventario Central
               </span>
             </div>
             <p class="text-xs text-gray-400 mt-1">
-              Control de stock mínimo, gestión de salidas para mantenimiento a maquinaria, reposición y valorización de inventario
+              Control de stock mínimo, gestión de salidas para mantenimiento a maquinaria, reposición y valorización de
+              inventario
             </p>
           </div>
           <div class="flex items-center gap-2 flex-wrap">
@@ -1029,7 +1041,8 @@
         <!-- VISTA 1: CATÁLOGO DE REPUESTOS -->
         <div id="vista-almacen-catalogo" class="space-y-4">
           <!-- Barra de Filtros y Búsqueda -->
-          <div class="bg-carbon p-4 rounded-xl border border-gray-800 flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div
+            class="bg-carbon p-4 rounded-xl border border-gray-800 flex flex-col md:flex-row gap-3 items-center justify-between">
             <div class="relative w-full md:w-96">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">🔍</span>
               <input type="text" id="filtro-repuesto-busqueda" oninput="filtrarRepuestos()"
@@ -1071,7 +1084,8 @@
               </thead>
               <tbody id="tabla-repuestos-body" class="divide-y divide-gray-800 font-medium">
                 <tr>
-                  <td colspan="9" class="py-8 text-center text-gray-500 font-medium">Cargando inventario de repuestos...</td>
+                  <td colspan="9" class="py-8 text-center text-gray-500 font-medium">Cargando inventario de repuestos...
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -1080,15 +1094,18 @@
 
         <!-- VISTA 2: KARDEX Y REGISTRO DE MOVIMIENTOS -->
         <div id="vista-almacen-kardex" class="hidden space-y-4">
-          <div class="bg-carbon p-4 rounded-xl border border-gray-800 flex flex-col md:flex-row gap-3 items-center justify-between">
+          <div
+            class="bg-carbon p-4 rounded-xl border border-gray-800 flex flex-col md:flex-row gap-3 items-center justify-between">
             <div class="flex items-center gap-3">
               <span class="text-sm font-bold text-gray-300">Filtrar Movimientos:</span>
               <button onclick="filtrarKardexPorTipo('')" id="btn-kardex-filtro-todos"
                 class="px-3 py-1.5 bg-gray-700 text-white rounded-lg text-xs font-bold transition">Todos</button>
               <button onclick="filtrarKardexPorTipo('SALIDA')" id="btn-kardex-filtro-salidas"
-                class="px-3 py-1.5 bg-graphite text-rose-300 hover:bg-rose-950/80 border border-gray-700 rounded-lg text-xs font-bold transition">📤 Salidas a Máquinas</button>
+                class="px-3 py-1.5 bg-graphite text-rose-300 hover:bg-rose-950/80 border border-gray-700 rounded-lg text-xs font-bold transition">📤
+                Salidas a Máquinas</button>
               <button onclick="filtrarKardexPorTipo('ENTRADA')" id="btn-kardex-filtro-entradas"
-                class="px-3 py-1.5 bg-graphite text-emerald-300 hover:bg-emerald-950/80 border border-gray-700 rounded-lg text-xs font-bold transition">📥 Entradas de Compras</button>
+                class="px-3 py-1.5 bg-graphite text-emerald-300 hover:bg-emerald-950/80 border border-gray-700 rounded-lg text-xs font-bold transition">📥
+                Entradas de Compras</button>
             </div>
             <div class="text-xs text-gray-400 font-mono" id="kardex-total-registros">
               0 movimientos registrados
@@ -1163,7 +1180,8 @@
               <span class="w-3 h-3 bg-amber-400 rounded-sm"></span>
               Gestión de Mantenimiento de Flota (Horas & Kilometraje)
             </h3>
-            <p class="text-xs text-gray-400">Supervisión técnica de horómetros y odómetros, semáforo preventivo de servicio y registro de mantenimientos efectuados</p>
+            <p class="text-xs text-gray-400">Supervisión técnica de horómetros y odómetros, semáforo preventivo de
+              servicio y registro de mantenimientos efectuados</p>
           </div>
           <div class="flex items-center gap-2">
             <button onclick="abrirModalNuevaOrdenMantenimiento()"
@@ -1208,7 +1226,9 @@
               <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
                 <span>🚜</span> Informe de Horas y Kilómetros - Semáforo de Mantenimiento
               </h4>
-              <p class="text-[11px] text-gray-400 mt-0.5">El semáforo 🔴 indica que la unidad ya llegó o superó su ciclo de servicio. Use el botón <b class="text-emerald-400">"🛠️ Mantenimiento Efectuado"</b> para reiniciar el ciclo en verde.</p>
+              <p class="text-[11px] text-gray-400 mt-0.5">El semáforo 🔴 indica que la unidad ya llegó o superó su ciclo
+                de servicio. Use el botón <b class="text-emerald-400">"🛠️ Mantenimiento Efectuado"</b> para reiniciar
+                el ciclo en verde.</p>
             </div>
             <span class="text-xs text-gray-400">Actualizado con telemetría en vivo</span>
           </div>
@@ -1235,39 +1255,39 @@
           </div>
         </div>
 
-          <!-- Tabla: Historial de Órdenes de Mantenimiento -->
-          <div class="mt-8 pt-6 border-t border-gray-800">
-            <div class="flex items-center justify-between mb-3">
-              <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
-                <span>📋</span> Órdenes de Trabajo y Mantenimiento de Taller
-              </h4>
-              <button onclick="cargarOrdenesMantenimiento()" class="text-xs text-machinery hover:underline font-bold">
-                🔄 Actualizar Órdenes
-              </button>
-            </div>
-            <div class="overflow-x-auto rounded-lg border border-gray-800">
-              <table class="w-full text-left text-xs">
-                <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
-                  <tr>
-                    <th class="py-3 px-4">N° Orden</th>
-                    <th class="py-3 px-4">Equipo</th>
-                    <th class="py-3 px-4">Tipo Servicio</th>
-                    <th class="py-3 px-4">Fecha Prog.</th>
-                    <th class="py-3 px-4 text-right">Horóm. Registro</th>
-                    <th class="py-3 px-4 text-right">Costo Estim. (S/.)</th>
-                    <th class="py-3 px-4">Técnico / Taller</th>
-                    <th class="py-3 px-4 text-center">Estado</th>
-                  </tr>
-                </thead>
-                <tbody id="tabla-ordenes-mantenimiento-body" class="divide-y divide-gray-800 font-medium">
-                  <tr>
-                    <td colspan="8" class="py-6 text-center text-gray-500">Cargando órdenes de mantenimiento...</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+        <!-- Tabla: Historial de Órdenes de Mantenimiento -->
+        <div class="mt-8 pt-6 border-t border-gray-800">
+          <div class="flex items-center justify-between mb-3">
+            <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
+              <span>📋</span> Órdenes de Trabajo y Mantenimiento de Taller
+            </h4>
+            <button onclick="cargarOrdenesMantenimiento()" class="text-xs text-machinery hover:underline font-bold">
+              🔄 Actualizar Órdenes
+            </button>
+          </div>
+          <div class="overflow-x-auto rounded-lg border border-gray-800">
+            <table class="w-full text-left text-xs">
+              <thead class="text-gray-400 uppercase bg-carbon font-semibold border-b border-gray-800">
+                <tr>
+                  <th class="py-3 px-4">N° Orden</th>
+                  <th class="py-3 px-4">Equipo</th>
+                  <th class="py-3 px-4">Tipo Servicio</th>
+                  <th class="py-3 px-4">Fecha Prog.</th>
+                  <th class="py-3 px-4 text-right">Horóm. Registro</th>
+                  <th class="py-3 px-4 text-right">Costo Estim. (S/.)</th>
+                  <th class="py-3 px-4">Técnico / Taller</th>
+                  <th class="py-3 px-4 text-center">Estado</th>
+                </tr>
+              </thead>
+              <tbody id="tabla-ordenes-mantenimiento-body" class="divide-y divide-gray-800 font-medium">
+                <tr>
+                  <td colspan="8" class="py-6 text-center text-gray-500">Cargando órdenes de mantenimiento...</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
+      </div>
 
       <!-- SECCIÓN CONTROL DE COMBUSTIBLE & PAGOS -->
       <div id="seccion-combustible"
@@ -1278,11 +1298,13 @@
               <span class="w-3 h-3 bg-emerald-400 rounded-sm"></span>
               Control de Combustible, Rendimiento & Pagos
             </h3>
-            <p class="text-xs text-gray-400">Abastecimiento previo a salida a obra, cálculo de consumo (Gal/h y Km/Gal) y conciliación financiera con administración</p>
+            <p class="text-xs text-gray-400">Abastecimiento previo a salida a obra, cálculo de consumo (Gal/h y Km/Gal)
+              y conciliación financiera con administración</p>
           </div>
           <div class="flex flex-wrap items-center gap-2.5">
             <!-- Indicador de Precios Independientes -->
-            <div class="flex items-center gap-2.5 bg-carbon/90 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl shadow-inner">
+            <div
+              class="flex items-center gap-2.5 bg-carbon/90 border border-emerald-500/40 px-3.5 py-1.5 rounded-xl shadow-inner">
               <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
               <div>
                 <span class="text-xs font-black text-emerald-400 flex items-center gap-1.5">
@@ -1336,7 +1358,8 @@
               <h4 class="text-sm font-black text-white uppercase flex items-center gap-2">
                 <span>⛽</span> Bitácora de Cargas, Consumo & Conciliación Financiera
               </h4>
-              <p class="text-[11px] text-gray-400 mt-0.5">Muestra el rendimiento operativo calculado (Gal/h en horas máquina o Km/Gal en vehículos) y estado de conciliación</p>
+              <p class="text-[11px] text-gray-400 mt-0.5">Muestra el rendimiento operativo calculado (Gal/h en horas
+                máquina o Km/Gal en vehículos) y estado de conciliación</p>
             </div>
             <span class="text-xs text-gray-400">Coordinación directa con área administrativa</span>
           </div>
@@ -1925,16 +1948,19 @@
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div id="editar-campo-horometro">
               <div class="flex items-center justify-between mb-1">
-                <label class="block font-bold text-gray-400 uppercase text-[11px]">Registro Horómetro Actual (h) *</label>
+                <label class="block font-bold text-gray-400 uppercase text-[11px]">Registro Horómetro Actual (h)
+                  *</label>
                 <span id="editar-badge-bloqueo-h"></span>
               </div>
               <div class="relative">
                 <input type="number" step="0.1" name="horometro_actual" id="editar-input-horometro-actual"
                   oninput="validarEdicionHorometroLive()" required
                   class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none transition-all pr-8">
-                <span id="editar-lock-icon-h" class="hidden absolute right-2.5 top-2.5 text-xs text-rose-400" title="Campo Bloqueado">🔒</span>
+                <span id="editar-lock-icon-h" class="hidden absolute right-2.5 top-2.5 text-xs text-rose-400"
+                  title="Campo Bloqueado">🔒</span>
               </div>
-              <div id="editar-aviso-bloqueo-h" class="hidden text-[10px] text-amber-400 font-medium mt-1 leading-tight"></div>
+              <div id="editar-aviso-bloqueo-h" class="hidden text-[10px] text-amber-400 font-medium mt-1 leading-tight">
+              </div>
               <div id="editar-aviso-horometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al
                 valor registrado (<span id="editar-valor-ant-h"></span> h)</div>
             </div>
@@ -1952,21 +1978,28 @@
                 <input type="number" step="0.1" name="odometro_actual" id="editar-input-odometro-actual"
                   oninput="validarEdicionOdometroLive()" value="0.0"
                   class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none transition-all pr-8">
-                <span id="editar-lock-icon-km" class="hidden absolute right-2.5 top-2.5 text-xs text-rose-400" title="Campo Bloqueado">🔒</span>
+                <span id="editar-lock-icon-km" class="hidden absolute right-2.5 top-2.5 text-xs text-rose-400"
+                  title="Campo Bloqueado">🔒</span>
               </div>
-              <div id="editar-aviso-bloqueo-km" class="hidden text-[10px] text-amber-400 font-medium mt-1 leading-tight"></div>
+              <div id="editar-aviso-bloqueo-km"
+                class="hidden text-[10px] text-amber-400 font-medium mt-1 leading-tight"></div>
               <div id="editar-aviso-odometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al
                 valor registrado (<span id="editar-valor-ant-km"></span> km)</div>
             </div>
           </div>
-          <div id="editar-bloqueo-acciones" class="hidden pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-gray-800/80">
-            <span class="text-[11px] text-gray-400">🔒 Límite de modificaciones de campo alcanzado (Bloqueo anti-fraude).</span>
+          <div id="editar-bloqueo-acciones"
+            class="hidden pt-2 flex flex-wrap items-center justify-between gap-2 border-t border-gray-800/80">
+            <span class="text-[11px] text-gray-400">🔒 Límite de modificaciones de campo alcanzado (Bloqueo
+              anti-fraude).</span>
             <div class="flex items-center gap-3">
-              <label class="inline-flex items-center gap-1.5 text-[11px] text-amber-400 font-bold cursor-pointer hover:text-amber-300 select-none bg-amber-500/10 px-2 py-1 rounded border border-amber-500/30">
-                <input type="checkbox" id="check-forzar-admin" onchange="toggleModoCreadorLectura(this.checked)" class="rounded bg-graphite border-gray-700 text-machinery focus:ring-0">
+              <label
+                class="inline-flex items-center gap-1.5 text-[11px] text-amber-400 font-bold cursor-pointer hover:text-amber-300 select-none bg-amber-500/10 px-2 py-1 rounded border border-amber-500/30">
+                <input type="checkbox" id="check-forzar-admin" onchange="toggleModoCreadorLectura(this.checked)"
+                  class="rounded bg-graphite border-gray-700 text-machinery focus:ring-0">
                 <span>👑 Forzar como Creador</span>
               </label>
-              <button type="button" id="btn-desbloquear-lectura" onclick="desbloquearLecturaAdmin()" class="text-[11px] text-gray-300 hover:text-white font-medium underline flex items-center gap-1 cursor-pointer">
+              <button type="button" id="btn-desbloquear-lectura" onclick="desbloquearLecturaAdmin()"
+                class="text-[11px] text-gray-300 hover:text-white font-medium underline flex items-center gap-1 cursor-pointer">
                 <span>🔓</span> Desbloquear permanentemente
               </button>
             </div>
@@ -2216,18 +2249,20 @@
             ¿Cada cuántas horas se realiza mantenimiento? *
           </label>
           <div class="relative">
-            <input type="number" step="10" min="10" max="200000" id="modal-mant-intervalo" required placeholder="Ej: 250"
-              oninput="recalcularProximoServicioModal()"
+            <input type="number" step="10" min="10" max="200000" id="modal-mant-intervalo" required
+              placeholder="Ej: 250" oninput="recalcularProximoServicioModal()"
               class="w-full bg-carbon border-2 border-gray-700 focus:border-amber-400 text-white font-mono font-black text-xl text-center rounded-xl py-2.5 px-3 focus:outline-none">
             <span id="modal-mant-unidad-intervalo" class="absolute right-4 top-3 text-gray-400 font-bold">Horas</span>
           </div>
-          <span id="modal-mant-nota-ayuda" class="text-[10px] text-gray-400 mt-1 block">Estándar en maquinaria pesada: 250h (preventivo básico) o
+          <span id="modal-mant-nota-ayuda" class="text-[10px] text-gray-400 mt-1 block">Estándar en maquinaria pesada:
+            250h (preventivo básico) o
             500h (mayor).</span>
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label id="modal-mant-label-proximo" class="block font-bold text-gray-300 uppercase mb-1">Horóm. Próx. Servicio *</label>
+            <label id="modal-mant-label-proximo" class="block font-bold text-gray-300 uppercase mb-1">Horóm. Próx.
+              Servicio *</label>
             <input type="number" step="0.1" id="modal-mant-proximo" required
               class="w-full bg-carbon border border-gray-700 focus:border-machinery text-amber-400 font-mono font-bold text-sm text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
@@ -2352,10 +2387,12 @@
   <!-- MODAL: REGISTRAR MANTENIMIENTO EFECTUADO (REINICIA SEMÁFORO A VERDE) -->
   <div id="modal-mantenimiento-efectuado"
     class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
+    <div
+      class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
             🛠️
           </div>
           <div>
@@ -2363,7 +2400,8 @@
             <p class="text-[11px] text-gray-400">Registra el servicio completado y reinicia el semáforo a 🟢 VERDE</p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalMantenimientoEfectuado()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
+        <button type="button" onclick="cerrarModalMantenimientoEfectuado()"
+          class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
       </div>
 
       <!-- Resumen de Máquina -->
@@ -2386,21 +2424,22 @@
         </div>
       </div>
 
-      <form id="form-mantenimiento-efectuado" onsubmit="guardarMantenimientoEfectuadoSubmit(event)" class="space-y-3.5 text-xs">
+      <form id="form-mantenimiento-efectuado" onsubmit="guardarMantenimientoEfectuadoSubmit(event)"
+        class="space-y-3.5 text-xs">
         <input type="hidden" id="mante-efec-equipo-id">
         <input type="hidden" id="mante-efec-tipo-ctrl-val">
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block font-bold text-gray-300 uppercase mb-1" id="mante-efec-lbl-lectura">Lectura al Servicio *</label>
-            <input type="number" step="0.1" id="mante-efec-lectura" required
-              oninput="calcularProximoMetaEfectuado()"
+            <label class="block font-bold text-gray-300 uppercase mb-1" id="mante-efec-lbl-lectura">Lectura al Servicio
+              *</label>
+            <input type="number" step="0.1" id="mante-efec-lectura" required oninput="calcularProximoMetaEfectuado()"
               class="w-full bg-carbon border-2 border-gray-700 focus:border-emerald-400 text-white font-mono font-bold text-base text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
           <div>
-            <label class="block font-bold text-gray-300 uppercase mb-1" id="mante-efec-lbl-intervalo">Intervalo para Próx. *</label>
-            <input type="number" step="10" id="mante-efec-intervalo" required
-              oninput="calcularProximoMetaEfectuado()"
+            <label class="block font-bold text-gray-300 uppercase mb-1" id="mante-efec-lbl-intervalo">Intervalo para
+              Próx. *</label>
+            <input type="number" step="10" id="mante-efec-intervalo" required oninput="calcularProximoMetaEfectuado()"
               class="w-full bg-carbon border-2 border-gray-700 focus:border-emerald-400 text-amber-400 font-mono font-bold text-base text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
         </div>
@@ -2417,7 +2456,8 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Tipo de Servicio</label>
-            <select id="mante-efec-tipo-mant" class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold text-xs focus:outline-none">
+            <select id="mante-efec-tipo-mant"
+              class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold text-xs focus:outline-none">
               <option value="preventivo">🔧 Preventivo (Aceite & Filtros)</option>
               <option value="correctivo">⚠️ Correctivo / Reparación</option>
             </select>
@@ -2442,7 +2482,9 @@
             class="w-full bg-carbon border border-gray-700 rounded-xl p-2.5 text-white text-xs focus:border-machinery focus:outline-none"></textarea>
         </div>
 
-        <div id="mante-efec-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="mante-efec-error"
+          class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-2 flex gap-2">
           <button type="submit"
@@ -2461,18 +2503,22 @@
   <!-- MODAL: REGISTRAR ABASTECIMIENTO DIRECTO DE COMBUSTIBLE -->
   <div id="modal-combustible-directo"
     class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
+    <div
+      class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
             ⛽
           </div>
           <div>
             <h3 class="text-base font-black text-white uppercase">Abastecer Combustible Directo</h3>
-            <p class="text-[11px] text-gray-400">Carga de diésel antes de salir a obra o abastecimiento en estación de servicio</p>
+            <p class="text-[11px] text-gray-400">Carga de diésel antes de salir a obra o abastecimiento en estación de
+              servicio</p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalCombustibleDirecto()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
+        <button type="button" onclick="cerrarModalCombustibleDirecto()"
+          class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
       </div>
 
       <form id="form-combustible-directo" onsubmit="guardarCombustibleDirectoSubmit(event)" class="space-y-3.5 text-xs">
@@ -2513,8 +2559,7 @@
           </div>
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Precio por Galón (S/.) *</label>
-            <input type="number" step="0.01" id="direct-comb-precio" required
-              oninput="recalcularTotalCombDirecto()"
+            <input type="number" step="0.01" id="direct-comb-precio" required oninput="recalcularTotalCombDirecto()"
               class="w-full bg-carbon border-2 border-gray-700 focus:border-emerald-400 text-white font-mono font-black text-xl text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
         </div>
@@ -2544,7 +2589,9 @@
           </div>
         </div>
 
-        <div id="direct-comb-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="direct-comb-error"
+          class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-2 flex gap-2">
           <button type="submit"
@@ -2563,18 +2610,22 @@
   <!-- MODAL: CONCILIAR PAGO DE COMBUSTIBLE -->
   <div id="modal-pago-combustible"
     class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
+    <div
+      class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
             💳
           </div>
           <div>
             <h3 class="text-base font-black text-white uppercase">Conciliar Pago de Combustible</h3>
-            <p class="text-[11px] text-gray-400" id="modal-pago-subtitulo">Registro financiero y validación de comprobante</p>
+            <p class="text-[11px] text-gray-400" id="modal-pago-subtitulo">Registro financiero y validación de
+              comprobante</p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalPagoCombustible()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
+        <button type="button" onclick="cerrarModalPagoCombustible()"
+          class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
       </div>
 
       <form id="form-pago-combustible" onsubmit="guardarConciliacionPagoSubmit(event)" class="space-y-3.5 text-xs">
@@ -2599,8 +2650,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Precio por Galón (S/.) *</label>
-            <input type="number" step="0.01" min="0" id="pago-comb-precio" required
-              oninput="recalcularTotalModalPago()"
+            <input type="number" step="0.01" min="0" id="pago-comb-precio" required oninput="recalcularTotalModalPago()"
               class="w-full bg-carbon border-2 border-gray-700 focus:border-emerald-400 text-white font-mono font-bold text-base rounded-xl py-2 px-3 focus:outline-none">
           </div>
           <div>
@@ -2635,13 +2685,16 @@
         <div id="pago-comb-voucher-box" class="hidden">
           <label class="block font-bold text-gray-300 uppercase mb-1">Voucher del Operador</label>
           <div class="flex items-center gap-2">
-            <button type="button" id="btn-ver-voucher-modal" class="px-3 py-1.5 bg-carbon hover:bg-gray-700 text-machinery border border-gray-700 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1">
+            <button type="button" id="btn-ver-voucher-modal"
+              class="px-3 py-1.5 bg-carbon hover:bg-gray-700 text-machinery border border-gray-700 rounded-lg text-xs font-bold transition cursor-pointer flex items-center gap-1">
               <span>🧾</span> <span>Ver Comprobante Completo</span>
             </button>
           </div>
         </div>
 
-        <div id="pago-comb-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="pago-comb-error"
+          class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-2 flex gap-2">
           <button type="submit"
@@ -2660,18 +2713,22 @@
   <!-- MODAL: REGISTRAR / EDITAR REPUESTO EN ALMACÉN -->
   <div id="modal-repuesto"
     class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
+    <div
+      class="bg-graphite border-2 border-emerald-500/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
             📦
           </div>
           <div>
-            <h3 id="modal-repuesto-titulo" class="text-base font-black text-white uppercase">Registrar Repuesto / Filtro</h3>
+            <h3 id="modal-repuesto-titulo" class="text-base font-black text-white uppercase">Registrar Repuesto / Filtro
+            </h3>
             <p class="text-[11px] text-gray-400">Control de inventario de taller y stock para mantenimientos</p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalRepuesto()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
+        <button type="button" onclick="cerrarModalRepuesto()"
+          class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
       </div>
 
       <form id="form-repuesto" onsubmit="guardarRepuestoSubmit(event)" class="space-y-3.5 text-xs">
@@ -2701,7 +2758,8 @@
 
         <div>
           <label class="block font-bold text-gray-300 uppercase mb-1">Descripción del Repuesto / Filtro *</label>
-          <input type="text" id="repuesto-nombre" required placeholder="Ej: Filtro de Aceite Primario CAT 336 / Volvo D13"
+          <input type="text" id="repuesto-nombre" required
+            placeholder="Ej: Filtro de Aceite Primario CAT 336 / Volvo D13"
             class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold text-xs focus:border-machinery focus:outline-none">
         </div>
 
@@ -2729,7 +2787,9 @@
             class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white text-xs focus:border-machinery focus:outline-none">
         </div>
 
-        <div id="repuesto-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="repuesto-error"
+          class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-2 flex gap-2">
           <button type="submit"
@@ -2748,18 +2808,23 @@
   <!-- MODAL: GESTIÓN DE SALIDAS Y ENTRADAS DE ALMACÉN (VALE DE DESPACHO) -->
   <div id="modal-ajuste-stock"
     class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
-    <div class="bg-graphite border-2 border-machinery/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+    <div
+      class="bg-graphite border-2 border-machinery/60 rounded-3xl max-w-lg w-full p-6 relative space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-xl shrink-0">
             📦
           </div>
           <div>
-            <h3 class="text-base font-black text-white uppercase" id="ajuste-modal-titulo">Vale de Salida de Almacén</h3>
-            <p class="text-[11px] text-gray-400" id="ajuste-repuesto-subtitulo">Despacho de repuestos para mantenimiento a maquinaria</p>
+            <h3 class="text-base font-black text-white uppercase" id="ajuste-modal-titulo">Vale de Salida de Almacén
+            </h3>
+            <p class="text-[11px] text-gray-400" id="ajuste-repuesto-subtitulo">Despacho de repuestos para mantenimiento
+              a maquinaria</p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalAjusteStock()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
+        <button type="button" onclick="cerrarModalAjusteStock()"
+          class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer">&times;</button>
       </div>
 
       <form id="form-ajuste-stock" onsubmit="guardarAjusteStockSubmit(event)" class="space-y-3.5 text-xs">
@@ -2791,11 +2856,13 @@
         </div>
 
         <!-- Banner de Repuesto Seleccionado -->
-        <div id="box-ajuste-repuesto-info" class="bg-carbon/80 p-3 rounded-xl border border-gray-800 flex justify-between items-center">
+        <div id="box-ajuste-repuesto-info"
+          class="bg-carbon/80 p-3 rounded-xl border border-gray-800 flex justify-between items-center">
           <div>
             <div id="ajuste-repuesto-codigo" class="font-mono font-bold text-machinery text-sm">CAT-1R-0716</div>
             <div id="ajuste-repuesto-nombre" class="text-gray-300 text-xs mt-0.5">Filtro de Aceite CAT</div>
-            <div id="ajuste-repuesto-precio-sub" class="text-[10px] text-gray-400 font-mono mt-0.5">Precio: S/ 0.00 c/u</div>
+            <div id="ajuste-repuesto-precio-sub" class="text-[10px] text-gray-400 font-mono mt-0.5">Precio: S/ 0.00 c/u
+            </div>
           </div>
           <div class="text-right">
             <span class="text-gray-400 text-[10px] block">Stock Disponible:</span>
@@ -2807,7 +2874,8 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block font-bold text-gray-300 uppercase mb-1">Cantidad *</label>
-            <input type="number" min="1" id="ajuste-cantidad" required placeholder="Ej: 2" oninput="calcularTotalAjuste()"
+            <input type="number" min="1" id="ajuste-cantidad" required placeholder="Ej: 2"
+              oninput="calcularTotalAjuste()"
               class="w-full bg-carbon border-2 border-gray-700 focus:border-machinery text-white font-mono font-black text-xl text-center rounded-xl py-2 px-3 focus:outline-none">
           </div>
           <div>
@@ -2838,9 +2906,12 @@
             <label class="block font-bold text-gray-300 uppercase mb-1">Motivo del Despacho / Mantenimiento</label>
             <select id="ajuste-motivo-servicio"
               class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-bold focus:border-machinery focus:outline-none">
-              <option value="Mantenimiento Preventivo (Cambio Periódico)">Mantenimiento Preventivo (Cambio Periódico)</option>
-              <option value="Mantenimiento Correctivo / Falla Mecánica">Mantenimiento Correctivo / Falla Mecánica</option>
-              <option value="Desgaste de Operación / Cambio de Cuchillas">Desgaste de Operación / Cambio de Cuchillas</option>
+              <option value="Mantenimiento Preventivo (Cambio Periódico)">Mantenimiento Preventivo (Cambio Periódico)
+              </option>
+              <option value="Mantenimiento Correctivo / Falla Mecánica">Mantenimiento Correctivo / Falla Mecánica
+              </option>
+              <option value="Desgaste de Operación / Cambio de Cuchillas">Desgaste de Operación / Cambio de Cuchillas
+              </option>
               <option value="Reposición de Emergencia en Obra">Reposición de Emergencia en Obra</option>
               <option value="Ajuste / Calibración de Taller">Ajuste / Calibración de Taller</option>
             </select>
@@ -2857,7 +2928,8 @@
             </div>
             <div>
               <label class="block font-bold text-gray-300 uppercase mb-1">Precio Unitario Adquisición (S/.)</label>
-              <input type="number" step="0.01" min="0" id="ajuste-precio-unitario" placeholder="Opcional para actualizar"
+              <input type="number" step="0.01" min="0" id="ajuste-precio-unitario"
+                placeholder="Opcional para actualizar"
                 class="w-full bg-carbon border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
             </div>
           </div>
@@ -2876,7 +2948,9 @@
           <span id="ajuste-total-soles-badge" class="font-mono font-black text-emerald-400 text-sm">S/ 0.00</span>
         </div>
 
-        <div id="ajuste-error" class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold"></div>
+        <div id="ajuste-error"
+          class="hidden p-2 bg-rose-950/60 border border-rose-800 rounded-xl text-rose-300 text-xs text-center font-bold">
+        </div>
 
         <div class="pt-2 flex gap-2">
           <button type="submit" id="btn-submit-ajuste"
@@ -2895,12 +2969,14 @@
   <!-- MODAL: INSPECCIÓN 360° (4 FOTOS CHECK-IN & 4 FOTOS CHECK-OUT) -->
   <div id="modal-inspeccion-360"
     class="fixed inset-0 bg-black/90 backdrop-blur-md z-50 hidden items-center justify-center p-4">
-    <div class="bg-graphite border-2 border-emerald-500/50 rounded-3xl max-w-4xl w-full p-6 relative space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
-      
+    <div
+      class="bg-graphite border-2 border-emerald-500/50 rounded-3xl max-w-4xl w-full p-6 relative space-y-4 shadow-2xl max-h-[92vh] overflow-y-auto">
+
       <!-- Encabezado -->
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
+          <div
+            class="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl shrink-0">
             📸
           </div>
           <div>
@@ -2908,14 +2984,16 @@
               <h3 class="text-base font-black text-white uppercase tracking-wider">
                 Inspección 360° de Maquinaria
               </h3>
-              <span id="insp-360-equipo-badge" class="px-2.5 py-0.5 rounded text-xs font-black bg-machinery text-carbon">CAT 336</span>
+              <span id="insp-360-equipo-badge"
+                class="px-2.5 py-0.5 rounded text-xs font-black bg-machinery text-carbon">CAT 336</span>
             </div>
             <p class="text-[11px] text-gray-400 mt-0.5" id="insp-360-subtitulo">
               4 vistas obligatorias (Delantera, Trasera, Izquierda, Derecha) registradas por el operador en campo
             </p>
           </div>
         </div>
-        <button type="button" onclick="cerrarModalInspeccion360()" class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer transition">&times;</button>
+        <button type="button" onclick="cerrarModalInspeccion360()"
+          class="text-gray-400 hover:text-white text-2xl font-bold cursor-pointer transition">&times;</button>
       </div>
 
       <!-- Selector de Momento: Check-In vs Check-Out -->
@@ -2938,88 +3016,108 @@
       <!-- Cuadrícula 4 Vistas (Delantera, Trasera, Izquierda, Derecha) -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         <!-- 1. Delantera -->
-        <div class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
+        <div
+          class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
           <div class="flex items-center justify-between mb-1.5 px-1">
             <span class="text-[11px] font-black uppercase text-gray-300 flex items-center gap-1">
               <span>🔼</span> Vista Delantera
             </span>
             <span id="insp-badge-delantera" class="text-[10px] text-emerald-400 font-bold">✓ Registrada</span>
           </div>
-          <div class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer" onclick="zoomFotoInspeccion('delantera')">
-            <img id="insp-img-delantera" src="" alt="Vista Delantera" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+          <div
+            class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer"
+            onclick="zoomFotoInspeccion('delantera')">
+            <img id="insp-img-delantera" src="" alt="Vista Delantera"
+              class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
             <div id="insp-empty-delantera" class="hidden text-center p-4 text-gray-500 text-xs">
               <div class="text-2xl mb-1">📷</div>
               Sin foto reportada
             </div>
           </div>
           <div class="mt-2 text-center">
-            <button type="button" onclick="zoomFotoInspeccion('delantera')" class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
+            <button type="button" onclick="zoomFotoInspeccion('delantera')"
+              class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
               🔍 Ampliar Imagen
             </button>
           </div>
         </div>
 
         <!-- 2. Trasera -->
-        <div class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
+        <div
+          class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
           <div class="flex items-center justify-between mb-1.5 px-1">
             <span class="text-[11px] font-black uppercase text-gray-300 flex items-center gap-1">
               <span>🔽</span> Vista Trasera
             </span>
             <span id="insp-badge-trasera" class="text-[10px] text-emerald-400 font-bold">✓ Registrada</span>
           </div>
-          <div class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer" onclick="zoomFotoInspeccion('trasera')">
-            <img id="insp-img-trasera" src="" alt="Vista Trasera" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+          <div
+            class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer"
+            onclick="zoomFotoInspeccion('trasera')">
+            <img id="insp-img-trasera" src="" alt="Vista Trasera"
+              class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
             <div id="insp-empty-trasera" class="hidden text-center p-4 text-gray-500 text-xs">
               <div class="text-2xl mb-1">📷</div>
               Sin foto reportada
             </div>
           </div>
           <div class="mt-2 text-center">
-            <button type="button" onclick="zoomFotoInspeccion('trasera')" class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
+            <button type="button" onclick="zoomFotoInspeccion('trasera')"
+              class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
               🔍 Ampliar Imagen
             </button>
           </div>
         </div>
 
         <!-- 3. Lateral Izquierda -->
-        <div class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
+        <div
+          class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
           <div class="flex items-center justify-between mb-1.5 px-1">
             <span class="text-[11px] font-black uppercase text-gray-300 flex items-center gap-1">
               <span>◀️</span> Lateral Izquierda
             </span>
             <span id="insp-badge-izquierda" class="text-[10px] text-emerald-400 font-bold">✓ Registrada</span>
           </div>
-          <div class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer" onclick="zoomFotoInspeccion('izquierda')">
-            <img id="insp-img-izquierda" src="" alt="Lateral Izquierda" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+          <div
+            class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer"
+            onclick="zoomFotoInspeccion('izquierda')">
+            <img id="insp-img-izquierda" src="" alt="Lateral Izquierda"
+              class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
             <div id="insp-empty-izquierda" class="hidden text-center p-4 text-gray-500 text-xs">
               <div class="text-2xl mb-1">📷</div>
               Sin foto reportada
             </div>
           </div>
           <div class="mt-2 text-center">
-            <button type="button" onclick="zoomFotoInspeccion('izquierda')" class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
+            <button type="button" onclick="zoomFotoInspeccion('izquierda')"
+              class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
               🔍 Ampliar Imagen
             </button>
           </div>
         </div>
 
         <!-- 4. Lateral Derecha -->
-        <div class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
+        <div
+          class="bg-carbon border border-gray-800 hover:border-emerald-500/50 rounded-2xl p-2.5 flex flex-col transition group">
           <div class="flex items-center justify-between mb-1.5 px-1">
             <span class="text-[11px] font-black uppercase text-gray-300 flex items-center gap-1">
               <span>▶️</span> Lateral Derecha
             </span>
             <span id="insp-badge-derecha" class="text-[10px] text-emerald-400 font-bold">✓ Registrada</span>
           </div>
-          <div class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer" onclick="zoomFotoInspeccion('derecha')">
-            <img id="insp-img-derecha" src="" alt="Lateral Derecha" class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
+          <div
+            class="bg-graphite rounded-xl overflow-hidden aspect-[4/3] flex items-center justify-center relative cursor-pointer"
+            onclick="zoomFotoInspeccion('derecha')">
+            <img id="insp-img-derecha" src="" alt="Lateral Derecha"
+              class="w-full h-full object-cover group-hover:scale-105 transition duration-300">
             <div id="insp-empty-derecha" class="hidden text-center p-4 text-gray-500 text-xs">
               <div class="text-2xl mb-1">📷</div>
               Sin foto reportada
             </div>
           </div>
           <div class="mt-2 text-center">
-            <button type="button" onclick="zoomFotoInspeccion('derecha')" class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
+            <button type="button" onclick="zoomFotoInspeccion('derecha')"
+              class="text-[11px] font-bold text-gray-400 hover:text-emerald-400 underline">
               🔍 Ampliar Imagen
             </button>
           </div>
@@ -3027,24 +3125,28 @@
       </div>
 
       <!-- Evidencias Complementarias: Horómetro, Combustible e Incidencia -->
-      <div class="bg-carbon/70 p-3.5 rounded-2xl border border-gray-800 flex flex-wrap items-center justify-between gap-3 text-xs">
+      <div
+        class="bg-carbon/70 p-3.5 rounded-2xl border border-gray-800 flex flex-wrap items-center justify-between gap-3 text-xs">
         <div class="flex items-center gap-3">
           <div id="insp-box-horometro-foto" class="flex items-center gap-2">
             <span class="text-gray-400">Lectura Tablero:</span>
-            <button type="button" id="btn-insp-horometro-foto" class="px-2.5 py-1 bg-graphite hover:bg-machinery hover:text-carbon rounded text-xs font-bold border border-gray-700 transition">
+            <button type="button" id="btn-insp-horometro-foto"
+              class="px-2.5 py-1 bg-graphite hover:bg-machinery hover:text-carbon rounded text-xs font-bold border border-gray-700 transition">
               📸 Ver Tablero
             </button>
           </div>
           <div id="insp-box-combustible-foto" class="hidden flex items-center gap-2">
             <span class="text-gray-400">Vale de Combustible:</span>
-            <button type="button" id="btn-insp-combustible-foto" class="px-2.5 py-1 bg-graphite hover:bg-amber-400 hover:text-carbon rounded text-xs font-bold border border-gray-700 transition">
+            <button type="button" id="btn-insp-combustible-foto"
+              class="px-2.5 py-1 bg-graphite hover:bg-amber-400 hover:text-carbon rounded text-xs font-bold border border-gray-700 transition">
               🧾 Ver Vale
             </button>
           </div>
         </div>
         <div id="insp-box-incidencia-foto" class="hidden flex items-center gap-2">
           <span class="text-rose-400 font-bold">⚠️ Incidencia / Daño:</span>
-          <button type="button" id="btn-insp-incidencia-foto" class="px-2.5 py-1 bg-rose-950/80 text-rose-300 hover:bg-rose-900 rounded text-xs font-bold border border-rose-800 transition">
+          <button type="button" id="btn-insp-incidencia-foto"
+            class="px-2.5 py-1 bg-rose-950/80 text-rose-300 hover:bg-rose-900 rounded text-xs font-bold border border-rose-800 transition">
             📸 Ver Evidencia de Incidencia
           </button>
         </div>
@@ -3056,20 +3158,24 @@
   <!-- MODAL: ENVIAR REPORTE POR WHATSAPP Y VINCULAR EMISOR POR QR -->
   <div id="modal-enviar-reporte-whatsapp"
     class="fixed inset-0 bg-black/85 backdrop-blur-md z-50 hidden items-center justify-center p-4">
-    <div class="bg-graphite border border-emerald-500/40 rounded-3xl max-w-xl w-full p-6 relative space-y-4 shadow-2xl shadow-emerald-950/40 max-h-[92vh] overflow-y-auto">
-      
+    <div
+      class="bg-graphite border border-emerald-500/40 rounded-3xl max-w-xl w-full p-6 relative space-y-4 shadow-2xl shadow-emerald-950/40 max-h-[92vh] overflow-y-auto">
+
       <!-- Header -->
       <div class="flex items-center justify-between border-b border-gray-800 pb-3">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl text-emerald-400">
+          <div
+            class="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-500/40 flex items-center justify-center text-xl text-emerald-400">
             📲
           </div>
           <div>
             <h3 class="text-base font-black text-white uppercase tracking-wider flex items-center gap-2">
               WhatsApp & Centro de Alarmas
-              <span class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold uppercase">Oficial</span>
+              <span
+                class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full font-bold uppercase">Oficial</span>
             </h3>
-            <p class="text-[11px] text-gray-400">Enlace por QR para emisión de alarmas automáticas y envío de reportes</p>
+            <p class="text-[11px] text-gray-400">Enlace por QR para emisión de alarmas automáticas y envío de reportes
+            </p>
           </div>
         </div>
         <button type="button" onclick="cerrarModalReporteWhatsApp()"
@@ -3092,7 +3198,8 @@
       <div id="tab-wa-vista-reporte" class="space-y-4">
         <!-- Contactos / Números Pre-asociados -->
         <div class="space-y-1.5">
-          <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Destinatarios Guardados / Frecuentes:</label>
+          <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Destinatarios Guardados /
+            Frecuentes:</label>
           <div id="modal-wa-contactos-list" class="flex flex-wrap gap-2">
             <!-- Dinámico: Chips de Gerencia, Jefe, etc. -->
           </div>
@@ -3100,7 +3207,8 @@
 
         <!-- Input Número con Checkbox de Asociación -->
         <div class="bg-carbon/70 p-3.5 rounded-2xl border border-gray-800 space-y-2.5">
-          <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Número de WhatsApp Destino (con código de país ej: +51):</label>
+          <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Número de WhatsApp Destino
+            (con código de país ej: +51):</label>
           <div class="flex gap-2">
             <div class="relative flex-1">
               <span class="absolute inset-y-0 left-0 flex items-center pl-3 text-emerald-400 text-sm">📞</span>
@@ -3114,7 +3222,7 @@
               <span>💾</span> Asociar
             </button>
           </div>
-          
+
           <label class="flex items-center gap-2 cursor-pointer select-none text-xs text-gray-300 hover:text-white pt-1">
             <input type="checkbox" id="modal-wa-check-asociar" checked
               class="w-4 h-4 rounded border-gray-700 text-emerald-500 focus:ring-0 bg-graphite cursor-pointer">
@@ -3125,7 +3233,8 @@
         <!-- Preview del mensaje -->
         <div class="space-y-1.5">
           <div class="flex items-center justify-between">
-            <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Vista Previa del Mensaje (Formato WhatsApp):</label>
+            <label class="block text-[11px] font-black uppercase text-gray-300 tracking-wider">Vista Previa del Mensaje
+              (Formato WhatsApp):</label>
             <span class="text-[10px] text-gray-400">Generado en tiempo real</span>
           </div>
           <div class="relative">
@@ -3133,7 +3242,8 @@
               class="w-full bg-[#0d1418] border border-emerald-950/80 rounded-2xl p-3 text-emerald-200/90 font-mono text-xs leading-relaxed resize-none focus:outline-none select-text shadow-inner">
 Cargando reporte de flota...
             </textarea>
-            <div class="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] bg-emerald-950/90 border border-emerald-800 text-emerald-300 px-2 py-0.5 rounded-md">
+            <div
+              class="absolute bottom-3 right-3 flex items-center gap-1 text-[10px] bg-emerald-950/90 border border-emerald-800 text-emerald-300 px-2 py-0.5 rounded-md">
               <span>⚡ ACR Flota360</span>
             </div>
           </div>
@@ -3164,7 +3274,8 @@ Cargando reporte de flota...
         <div id="wa-qr-status-card" class="bg-carbon/90 p-4 rounded-2xl border border-gray-800 space-y-3">
           <div class="flex items-center justify-between">
             <span class="font-bold uppercase text-gray-300 tracking-wider">Estado del Gateway Emisor:</span>
-            <span id="wa-qr-badge-estado" class="px-2.5 py-1 rounded-full font-black text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center gap-1.5">
+            <span id="wa-qr-badge-estado"
+              class="px-2.5 py-1 rounded-full font-black text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center gap-1.5">
               <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
               <span>CONECTADO & ENLAZADO</span>
             </span>
@@ -3177,19 +3288,22 @@ Cargando reporte de flota...
             </div>
             <div class="bg-graphite/70 p-2.5 rounded-xl border border-gray-800">
               <span class="text-[10px] text-gray-500 uppercase block font-bold">Cliente / Dispositivo:</span>
-              <span id="wa-qr-dispositivo-vinculado" class="font-bold text-emerald-300 text-xs">WhatsApp Multi-Device</span>
+              <span id="wa-qr-dispositivo-vinculado" class="font-bold text-emerald-300 text-xs">WhatsApp
+                Multi-Device</span>
             </div>
           </div>
         </div>
 
         <!-- Visualizador de Código QR Dinámico (Baileys Gateway) -->
-        <div id="wa-qr-scanner-box" class="bg-carbon/95 p-5 rounded-2xl border-2 border-dashed border-emerald-500/40 flex flex-col items-center justify-center text-center space-y-3">
+        <div id="wa-qr-scanner-box"
+          class="bg-carbon/95 p-5 rounded-2xl border-2 border-dashed border-emerald-500/40 flex flex-col items-center justify-center text-center space-y-3">
           <div id="wa-qr-header-msg" class="text-[11px] font-bold text-gray-300">
             Escanea este código con WhatsApp en el celular que emitirá las alertas oficiales:
           </div>
 
           <!-- Contenedor Gráfico QR Dinámico -->
-          <div id="wa-qr-image-wrapper" class="relative p-3 bg-white rounded-2xl shadow-xl flex items-center justify-center min-w-[220px] min-h-[220px]">
+          <div id="wa-qr-image-wrapper"
+            class="relative p-3 bg-white rounded-2xl shadow-xl flex items-center justify-center min-w-[220px] min-h-[220px]">
             <img id="wa-qr-dynamic-img" src="" alt="Código QR WhatsApp" class="w-52 h-52 object-contain hidden" />
             <div id="wa-qr-loading-spinner" class="flex flex-col items-center justify-center p-6 text-carbon space-y-2">
               <div class="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
@@ -3198,10 +3312,12 @@ Cargando reporte de flota...
           </div>
 
           <!-- Estado Conectado (Visible solo cuando ya está enlazado) -->
-          <div id="wa-qr-connected-card" class="hidden w-full bg-emerald-950/60 border border-emerald-700/80 rounded-2xl p-4 text-center space-y-3">
+          <div id="wa-qr-connected-card"
+            class="hidden w-full bg-emerald-950/60 border border-emerald-700/80 rounded-2xl p-4 text-center space-y-3">
             <div class="text-2xl">🟢</div>
             <div class="text-sm font-black text-emerald-300 uppercase">Gateway de WhatsApp Enlazado & Operativo</div>
-            <p class="text-[11px] text-gray-300">El número emisor oficial está conectado 24/7 en el servidor para alertas de fallas, OTs y reportes.</p>
+            <p class="text-[11px] text-gray-300">El número emisor oficial está conectado 24/7 en el servidor para
+              alertas de fallas, OTs y reportes.</p>
 
             <!-- Campo para ingresar / editar el número que recibirá las alertas y pruebas -->
             <div class="bg-carbon/90 p-3 rounded-xl border border-gray-700/80 text-left space-y-2 mt-2">
@@ -3216,7 +3332,8 @@ Cargando reporte de flota...
                   <span>🚀</span> Enviar Prueba
                 </button>
               </div>
-              <p class="text-[10px] text-gray-400">Ingresa tu número (ej: +51 9XXXXXXXX). Al enviar la prueba se guardará permanentemente como tu teléfono de recepción.</p>
+              <p class="text-[10px] text-gray-400">Ingresa tu número (ej: +51 9XXXXXXXX). Al enviar la prueba se
+                guardará permanentemente como tu teléfono de recepción.</p>
             </div>
 
             <div class="pt-1 flex justify-center">
@@ -3229,9 +3346,12 @@ Cargando reporte de flota...
 
           <!-- Pasos de Escaneo -->
           <div id="wa-qr-steps-box" class="text-left text-[11px] text-gray-400 space-y-1 max-w-sm">
-            <div><span class="text-emerald-400 font-bold">1.</span> Abra WhatsApp en el celular emisor de la empresa.</div>
-            <div><span class="text-emerald-400 font-bold">2.</span> Toque <b>Ajustes</b> o <b>Menú</b> > <b>Dispositivos vinculados</b>.</div>
-            <div><span class="text-emerald-400 font-bold">3.</span> Presione <b>Vincular un dispositivo</b> y apunte la cámara al código QR.</div>
+            <div><span class="text-emerald-400 font-bold">1.</span> Abra WhatsApp en el celular emisor de la empresa.
+            </div>
+            <div><span class="text-emerald-400 font-bold">2.</span> Toque <b>Ajustes</b> o <b>Menú</b> > <b>Dispositivos
+                vinculados</b>.</div>
+            <div><span class="text-emerald-400 font-bold">3.</span> Presione <b>Vincular un dispositivo</b> y apunte la
+              cámara al código QR.</div>
           </div>
         </div>
 
@@ -3247,10 +3367,12 @@ Cargando reporte de flota...
                 <span class="text-base">🚨</span>
                 <div>
                   <span class="font-bold text-white block">Alerta de GPS Apagado o Desconectado en Turno</span>
-                  <span class="text-[10px] text-gray-400">Detecta si el operador apagó el GPS para evitar ser rastreado</span>
+                  <span class="text-[10px] text-gray-400">Detecta si el operador apagó el GPS para evitar ser
+                    rastreado</span>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800">ACTIVO</span>
+              <span
+                class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800">ACTIVO</span>
             </div>
 
             <div class="flex items-center justify-between p-2 rounded-xl bg-graphite border border-gray-800">
@@ -3258,10 +3380,12 @@ Cargando reporte de flota...
                 <span class="text-base">🛠️</span>
                 <div>
                   <span class="font-bold text-white block">Mantenimientos Próximos (&lt; 25h) y Vencidos</span>
-                  <span class="text-[10px] text-gray-400">Aviso automático para preparación de filtros y lubricantes</span>
+                  <span class="text-[10px] text-gray-400">Aviso automático para preparación de filtros y
+                    lubricantes</span>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800">ACTIVO</span>
+              <span
+                class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800">ACTIVO</span>
             </div>
 
             <div class="flex items-center justify-between p-2 rounded-xl bg-graphite border border-gray-800">
@@ -3272,7 +3396,8 @@ Cargando reporte de flota...
                   <span class="text-[10px] text-gray-400">Aviso preventivo legal a los 15 días de vencimiento</span>
                 </div>
               </div>
-              <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800">ACTIVO</span>
+              <span
+                class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-950 text-emerald-400 border border-emerald-800">ACTIVO</span>
             </div>
           </div>
 
@@ -4463,7 +4588,7 @@ Cargando reporte de flota...
       form.horometro_actual.value = eq.horometro_actual ?? 0.0;
       if (eq.tipo_control === 'KILOMETRAJE') {
         form.horometro_proximo_servicio.value = (eq.odometro_proximo_servicio && Number(eq.odometro_proximo_servicio) > 0)
-          ? eq.odometro_proximo_servicio 
+          ? eq.odometro_proximo_servicio
           : ((eq.horometro_proximo_servicio && Number(eq.horometro_proximo_servicio) > 1000) ? eq.horometro_proximo_servicio : 5000.0);
       } else {
         form.horometro_proximo_servicio.value = eq.horometro_proximo_servicio ?? 250.0;
@@ -6562,7 +6687,7 @@ Cargando reporte de flota...
       const selRep = document.getElementById('ajuste-select-repuesto');
       if (selRep) {
         selRep.innerHTML = repuestosCache.map(r => `
-          <option value="${r.id}">${r.codigo_parte} — ${r.nombre} (Stock: ${r.stock_actual} und | S/ ${Number(r.precio_unitario||0).toFixed(2)})</option>
+          <option value="${r.id}">${r.codigo_parte} — ${r.nombre} (Stock: ${r.stock_actual} und | S/ ${Number(r.precio_unitario || 0).toFixed(2)})</option>
         `).join('');
       }
 
@@ -6583,7 +6708,7 @@ Cargando reporte de flota...
       const valeEl = document.getElementById('ajuste-numero-vale');
       if (valeEl) {
         const prefijo = (tipo === 'entrada') ? 'ING' : 'VAL';
-        valeEl.value = `${prefijo}-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${Math.floor(100+Math.random()*900)}`;
+        valeEl.value = `${prefijo}-${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${Math.floor(100 + Math.random() * 900)}`;
       }
       calcularTotalAjuste();
 
@@ -6652,7 +6777,7 @@ Cargando reporte de flota...
       const valeEl = document.getElementById('ajuste-numero-vale');
       if (valeEl) {
         const prefijo = (tipo === 'entrada') ? 'ING' : 'VAL';
-        valeEl.value = `${prefijo}-${new Date().toISOString().slice(2,10).replace(/-/g,'')}-${r.id}`;
+        valeEl.value = `${prefijo}-${new Date().toISOString().slice(2, 10).replace(/-/g, '')}-${r.id}`;
       }
 
       seleccionarTipoMovimiento(tipo || 'salida');
@@ -7196,11 +7321,10 @@ Cargando reporte de flota...
         if (containerChips && dataContactos.contactos) {
           containerChips.innerHTML = dataContactos.contactos.map((c, idx) => `
             <button type="button" onclick="seleccionarContactoWhatsApp('${c.telefono}', ${c.rol === 'gerencia'})"
-              class="px-2.5 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${
-                idx === 0 
-                  ? 'bg-emerald-950/80 border-emerald-500/60 text-emerald-300 hover:bg-emerald-900' 
-                  : 'bg-graphiteLight/60 border-gray-700 text-gray-300 hover:text-white hover:border-gray-500'
-              }">
+              class="px-2.5 py-1 rounded-xl text-xs font-bold transition flex items-center gap-1.5 cursor-pointer border ${idx === 0
+              ? 'bg-emerald-950/80 border-emerald-500/60 text-emerald-300 hover:bg-emerald-900'
+              : 'bg-graphiteLight/60 border-gray-700 text-gray-300 hover:text-white hover:border-gray-500'
+            }">
               <span>${c.nombre}</span>
               <span class="font-mono text-[11px] text-gray-400">(${c.telefono || 'Sin núm'})</span>
             </button>
@@ -7978,7 +8102,7 @@ Cargando reporte de flota...
 
           const actual = esKm ? (Number(e.odometro_actual) || 0) : (Number(e.horometro_actual) || 0);
           const intervalo = esKm ? (Number(e.odometro_intervalo_servicio) || 5000) : (Number(e.intervalo_servicio) || 250);
-          
+
           let prox = 0;
           if (esKm) {
             if (e.odometro_proximo_servicio && Number(e.odometro_proximo_servicio) > 0) {

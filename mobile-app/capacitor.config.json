@@ -1,0 +1,15 @@
+{
+  "appId": "com.acr.flota360",
+  "appName": "ACR Operadores",
+  "webDir": "www",
+  "server": {
+    "url": "http://100.84.247.4:8001/operador",
+    "cleartext": true,
+    "androidScheme": "http"
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  }
+}

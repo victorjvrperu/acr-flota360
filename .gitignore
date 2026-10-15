@@ -47,3 +47,8 @@ data/
 # OS
 .DS_Store
 Thumbs.db
+
+# Mobile App & Capacitor
+mobile-app/node_modules/
+mobile-app/android/
+*.apk
