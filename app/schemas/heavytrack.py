@@ -130,8 +130,8 @@ class PersonalResponse(PersonalBase):
 class ProyectoBase(BaseModel):
     codigo: str
     nombre: str
-    ubicacion: str
-    fecha_inicio: date
+    ubicacion: Optional[str] = None
+    fecha_inicio: Optional[date] = None
     estado: EstadoProyecto = EstadoProyecto.ACTIVO
 
 
@@ -143,7 +143,7 @@ class ProyectoResponse(ProyectoBase):
     id: int
     equipos_count: Optional[int] = 0
     horas_totales: Optional[float] = 0.0
-    creado_en: datetime
+    creado_en: Optional[datetime] = None
 
     class Config:
         from_attributes = True
