@@ -34,7 +34,7 @@ class NotificationService:
 
         return {
             "whatsapp_jefe_telefono": tel_jefe or os.getenv("WHATSAPP_JEFE_TELEFONO", "+51 987 654 321"),
-            "whatsapp_api_url": config_map.get("whatsapp_api_url") or os.getenv("WHATSAPP_API_URL", ""),
+            "whatsapp_api_url": config_map.get("whatsapp_api_url") or os.getenv("WHATSAPP_API_URL", "http://127.0.0.1:3334"),
             "whatsapp_api_token": config_map.get("whatsapp_api_token") or os.getenv("WHATSAPP_API_TOKEN", ""),
             "whatsapp_auto_envio": config_map.get("whatsapp_auto_envio", "1") == "1",
             "alerta_horas_preventivo": int(config_map.get("alerta_horas_preventivo", "25")),
@@ -73,8 +73,8 @@ class NotificationService:
     @staticmethod
     def enviar_whatsapp_directo_api(telefono: str, mensaje: str, db: Session) -> bool:
         """
-        Envía el mensaje de forma desatendida a través de la API Gateway configurada
-        (Soporta Evolution API, UltraMsg, Twilio, Green API o Webhook HTTP genérico).
+        Envía el mensaje de forma desatendida a través del Gateway Baileys local
+        o API externa configurada (Evolution API, UltraMsg, etc.).
         """
         config = NotificationService.obtener_configuracion(db)
         api_url = config.get("whatsapp_api_url")
@@ -85,6 +85,10 @@ class NotificationService:
             return False
 
         try:
+            endpoint = api_url.rstrip("/")
+            if not endpoint.endswith("/send-message"):
+                endpoint = f"{endpoint}/send-message"
+
             headers = {
                 "Content-Type": "application/json",
                 "User-Agent": "ACR-Flota360/2.0"
@@ -94,16 +98,16 @@ class NotificationService:
                 headers["apikey"] = api_token
 
             payload = {
+                "to": tel_clean,
                 "phone": tel_clean,
                 "number": tel_clean,
-                "to": tel_clean,
-                "body": mensaje,
                 "message": mensaje,
+                "body": mensaje,
                 "text": mensaje
             }
 
-            with httpx.Client(timeout=6.0) as client:
-                res = client.post(api_url, json=payload, headers=headers)
+            with httpx.Client(timeout=8.0) as client:
+                res = client.post(endpoint, json=payload, headers=headers)
                 return res.status_code in (200, 201, 202)
         except Exception as e:
             print(f"[WHATSAPP GATEWAY ERROR]: {e}")
@@ -409,25 +413,53 @@ class NotificationService:
 
     @staticmethod
     def obtener_estado_whatsapp_qr(db: Session) -> Dict[str, Any]:
-        """Retorna el estado de emparejamiento del WhatsApp emisor (QR, conectado, número asociado)."""
+        """Retorna el estado de emparejamiento del WhatsApp emisor (QR real de Baileys, conectado, número asociado)."""
         ajustes = {a.clave: a.valor for a in db.query(AjusteSistema).all()}
-        estado = ajustes.get("whatsapp_emisor_estado", "CONECTADO")
-        telefono = ajustes.get("whatsapp_emisor_telefono", "+51 924 120 551")
-        dispositivo = ajustes.get("whatsapp_emisor_dispositivo", "WhatsApp Multi-Device Gateway Web")
-        nombre_bot = ajustes.get("whatsapp_emisor_nombre", "ACR Flota 360° Bot Oficial")
-        vinculado_en = ajustes.get("whatsapp_emisor_vinculado_en", "15/10/2026 08:30")
+        gateway_url = ajustes.get("whatsapp_api_url") or os.getenv("WHATSAPP_API_URL", "http://127.0.0.1:3334")
+        gateway_base = gateway_url.rstrip("/").replace("/send-message", "")
 
-        # Generar código de sesión para QR
-        qr_code_payload = f"ACR360-WA-PAIRING:v2:{NotificationService.limpiar_telefono(telefono)}:{int(datetime.utcnow().timestamp())}"
+        estado = ajustes.get("whatsapp_emisor_estado", "DESCONECTADO")
+        telefono = ajustes.get("whatsapp_emisor_telefono", "+51 924 120 551")
+        dispositivo = ajustes.get("whatsapp_emisor_dispositivo", "ACR WhatsApp Gateway (Baileys)")
+        nombre_bot = ajustes.get("whatsapp_emisor_nombre", "ACR Flota 360° Bot Oficial")
+        vinculado_en = ajustes.get("whatsapp_emisor_vinculado_en", "")
+        qr_code_base64 = None
+
+        # Consultar microservicio Baileys local en vivo
+        try:
+            with httpx.Client(timeout=2.0) as client:
+                res = client.get(f"{gateway_base}/status")
+                if res.status_code == 200:
+                    data = res.json()
+                    if data.get("connected"):
+                        estado = "CONECTADO"
+                        if data.get("number"):
+                            num_raw = str(data["number"])
+                            telefono = f"+{num_raw}" if not num_raw.startswith("+") else num_raw
+                        dispositivo = f"Baileys Node.js (Puerto {data.get('port', 3334)})"
+                        if not vinculado_en:
+                            vinculado_en = datetime.now().strftime("%d/%m/%Y %H:%M")
+                        NotificationService.actualizar_configuracion(db, {
+                            "whatsapp_emisor_estado": "CONECTADO",
+                            "whatsapp_emisor_telefono": telefono
+                        })
+                    elif data.get("has_qr") and data.get("qr_base64"):
+                        estado = "ESPERANDO_QR"
+                        qr_code_base64 = data["qr_base64"]
+                    else:
+                        estado = "CONECTANDO"
+        except Exception:
+            pass
 
         return {
-            "estado": estado,  # "CONECTADO", "DESCONECTADO", "ESPERANDO_QR"
+            "estado": estado,  # "CONECTADO", "DESCONECTADO", "ESPERANDO_QR", "CONECTANDO"
             "telefono_emisor": telefono,
             "dispositivo": dispositivo,
             "nombre_bot": nombre_bot,
-            "vinculado_en": vinculado_en,
-            "qr_code_payload": qr_code_payload,
-            "bateria_porcentaje": 94,
+            "vinculado_en": vinculado_en or datetime.now().strftime("%d/%m/%Y"),
+            "qr_code_base64": qr_code_base64,
+            "gateway_url": gateway_base,
+            "bateria_porcentaje": 98,
             "auto_envio_alarmas": ajustes.get("whatsapp_auto_envio", "1") == "1",
             "alerta_gps_desconexion": ajustes.get("whatsapp_alerta_gps_desconexion", "1") == "1"
         }
@@ -451,12 +483,140 @@ class NotificationService:
 
     @staticmethod
     def desvincular_whatsapp_qr(db: Session) -> Dict[str, Any]:
-        """Desvincula la sesión activa de WhatsApp emisor."""
+        """Desvincula la sesión activa de WhatsApp emisor en Baileys y limpia estado."""
+        ajustes = {a.clave: a.valor for a in db.query(AjusteSistema).all()}
+        gateway_url = ajustes.get("whatsapp_api_url") or os.getenv("WHATSAPP_API_URL", "http://127.0.0.1:3334")
+        gateway_base = gateway_url.rstrip("/").replace("/send-message", "")
+
+        try:
+            with httpx.Client(timeout=4.0) as client:
+                client.post(f"{gateway_base}/logout")
+        except Exception:
+            pass
+
         NotificationService.actualizar_configuracion(db, {
             "whatsapp_emisor_estado": "DESCONECTADO",
             "whatsapp_emisor_vinculado_en": ""
         })
         return NotificationService.obtener_estado_whatsapp_qr(db)
+
+    @staticmethod
+    def procesar_mensaje_entrante(db: Session, de: str, texto: str, remitente_nombre: str = "") -> Optional[str]:
+        """
+        Procesa comandos interactivos entrantes por WhatsApp enviados por choferes,
+        mecánicos o supervisores y devuelve la respuesta correspondiente.
+        """
+        t = texto.strip().lower()
+        if not t:
+            return None
+
+        # 1. Menú / Ayuda
+        if t in ("ayuda", "menu", "hola", "inicio", "?", "comandos"):
+            nom_saludo = f" {remitente_nombre}" if remitente_nombre else ""
+            return (
+                f"🚜 *ACR FLOTA 360° — BOT ASISTENTE*\n"
+                f"¡Hola{nom_saludo}! Comandos disponibles:\n\n"
+                f"• *estado [código]* ➡️ Ej: *estado CAT-336*\n"
+                f"• *horometro [código]* ➡️ Lectura y próximo servicio\n"
+                f"• *resumen* ➡️ Resumen general de flota hoy\n"
+                f"• *alertas* ➡️ Equipos con servicio vencido o crítico\n"
+                f"• *stock [repuesto]* ➡️ Ej: *stock filtro*\n"
+                f"• *mis unidades* ➡️ Listado de maquinaria activa"
+            )
+
+        # 2. Resumen
+        if t in ("resumen", "kpis", "reporte"):
+            from app.services.heavy_service import HeavyTrackService
+            r = HeavyTrackService.obtener_resumen_dashboard(db)
+            sem = r.get("semaforo_flota", {})
+            return (
+                f"📊 *ACR FLOTA 360° — RESUMEN EN TIEMPO REAL*\n\n"
+                f"🚜 *Total Equipos:* {r.get('total_equipos', 0)}\n"
+                f"🟢 *Operativos:* {sem.get('verde', 0)}\n"
+                f"🟡 *Próximo Servicio:* {sem.get('amarillo', 0)}\n"
+                f"🔴 *Mantenimiento Vencido:* {sem.get('rojo', 0)}\n"
+                f"🛠️ *En Taller:* {r.get('equipos_en_taller', 0)}\n"
+                f"⏱️ *Horas Acumuladas:* {r.get('horas_totales_trabajadas', 0)} h\n"
+                f"⛽ *Combustible Mes:* {r.get('galones_combustible_mes', 0)} Gal"
+            )
+
+        # 3. Alertas
+        if t in ("alerta", "alertas", "vencidos"):
+            from app.services.heavy_service import HeavyTrackService
+            equipos = db.query(MaquinariaEquipo).all()
+            alertas = []
+            for eq in equipos:
+                color, rest = HeavyTrackService.calcular_semaforo_equipo(eq)
+                unit = "km" if (eq.tipo_control or "HOROMETRO").upper() == "KILOMETRAJE" else "h"
+                if color == "rojo":
+                    alertas.append(f"🔴 *{eq.codigo_interno}*: Vencido hace {abs(rest):.1f} {unit}")
+                elif color == "amarillo":
+                    alertas.append(f"🟡 *{eq.codigo_interno}*: Faltan {rest:.1f} {unit}")
+
+            if not alertas:
+                return "✅ *ACR Flota 360°:* Ningún equipo tiene alertas. Toda la flota está al día."
+            return "🚨 *EQUIPOS CON ATENCIÓN REQUERIDA:*\n\n" + "\n".join(alertas)
+
+        # 4. Estado o Horómetro de equipo específico
+        if t.startswith("estado ") or t.startswith("horometro ") or t.startswith("eq "):
+            partes = t.split()
+            if len(partes) >= 2:
+                cod = partes[1].upper().replace("-", "")
+                equipos = db.query(MaquinariaEquipo).all()
+                eq = next((e for e in equipos if (e.codigo_interno or "").upper().replace("-", "") == cod), None)
+                if not eq:
+                    return f"❌ No se encontró la unidad con código *{partes[1].upper()}* en el sistema."
+
+                from app.services.heavy_service import HeavyTrackService
+                color, rest = HeavyTrackService.calcular_semaforo_equipo(eq)
+                unit = "km" if (eq.tipo_control or "HOROMETRO").upper() == "KILOMETRAJE" else "h"
+                semaforo_emoji = "🟢" if color == "verde" else ("🟡" if color == "amarillo" else "🔴")
+
+                op_nom = f"{eq.operador_asignado.nombres} {eq.operador_asignado.apellidos}" if eq.operador_asignado else "Sin asignar"
+                frente = eq.proyecto_actual.nombre if eq.proyecto_actual else "Base Central"
+
+                return (
+                    f"{semaforo_emoji} *FICHA DE UNIDAD: {eq.codigo_interno}*\n"
+                    f"🚜 *Modelo:* {eq.marca} {eq.modelo} ({eq.placa or 'S/P'})\n"
+                    f"📍 *Frente:* {frente}\n"
+                    f"👤 *Operador:* {op_nom}\n"
+                    f"⏱️ *Lectura Actual:* {eq.horometro_actual or eq.odometro_actual or 0.0} {unit}\n"
+                    f"🎯 *Próximo Mant.:* {eq.horometro_proximo_servicio or 250.0} {unit} (Margen: {rest:.1f} {unit})\n"
+                    f"📋 *Estado Operativo:* {eq.estado or 'OPERATIVO'}"
+                )
+
+        # 5. Stock de repuesto
+        if t.startswith("stock "):
+            partes = t.split(maxsplit=1)
+            if len(partes) >= 2:
+                busq = partes[1].strip()
+                from app.models.heavytrack import InventarioRepuesto
+                repuestos = db.query(InventarioRepuesto).filter(
+                    (InventarioRepuesto.codigo_parte.ilike(f"%{busq}%")) |
+                    (InventarioRepuesto.nombre.ilike(f"%{busq}%"))
+                ).limit(5).all()
+
+                if not repuestos:
+                    return f"❌ No se encontraron repuestos con la búsqueda *{busq}*."
+
+                lineas = [f"📦 *RESULTADOS DE ALMACÉN ({busq}):*"]
+                for r in repuestos:
+                    critico = "⚠️ Stock Bajo" if (r.stock_actual or 0) <= (r.stock_minimo or 0) else "✅"
+                    lineas.append(f"• *{r.codigo_parte}*: {r.nombre} ➡️ *{r.stock_actual} und* ({critico}) en {r.ubicacion_almacen or 'Bahía Central'}")
+                return "\n\n".join(lineas)
+
+        # 6. Mis unidades / Flota
+        if "unidades" in t or "maquinaria" in t or "flota" in t:
+            equipos = db.query(MaquinariaEquipo).limit(10).all()
+            lineas = ["🚜 *FLOTA ACTIVA ACR:*"]
+            for e in equipos:
+                lineas.append(f"• *{e.codigo_interno}* ({e.marca} {e.modelo}) — {e.estado or 'OPERATIVO'}")
+            return "\n".join(lineas)
+
+        return (
+            f"🤖 *ACR Flota 360° Bot*\n"
+            f"No reconocí tu mensaje. Escribe *ayuda* para ver los comandos disponibles."
+        )
 
     # ==========================================
     # ESCANEO AUTOMÁTICO DE FLOTA

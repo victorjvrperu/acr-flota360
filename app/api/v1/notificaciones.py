@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.orm import Session
 from typing import Optional, List, Dict, Any
 from datetime import datetime
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.core.database import get_db
 from app.models.heavytrack import NotificacionAlerta
@@ -213,3 +213,39 @@ def reportar_alerta_gps_apagado(req: ReportarGpsApagadoRequest, db: Session = De
         "titulo": notif.titulo,
         "whatsapp_link": notif.whatsapp_link
     }
+
+
+class WhatsAppWebhookPayload(BaseModel):
+    event: Optional[str] = None
+    from_: Optional[str] = Field(None, alias="from")
+    text: Optional[str] = None
+    pushName: Optional[str] = None
+    number: Optional[str] = None
+    timestamp: Optional[Any] = None
+
+    class Config:
+        allow_population_by_field_name = True
+
+
+@router.post("/whatsapp-webhook")
+def whatsapp_webhook(payload: WhatsAppWebhookPayload, db: Session = Depends(get_db)):
+    """
+    Webhook receptor de eventos y mensajes entrantes desde el Gateway Baileys.
+    Procesa consultas interactivas de choferes/mecánicos y devuelve la respuesta inmediata.
+    """
+    if payload.event == "connected":
+        if payload.number:
+            NotificationService.actualizar_configuracion(db, {
+                "whatsapp_emisor_estado": "CONECTADO",
+                "whatsapp_emisor_telefono": f"+{payload.number}" if not payload.number.startswith("+") else payload.number
+            })
+        return {"status": "ok", "message": "Estado sincronizado"}
+
+    if payload.event == "message_received" and payload.text:
+        de = payload.from_ or ""
+        nom = payload.pushName or ""
+        respuesta = NotificationService.procesar_mensaje_entrante(db, de, payload.text, nom)
+        return {"status": "ok", "reply": respuesta}
+
+    return {"status": "ignored"}
+

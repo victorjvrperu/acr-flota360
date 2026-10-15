@@ -3156,76 +3156,43 @@ Cargando reporte de flota...
           </div>
         </div>
 
-        <!-- Visualizador de Código QR (WhatsApp Web Style) -->
+        <!-- Visualizador de Código QR Dinámico (Baileys Gateway) -->
         <div id="wa-qr-scanner-box" class="bg-carbon/95 p-5 rounded-2xl border-2 border-dashed border-emerald-500/40 flex flex-col items-center justify-center text-center space-y-3">
-          <div class="text-[11px] font-bold text-gray-300">
-            Escanea este código con WhatsApp en el celular que emitirá las alertas:
+          <div id="wa-qr-header-msg" class="text-[11px] font-bold text-gray-300">
+            Escanea este código con WhatsApp en el celular que emitirá las alertas oficiales:
           </div>
 
-          <!-- Contenedor Gráfico QR -->
-          <div class="relative p-3 bg-white rounded-2xl shadow-xl flex items-center justify-center">
-            <svg id="wa-qr-svg" class="w-48 h-48" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <!-- Matriz QR estilizada -->
-              <rect width="100" height="100" fill="white"/>
-              <!-- Corner TL -->
-              <rect x="10" y="10" width="24" height="24" fill="#0B141A" rx="3"/>
-              <rect x="14" y="14" width="16" height="16" fill="white" rx="2"/>
-              <rect x="18" y="18" width="8" height="8" fill="#0B141A" rx="1"/>
-              <!-- Corner TR -->
-              <rect x="66" y="10" width="24" height="24" fill="#0B141A" rx="3"/>
-              <rect x="70" y="14" width="16" height="16" fill="white" rx="2"/>
-              <rect x="74" y="18" width="8" height="8" fill="#0B141A" rx="1"/>
-              <!-- Corner BL -->
-              <rect x="10" y="66" width="24" height="24" fill="#0B141A" rx="3"/>
-              <rect x="14" y="70" width="16" height="16" fill="white" rx="2"/>
-              <rect x="18" y="74" width="8" height="8" fill="#0B141A" rx="1"/>
-              <!-- Data Patterns -->
-              <rect x="38" y="12" width="6" height="6" fill="#0B141A"/>
-              <rect x="48" y="12" width="6" height="6" fill="#0B141A"/>
-              <rect x="38" y="24" width="6" height="6" fill="#0B141A"/>
-              <rect x="52" y="24" width="8" height="6" fill="#0B141A"/>
-              <rect x="12" y="42" width="6" height="6" fill="#0B141A"/>
-              <rect x="24" y="42" width="8" height="6" fill="#0B141A"/>
-              <rect x="38" y="38" width="24" height="24" fill="#25D366" rx="4"/>
-              <rect x="70" y="42" width="8" height="6" fill="#0B141A"/>
-              <rect x="82" y="42" width="6" height="6" fill="#0B141A"/>
-              <rect x="40" y="68" width="6" height="6" fill="#0B141A"/>
-              <rect x="52" y="68" width="6" height="6" fill="#0B141A"/>
-              <rect x="40" y="80" width="8" height="6" fill="#0B141A"/>
-              <rect x="54" y="80" width="6" height="6" fill="#0B141A"/>
-              <rect x="70" y="68" width="8" height="6" fill="#0B141A"/>
-              <rect x="82" y="74" width="6" height="12" fill="#0B141A"/>
-              <!-- WhatsApp Icon In Center -->
-              <circle cx="50" cy="50" r="9" fill="white"/>
-              <path d="M50 43C46.13 43 43 46.13 43 50C43 51.3 43.35 52.52 43.96 53.57L43 57L46.56 56.07C47.57 56.63 48.75 57 50 57C53.87 57 57 53.87 57 50C57 46.13 53.87 43 50 43ZM53.64 53.25C53.48 53.71 52.83 54.08 52.27 54.2C51.89 54.28 51.39 54.34 49.71 53.64C47.57 52.75 46.19 50.57 46.08 50.43C45.98 50.29 45.2 49.25 45.2 48.17C45.2 47.09 45.75 46.56 45.97 46.33C46.19 46.11 46.45 46.06 46.63 46.06C46.77 46.06 46.91 46.06 47.04 46.07C47.2 46.08 47.38 46.03 47.54 46.41C47.7 46.79 48.09 47.74 48.14 47.84C48.19 47.95 48.22 48.06 48.14 48.2C48.06 48.35 48.03 48.42 47.92 48.55C47.81 48.68 47.69 48.83 47.58 48.95C47.46 49.07 47.34 49.2 47.48 49.44C47.62 49.67 48.1 50.45 48.81 51.08C49.72 51.89 50.47 52.15 50.71 52.27C50.95 52.39 51.1 52.36 51.24 52.2C51.38 52.04 51.85 51.49 52.01 51.25C52.17 51.01 52.33 51.05 52.54 51.13C52.75 51.21 53.88 51.77 54.11 51.88C54.34 52 54.49 52.06 54.55 52.16C54.61 52.26 54.61 52.79 54.45 53.25Z" fill="#25D366"/>
-            </svg>
+          <!-- Contenedor Gráfico QR Dinámico -->
+          <div id="wa-qr-image-wrapper" class="relative p-3 bg-white rounded-2xl shadow-xl flex items-center justify-center min-w-[220px] min-h-[220px]">
+            <img id="wa-qr-dynamic-img" src="" alt="Código QR WhatsApp" class="w-52 h-52 object-contain hidden" />
+            <div id="wa-qr-loading-spinner" class="flex flex-col items-center justify-center p-6 text-carbon space-y-2">
+              <div class="w-8 h-8 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin"></div>
+              <span class="text-[11px] font-bold text-gray-700">Conectando con Gateway...</span>
+            </div>
+          </div>
+
+          <!-- Estado Conectado (Visible solo cuando ya está enlazado) -->
+          <div id="wa-qr-connected-card" class="hidden w-full bg-emerald-950/60 border border-emerald-700/80 rounded-2xl p-4 text-center space-y-2">
+            <div class="text-2xl">🟢</div>
+            <div class="text-sm font-black text-emerald-300 uppercase">Gateway de WhatsApp Enlazado & Operativo</div>
+            <p class="text-[11px] text-gray-300">El número emisor oficial está conectado 24/7 en el servidor para alertas de fallas, OTs y reportes.</p>
+            <div class="pt-2 flex justify-center gap-2 flex-wrap">
+              <button type="button" onclick="enviarWhatsAppPruebaModal()"
+                class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-carbon font-black text-xs uppercase rounded-xl transition shadow-lg shadow-emerald-500/20 cursor-pointer flex items-center gap-1.5">
+                <span>🚀</span> Enviar WhatsApp de Prueba
+              </button>
+              <button type="button" onclick="desvincularEmisorWhatsAppSubmit()"
+                class="px-3.5 py-2 bg-rose-950/80 hover:bg-rose-700 text-rose-300 rounded-xl text-xs font-bold transition border border-rose-800 cursor-pointer flex items-center gap-1">
+                <span>🔄</span> Desvincular / Nuevo QR
+              </button>
+            </div>
           </div>
 
           <!-- Pasos de Escaneo -->
-          <div class="text-left text-[11px] text-gray-400 space-y-1 max-w-sm">
-            <div><span class="text-emerald-400 font-bold">1.</span> Abra WhatsApp en el celular emisor.</div>
-            <div><span class="text-emerald-400 font-bold">2.</span> Toque <b>Dispositivos vinculados</b> > <b>Vincular un dispositivo</b>.</div>
-            <div><span class="text-emerald-400 font-bold">3.</span> Apunte la cámara hacia este código QR para emparejar.</div>
-          </div>
-
-          <!-- Formulario de Emparejamiento Rápido -->
-          <div class="w-full max-w-md pt-2 border-t border-gray-800 space-y-2">
-            <label class="block text-left text-[11px] font-bold text-gray-300 uppercase">
-              Número de Celular Emisor a Enlazar:
-            </label>
-            <div class="flex gap-2">
-              <input type="tel" id="wa-qr-input-nuevo-tel" placeholder="+51 924 120 551" value="+51 924 120 551"
-                class="flex-1 bg-graphite border border-gray-700 rounded-xl px-3 py-2 text-white font-mono font-bold text-xs focus:border-emerald-500 focus:outline-none">
-              <button type="button" onclick="vincularEmisorWhatsAppSubmit()"
-                class="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-carbon font-black text-xs uppercase rounded-xl transition cursor-pointer shadow-md">
-                🔗 Vincular
-              </button>
-              <button type="button" onclick="desvincularEmisorWhatsAppSubmit()"
-                class="px-3 py-2 bg-rose-950/80 hover:bg-rose-700 text-rose-300 rounded-xl text-xs font-bold transition border border-rose-800 cursor-pointer"
-                title="Desvincular emisor actual">
-                Desvincular
-              </button>
-            </div>
+          <div id="wa-qr-steps-box" class="text-left text-[11px] text-gray-400 space-y-1 max-w-sm">
+            <div><span class="text-emerald-400 font-bold">1.</span> Abra WhatsApp en el celular emisor de la empresa.</div>
+            <div><span class="text-emerald-400 font-bold">2.</span> Toque <b>Ajustes</b> o <b>Menú</b> > <b>Dispositivos vinculados</b>.</div>
+            <div><span class="text-emerald-400 font-bold">3.</span> Presione <b>Vincular un dispositivo</b> y apunte la cámara al código QR.</div>
           </div>
         </div>
 
@@ -6633,7 +6600,14 @@ Cargando reporte de flota...
       }
     }
 
+    let waQrPollTimer = null;
+
     async function cargarEstadoWhatsAppQR() {
+      if (waQrPollTimer) {
+        clearTimeout(waQrPollTimer);
+        waQrPollTimer = null;
+      }
+
       try {
         const resp = await fetch('/api/v1/heavy/notificaciones/whatsapp-qr');
         if (!resp.ok) return;
@@ -6642,19 +6616,63 @@ Cargando reporte de flota...
         const badge = document.getElementById('wa-qr-badge-estado');
         const telSpan = document.getElementById('wa-qr-telefono-vinculado');
         const dispSpan = document.getElementById('wa-qr-dispositivo-vinculado');
-        const inputTel = document.getElementById('wa-qr-input-nuevo-tel');
+        const imgEl = document.getElementById('wa-qr-dynamic-img');
+        const spinnerEl = document.getElementById('wa-qr-loading-spinner');
+        const connectedCard = document.getElementById('wa-qr-connected-card');
+        const imgWrapper = document.getElementById('wa-qr-image-wrapper');
+        const stepsBox = document.getElementById('wa-qr-steps-box');
+        const headerMsg = document.getElementById('wa-qr-header-msg');
 
-        if (telSpan) telSpan.textContent = data.telefono_emisor || '-';
-        if (dispSpan) dispSpan.textContent = data.dispositivo || 'WhatsApp Multi-Device Gateway';
-        if (inputTel && data.telefono_emisor) inputTel.value = data.telefono_emisor;
+        if (telSpan) telSpan.textContent = data.telefono_emisor || 'Pendiente de escaneo';
+        if (dispSpan) dispSpan.textContent = data.dispositivo || 'ACR Baileys Gateway';
 
-        if (badge) {
-          if (data.estado === 'CONECTADO') {
+        if (data.estado === 'CONECTADO') {
+          if (badge) {
             badge.className = 'px-2.5 py-1 rounded-full font-black text-[11px] bg-emerald-950 text-emerald-400 border border-emerald-700 flex items-center gap-1.5';
-            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> <span>CONECTADO & ENLAZADO</span>';
-          } else {
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> <span>EN LÍNEA & CONECTADO</span>';
+          }
+          if (connectedCard) connectedCard.classList.remove('hidden');
+          if (imgWrapper) imgWrapper.classList.add('hidden');
+          if (stepsBox) stepsBox.classList.add('hidden');
+          if (headerMsg) headerMsg.classList.add('hidden');
+        } else if (data.estado === 'ESPERANDO_QR') {
+          if (badge) {
             badge.className = 'px-2.5 py-1 rounded-full font-black text-[11px] bg-amber-950 text-amber-400 border border-amber-700 flex items-center gap-1.5';
             badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span> <span>ESPERANDO ESCANEO QR</span>';
+          }
+          if (connectedCard) connectedCard.classList.add('hidden');
+          if (imgWrapper) imgWrapper.classList.remove('hidden');
+          if (stepsBox) stepsBox.classList.remove('hidden');
+          if (headerMsg) headerMsg.classList.remove('hidden');
+
+          if (data.qr_code_base64 && imgEl) {
+            imgEl.src = data.qr_code_base64;
+            imgEl.classList.remove('hidden');
+            if (spinnerEl) spinnerEl.classList.add('hidden');
+          } else {
+            if (imgEl) imgEl.classList.add('hidden');
+            if (spinnerEl) spinnerEl.classList.remove('hidden');
+          }
+
+          // Seguir verificando si el usuario ya escaneó
+          const vQr = document.getElementById('tab-wa-vista-qr');
+          if (vQr && !vQr.classList.contains('hidden')) {
+            waQrPollTimer = setTimeout(cargarEstadoWhatsAppQR, 3000);
+          }
+        } else {
+          // Conectando / Iniciando
+          if (badge) {
+            badge.className = 'px-2.5 py-1 rounded-full font-black text-[11px] bg-sky-950 text-sky-400 border border-sky-700 flex items-center gap-1.5';
+            badge.innerHTML = '<span class="w-2 h-2 rounded-full bg-sky-400 animate-pulse"></span> <span>INICIANDO SERVICIO</span>';
+          }
+          if (connectedCard) connectedCard.classList.add('hidden');
+          if (imgWrapper) imgWrapper.classList.remove('hidden');
+          if (imgEl) imgEl.classList.add('hidden');
+          if (spinnerEl) spinnerEl.classList.remove('hidden');
+
+          const vQr = document.getElementById('tab-wa-vista-qr');
+          if (vQr && !vQr.classList.contains('hidden')) {
+            waQrPollTimer = setTimeout(cargarEstadoWhatsAppQR, 2500);
           }
         }
       } catch (err) {
@@ -6662,24 +6680,19 @@ Cargando reporte de flota...
       }
     }
 
-    async function vincularEmisorWhatsAppSubmit() {
-      const tel = document.getElementById('wa-qr-input-nuevo-tel')?.value.trim();
-      if (!tel || tel.length < 8) {
-        alert('Por favor ingrese un número de teléfono válido con código de país (ej: +51 924 120 551).');
-        return;
-      }
+    async function enviarWhatsAppPruebaModal() {
       try {
-        const resp = await fetch('/api/v1/heavy/notificaciones/whatsapp-qr/vincular', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ telefono: tel })
-        });
+        const resp = await fetch('/api/v1/heavy/notificaciones/test-whatsapp', { method: 'POST' });
         const res = await resp.json();
         if (resp.ok) {
-          alert(`✅ Número ${tel} vinculado con éxito como Gateway emisor de alarmas por WhatsApp.`);
-          await cargarEstadoWhatsAppQR();
+          if (res.enviado_por_api) {
+            alert(`🚀 ¡Mensaje de prueba enviado exitosamente por el Bot oficial al número ${res.telefono}!`);
+          } else {
+            alert(`✅ Enlace generado para ${res.telefono}. Abriendo WhatsApp...`);
+            if (res.whatsapp_link) window.open(res.whatsapp_link, '_blank');
+          }
         } else {
-          alert('Error: ' + (res.detail || 'No se pudo vincular'));
+          alert('Error al enviar mensaje de prueba: ' + (res.detail || 'Error desconocido'));
         }
       } catch (e) {
         alert('Error conectando con el servidor.');
@@ -6687,11 +6700,11 @@ Cargando reporte de flota...
     }
 
     async function desvincularEmisorWhatsAppSubmit() {
-      if (!confirm('¿Desea desvincular el teléfono emisor de WhatsApp? Se requerirá escanear nuevamente el código QR.')) return;
+      if (!confirm('¿Desea desvincular el WhatsApp actual y generar un nuevo código QR limpio para emparejar?')) return;
       try {
         const resp = await fetch('/api/v1/heavy/notificaciones/whatsapp-qr/desvincular', { method: 'POST' });
         if (resp.ok) {
-          alert('Dispositivo desvinculado.');
+          alert('Sesión cerrada. Generando nuevo código QR...');
           await cargarEstadoWhatsAppQR();
         }
       } catch (e) {

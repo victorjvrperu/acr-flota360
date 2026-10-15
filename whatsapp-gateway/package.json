@@ -1,0 +1,25 @@
+{
+  "name": "acr-whatsapp-gateway",
+  "version": "1.0.0",
+  "description": "Microservicio de WhatsApp Gateway con Baileys para ACR Flota 360°",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": [
+    "whatsapp",
+    "baileys",
+    "gateway",
+    "acr-flota360"
+  ],
+  "author": "ACR Flota 360",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^7.0.0-rc14",
+    "axios": "^1.20.0",
+    "express": "^5.2.1",
+    "pino": "^10.3.1",
+    "qrcode": "^1.5.4"
+  }
+}

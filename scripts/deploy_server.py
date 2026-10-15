@@ -117,9 +117,33 @@ echo "✅ {service_name} reiniciado"
             )
             print(f"   ✅ http://{server_ip}:{port} actualizado")
 
+        # Despliegue de ACR WhatsApp Gateway (Baileys en puerto 3334 con PM2)
+        print("🤖 Configurando microservicio Baileys ACR WhatsApp Gateway (puerto 3334)...")
+        wa_cmds = f"""
+set -e
+mkdir -p /home/bodylab/acr-whatsapp-gateway
+cp -rf /var/www/acr-flota360/whatsapp-gateway/* /home/bodylab/acr-whatsapp-gateway/ 2>/dev/null || cp -rf /home/bodylab/maquinaria/whatsapp-gateway/* /home/bodylab/acr-whatsapp-gateway/ 2>/dev/null || true
+cd /home/bodylab/acr-whatsapp-gateway
+if [ ! -d "node_modules" ]; then
+    if [ -d "/home/bodylab/gym-system/whatsapp-gateway/node_modules" ]; then
+        cp -r /home/bodylab/gym-system/whatsapp-gateway/node_modules ./ 2>/dev/null || npm install --omit=dev
+    else
+        npm install --omit=dev
+    fi
+fi
+pm2 describe acr-whatsapp >/dev/null 2>&1 && pm2 restart acr-whatsapp || PORT=3334 pm2 start server.js --name "acr-whatsapp"
+pm2 save
+echo "✅ ACR WhatsApp Gateway activo en PM2 (puerto 3334)"
+"""
+        subprocess.run(
+            ["ssh"] + ssh_opts + [f"{SERVER_USER}@{server_ip}", wa_cmds],
+            env=env, stdin=subprocess.DEVNULL, check=True
+        )
+
         print(f"\n🎉 ¡Despliegue exitoso en ambos servicios!")
         print(f"   • Puerto 8000 (maquinaria.service): http://{server_ip}:8000")
         print(f"   • Puerto 8001 (acr-flota360.service / producción): http://{server_ip}:8001")
+        print(f"   • Puerto 3334 (acr-whatsapp PM2 Gateway): http://{server_ip}:3334/status")
     finally:
         if os.path.exists(askpass_path):
             os.unlink(askpass_path)
