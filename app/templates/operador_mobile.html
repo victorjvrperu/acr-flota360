@@ -1236,6 +1236,23 @@
             <span class="text-gray-400 font-bold uppercase text-[10px]" id="checkout-lbl-tot">Horas Trabajadas:</span>
             <span class="font-mono font-black text-white text-right" id="checkout-resumen-tot">- h</span>
           </div>
+
+          <!-- Resumen de Combustible & Consumo Calculado al Check-Out -->
+          <div id="checkout-comb-box" class="hidden border-b border-gray-800/80 pb-1.5 space-y-1.5 bg-carbon/60 p-2.5 rounded-xl border border-gray-800">
+            <div class="flex justify-between items-center">
+              <span class="text-amber-400 font-bold uppercase text-[10px]">⛽ Combustible Cargado:</span>
+              <span class="font-mono font-bold text-amber-400 text-right" id="checkout-resumen-comb-gal">-</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-machinery font-bold uppercase text-[10px]" id="checkout-lbl-comb-rendimiento">📊 Rendimiento Operativo:</span>
+              <span class="font-mono font-black text-white text-right" id="checkout-resumen-comb-rendimiento">-</span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-emerald-400 font-bold uppercase text-[10px]">💰 Costo Estimado:</span>
+              <span class="font-mono font-bold text-emerald-400 text-right" id="checkout-resumen-comb-costo">-</span>
+            </div>
+          </div>
+
           <div class="flex justify-between items-center">
             <span class="text-gray-400 font-bold uppercase text-[10px]">Inspección 360°:</span>
             <span class="font-bold text-emerald-400 text-right">4 Fotos Selladas ✅</span>
@@ -3632,6 +3649,48 @@
       const lblTot = document.getElementById('checkout-lbl-tot');
       if (lblTot) lblTot.textContent = esKm ? 'Km Recorridos:' : 'Horas Efectivas:';
       document.getElementById('checkout-resumen-tot').textContent = totalDiffStr;
+
+      // Cálculo y visualización de consumo de combustible al Check-Out
+      try {
+        const boxComb = document.getElementById('checkout-comb-box');
+        const galAbastecidos = parseFloat(turnoGuardar.combustible_galones) || 0;
+        if (galAbastecidos > 0) {
+          if (boxComb) boxComb.classList.remove('hidden');
+          document.getElementById('checkout-resumen-comb-gal').textContent = `${galAbastecidos.toFixed(1)} Gal`;
+
+          const precioGal = parseFloat(turnoGuardar.combustible_precio_galon) || 17.50;
+          const totalSoles = galAbastecidos * precioGal;
+
+          if (esKm) {
+            const km = Math.round(diffVal);
+            document.getElementById('checkout-lbl-comb-rendimiento').textContent = '📊 Rendimiento por Galón:';
+            if (km > 0) {
+              const rendKmGal = (km / galAbastecidos).toFixed(1);
+              const costoPorKm = (totalSoles / km).toFixed(2);
+              document.getElementById('checkout-resumen-comb-rendimiento').textContent = `${rendKmGal} Km/Gal`;
+              document.getElementById('checkout-resumen-comb-costo').textContent = `S/ ${totalSoles.toFixed(2)} (S/ ${costoPorKm}/km)`;
+            } else {
+              document.getElementById('checkout-resumen-comb-rendimiento').textContent = '0.0 Km/Gal';
+              document.getElementById('checkout-resumen-comb-costo').textContent = `S/ ${totalSoles.toFixed(2)}`;
+            }
+          } else {
+            document.getElementById('checkout-lbl-comb-rendimiento').textContent = '📊 Consumo por Hora:';
+            if (horasEfectivas > 0) {
+              const consumoGalH = (galAbastecidos / horasEfectivas).toFixed(2);
+              const costoPorH = (totalSoles / horasEfectivas).toFixed(2);
+              document.getElementById('checkout-resumen-comb-rendimiento').textContent = `${consumoGalH} Gal/h`;
+              document.getElementById('checkout-resumen-comb-costo').textContent = `S/ ${totalSoles.toFixed(2)} (S/ ${costoPorH}/h)`;
+            } else {
+              document.getElementById('checkout-resumen-comb-rendimiento').textContent = '0.00 Gal/h';
+              document.getElementById('checkout-resumen-comb-costo').textContent = `S/ ${totalSoles.toFixed(2)}`;
+            }
+          }
+        } else {
+          if (boxComb) boxComb.classList.add('hidden');
+        }
+      } catch (errComb) {
+        console.warn("No se pudo calcular resumen de combustible en checkout:", errComb);
+      }
 
       localStorage.removeItem('heavy_turno_activo');
       turnoEnCurso = null;

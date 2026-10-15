@@ -14,7 +14,8 @@ from app.core.database import get_db
 from app.models.heavytrack import (
     MaquinariaEquipo, Proyecto, Personal, OrdenMantenimiento,
     InventarioRepuesto, Proveedor, TurnoOperacion, ControlCombustible,
-    EstadoOperativo, EstadoOrdenMantenimiento, RolPersonal
+    EstadoOperativo, EstadoOrdenMantenimiento, RolPersonal, AjusteSistema,
+    TipoOrdenMantenimiento
 )
 from app.schemas.heavytrack import (
     MaquinariaEquipoCreate, MaquinariaEquipoResponse,
@@ -25,7 +26,9 @@ from app.schemas.heavytrack import (
     InventarioRepuestoCreate, InventarioRepuestoResponse,
     ProveedorCreate, ProveedorResponse,
     TelemetriaGPSRequest, ActualizarCombustibleTurno,
-    ConfigurarMantenimientoEquipoRequest, ActualizarPagoCombustibleRequest
+    ConfigurarMantenimientoEquipoRequest, ActualizarPagoCombustibleRequest,
+    PrecioCombustibleRequest, RegistroCombustibleDirectoRequest,
+    MantenimientoEfectuadoRequest
 )
 from app.services.heavytrack_service import HeavyTrackService
 
@@ -457,6 +460,34 @@ def listar_registros_combustible(db: Session = Depends(get_db)):
     registros = db.query(ControlCombustible).order_by(ControlCombustible.id.desc()).all()
     resultado = []
     for r in registros:
+        tipo_ctrl = (r.equipo.tipo_control or "HOROMETRO").upper() if r.equipo else "HOROMETRO"
+        
+        # Buscar turno asociado si existe
+        turno = None
+        if r.uuid_local and r.uuid_local.startswith("comb-"):
+            turno_uuid = r.uuid_local.replace("comb-", "")
+            turno = db.query(TurnoOperacion).filter(TurnoOperacion.uuid_local == turno_uuid).first()
+
+        rendimiento_str = "-"
+        costo_unitario_str = "-"
+        horas_o_km_turno = 0.0
+
+        if turno:
+            if tipo_ctrl == "KILOMETRAJE":
+                km = float(turno.km_recorridos or 0.0)
+                horas_o_km_turno = km
+                if km > 0 and r.galones_cargados > 0:
+                    kpg = round(km / r.galones_cargados, 1)
+                    rendimiento_str = f"{kpg} Km/Gal"
+                    costo_unitario_str = f"S/ {(r.costo_total / km):.2f}/Km"
+            else:
+                horas = float(turno.horas_trabajadas or 0.0)
+                horas_o_km_turno = horas
+                if horas > 0 and r.galones_cargados > 0:
+                    gph = round(r.galones_cargados / horas, 2)
+                    rendimiento_str = f"{gph} Gal/h"
+                    costo_unitario_str = f"S/ {(r.costo_total / horas):.2f}/h"
+
         resultado.append({
             "id": r.id,
             "uuid_local": r.uuid_local,
@@ -464,6 +495,7 @@ def listar_registros_combustible(db: Session = Depends(get_db)):
             "equipo_codigo": r.equipo.codigo_interno if r.equipo else "-",
             "equipo_nombre": r.equipo.nombre if r.equipo else "-",
             "placa": r.equipo.placa if r.equipo else "-",
+            "tipo_control": tipo_ctrl,
             "operador_id": r.operador_id,
             "operador_nombre": f"{r.operador.nombres} {r.operador.apellidos}" if r.operador else "-",
             "proyecto_id": r.proyecto_id,
@@ -472,6 +504,9 @@ def listar_registros_combustible(db: Session = Depends(get_db)):
             "galones_cargados": r.galones_cargados,
             "precio_por_galon": r.precio_por_galon or 0.0,
             "costo_total": r.costo_total or 0.0,
+            "rendimiento_str": rendimiento_str,
+            "costo_unitario_str": costo_unitario_str,
+            "horas_o_km_turno": horas_o_km_turno,
             "foto_comprobante": r.foto_comprobante,
             "tipo_combustible": r.tipo_combustible,
             "fecha_hora": r.fecha_hora.strftime("%Y-%m-%d %H:%M:%S") if r.fecha_hora else "-",
@@ -533,6 +568,156 @@ def registrar_pago_combustible(
         "costo_total": comb.costo_total,
         "estado_pago": comb.estado_pago,
         "numero_operacion_pago": comb.numero_operacion_pago
+    }
+
+
+@router.get("/ajustes/precio-combustible")
+def obtener_precio_combustible(db: Session = Depends(get_db)):
+    """Obtiene el precio configurado del galón de combustible para la zona/obra."""
+    ajuste = db.query(AjusteSistema).filter(AjusteSistema.clave == "precio_combustible_zona").first()
+    precio = float(ajuste.valor) if ajuste and ajuste.valor else 17.50
+    return {
+        "precio_por_galon": precio,
+        "zona": "Jaén / Obra Central",
+        "actualizado_en": ajuste.actualizado_en.strftime("%Y-%m-%d %H:%M") if ajuste and ajuste.actualizado_en else "Por defecto"
+    }
+
+
+@router.post("/ajustes/precio-combustible")
+def guardar_precio_combustible(payload: PrecioCombustibleRequest, db: Session = Depends(get_db)):
+    """Actualiza el precio del galón de combustible de la zona en el sistema."""
+    ajuste = db.query(AjusteSistema).filter(AjusteSistema.clave == "precio_combustible_zona").first()
+    if not ajuste:
+        ajuste = AjusteSistema(
+            clave="precio_combustible_zona",
+            valor=str(round(payload.precio_por_galon, 2)),
+            descripcion=f"Precio estándar de combustible por galón en {payload.zona or 'la zona'}"
+        )
+        db.add(ajuste)
+    else:
+        ajuste.valor = str(round(payload.precio_por_galon, 2))
+        ajuste.descripcion = f"Precio estándar de combustible por galón en {payload.zona or 'la zona'}"
+        ajuste.actualizado_en = datetime.utcnow()
+    db.commit()
+    return {
+        "success": True,
+        "mensaje": f"Precio de combustible actualizado a S/ {payload.precio_por_galon:.2f} por galón",
+        "precio_por_galon": round(payload.precio_por_galon, 2)
+    }
+
+
+@router.post("/combustible/registro-directo", status_code=status.HTTP_201_CREATED)
+def registrar_combustible_directo(payload: RegistroCombustibleDirectoRequest, db: Session = Depends(get_db)):
+    """Registra una carga de combustible directamente desde el Dashboard."""
+    equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == payload.equipo_id).first()
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado.")
+
+    # Si no se pasó operador o proyecto, asignar del equipo
+    operador_id = payload.operador_id or equipo.operador_asignado_id
+    if not operador_id:
+        admin_op = db.query(Personal).filter(Personal.rol.in_([RolPersonal.SISTEMAS_ADMIN.value, RolPersonal.GERENCIA.value])).first()
+        operador_id = admin_op.id if admin_op else 1
+
+    proyecto_id = payload.proyecto_id or equipo.proyecto_actual_id
+    if not proyecto_id:
+        primer_proy = db.query(Proyecto).filter(Proyecto.estado == "activo").first()
+        proyecto_id = primer_proy.id if primer_proy else 1
+
+    galones = float(payload.galones_cargados)
+    precio = float(payload.precio_por_galon or 17.50)
+    costo_total = round(galones * precio, 2)
+
+    nuevo_comb = ControlCombustible(
+        uuid_local=f"comb-direct-{uuid.uuid4().hex[:12]}",
+        equipo_id=equipo.id,
+        operador_id=operador_id,
+        proyecto_id=proyecto_id,
+        horometro_tanqueo=float(payload.lectura_tanqueo or (equipo.odometro_actual if (equipo.tipo_control or '').upper() == 'KILOMETRAJE' else equipo.horometro_actual) or 0.0),
+        galones_cargados=galones,
+        precio_por_galon=precio,
+        costo_total=costo_total,
+        tipo_combustible=payload.tipo_combustible or "Diesel D2 B5",
+        foto_comprobante=payload.foto_comprobante or "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=",
+        estado_pago=payload.estado_pago or "pendiente",
+        numero_operacion_pago=payload.numero_operacion_pago,
+        observaciones_pago=payload.observaciones_pago,
+        fecha_hora=datetime.utcnow()
+    )
+    if nuevo_comb.estado_pago == "pagado":
+        nuevo_comb.fecha_pago = datetime.utcnow()
+
+    db.add(nuevo_comb)
+    db.commit()
+    db.refresh(nuevo_comb)
+
+    return {
+        "success": True,
+        "mensaje": f"Abastecimiento registrado: {galones} Gal (Total S/ {costo_total:.2f}) para {equipo.codigo_interno}",
+        "id": nuevo_comb.id,
+        "costo_total": costo_total
+    }
+
+
+@router.post("/mantenimiento/efectuado")
+def registrar_mantenimiento_efectuado(payload: MantenimientoEfectuadoRequest, db: Session = Depends(get_db)):
+    """
+    Registra el mantenimiento efectuado a un equipo, programa el nuevo próximo servicio
+    sumando el intervalo correspondiente y resetea el semáforo inmediatamente a VERDE.
+    """
+    equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == payload.equipo_id).first()
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado.")
+
+    tipo_ctrl = (equipo.tipo_control or "HOROMETRO").upper()
+    lectura = float(payload.lectura_al_servicio)
+    intervalo = float(payload.intervalo_nuevo)
+    proxima_meta = round(lectura + intervalo, 1)
+
+    # 1. Crear Orden de Mantenimiento Completada
+    codigo_ot = f"OT-{datetime.utcnow().strftime('%Y%m')}-{uuid.uuid4().hex[:4].upper()}"
+    nueva_ot = OrdenMantenimiento(
+        codigo_ot=codigo_ot,
+        equipo_id=equipo.id,
+        proyecto_id=equipo.proyecto_actual_id,
+        tipo=TipoOrdenMantenimiento.PREVENTIVO_FICHA.value if payload.tipo_mantenimiento == "preventivo" else TipoOrdenMantenimiento.CORRECTIVO_TALLER.value,
+        horometro_al_servicio=lectura,
+        diagnostico=payload.trabajos_realizados or f"Mantenimiento {payload.tipo_mantenimiento} completado con éxito a las {lectura} {('km' if tipo_ctrl == 'KILOMETRAJE' else 'horas')}",
+        costo_mano_obra=round(float(payload.costo_total) * 0.4, 2),
+        costo_repuestos=round(float(payload.costo_total) * 0.6, 2),
+        costo_total=round(float(payload.costo_total), 2),
+        estado=EstadoOrdenMantenimiento.COMPLETADO.value,
+        fecha_programada=date.today(),
+        fecha_cierre=datetime.utcnow()
+    )
+    db.add(nueva_ot)
+
+    # 2. Actualizar el equipo y restablecer próximo servicio
+    if tipo_ctrl == "KILOMETRAJE":
+        equipo.odometro_actual = max(float(equipo.odometro_actual or 0.0), lectura)
+        equipo.odometro_proximo_servicio = proxima_meta
+        equipo.odometro_intervalo_servicio = intervalo
+        equipo.horometro_proximo_servicio = proxima_meta  # mantener sincronizado
+    else:
+        equipo.horometro_actual = max(float(equipo.horometro_actual or 0.0), lectura)
+        equipo.horometro_proximo_servicio = proxima_meta
+        equipo.intervalo_servicio = intervalo
+
+    equipo.estado_operativo = EstadoOperativo.OPERATIVO.value
+    db.commit()
+    db.refresh(equipo)
+
+    # Calcular semáforo renovado
+    color, restantes = HeavyTrackService.calcular_semaforo_equipo(equipo)
+
+    return {
+        "success": True,
+        "mensaje": f"Mantenimiento efectuado en {equipo.codigo_interno}. Próximo servicio programado a los {proxima_meta} {('km' if tipo_ctrl == 'KILOMETRAJE' else 'h')}. Semáforo: {color.upper()}.",
+        "equipo_id": equipo.id,
+        "codigo_ot": codigo_ot,
+        "semaforo": color,
+        "restantes": restantes,
+        "proxima_meta": proxima_meta
     }
 
 

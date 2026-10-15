@@ -38,6 +38,8 @@ def seed_flota_inicial(db: Session):
         ("turnos_operacion", "horas_calentamiento", "FLOAT DEFAULT 0.25"),
         ("turnos_operacion", "horas_motor_brutas", "FLOAT DEFAULT 0.0"),
         ("control_combustible", "precio_por_galon", "FLOAT DEFAULT 0.0"),
+        ("maquinaria_equipos", "odometro_proximo_servicio", "FLOAT DEFAULT 5000.0"),
+        ("maquinaria_equipos", "odometro_intervalo_servicio", "FLOAT DEFAULT 5000.0"),
     ]
     for tabla, columna, definicion in columnas_nuevas:
         try:

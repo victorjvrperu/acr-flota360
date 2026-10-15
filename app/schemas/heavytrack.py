@@ -191,6 +191,38 @@ class ConfigurarMantenimientoEquipoRequest(BaseModel):
     intervalo_servicio: float = 250.0  # Frecuencia en horas (ej: cada 250h, 500h)
     horometro_proximo_servicio: Optional[float] = None
     horometro_actual: Optional[float] = None
+    odometro_proximo_servicio: Optional[float] = None
+    odometro_intervalo_servicio: Optional[float] = None
+
+
+class MantenimientoEfectuadoRequest(BaseModel):
+    equipo_id: int
+    lectura_al_servicio: float
+    intervalo_nuevo: float
+    tipo_mantenimiento: str = "preventivo"
+    taller_proveedor: Optional[str] = "Taller Central"
+    costo_total: float = 0.0
+    trabajos_realizados: str = "Mantenimiento preventivo periódico completado"
+    mecanico_nombre: Optional[str] = None
+
+
+class PrecioCombustibleRequest(BaseModel):
+    precio_por_galon: float = 17.50
+    zona: Optional[str] = "Jaén / Obra"
+
+
+class RegistroCombustibleDirectoRequest(BaseModel):
+    equipo_id: int
+    operador_id: Optional[int] = None
+    proyecto_id: Optional[int] = None
+    galones_cargados: float
+    precio_por_galon: float = 17.50
+    lectura_tanqueo: float = 0.0
+    tipo_combustible: str = "Diesel D2 B5"
+    foto_comprobante: Optional[str] = None
+    estado_pago: str = "pendiente"  # pendiente, pagado
+    numero_operacion_pago: Optional[str] = None
+    observaciones_pago: Optional[str] = None
 
 
 class ActualizarPagoCombustibleRequest(BaseModel):
@@ -210,7 +242,9 @@ class MaquinariaEquipoResponse(MaquinariaEquipoBase):
     horas_para_servicio: Optional[float] = None
     proyecto_nombre: Optional[str] = None
     operador_asignado_nombre: Optional[str] = None
-    creado_en: datetime
+    odometro_proximo_servicio: Optional[float] = None
+    odometro_intervalo_servicio: Optional[float] = None
+    creado_en: Optional[datetime] = None
 
     class Config:
         from_attributes = True

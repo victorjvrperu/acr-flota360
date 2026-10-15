@@ -8,7 +8,7 @@ from app.models.heavytrack import (
     ControlCombustible, IncidenteCheckpoint, OrdenMantenimiento,
     InventarioRepuesto, Proveedor, MantenimientoRepuesto,
     EstadoOperativo, SeveridadIncidente, EstadoSync,
-    EstadoOrdenMantenimiento
+    EstadoOrdenMantenimiento, AjusteSistema
 )
 from app.schemas.heavytrack import (
     BatchSyncRequest, BatchSyncResponse, BatchSyncItemStatus
@@ -21,18 +21,46 @@ class HeavyTrackService:
     def calcular_semaforo_equipo(equipo: MaquinariaEquipo) -> Tuple[str, float]:
         """
         Regla de negocio:
-        - Si horometro_actual >= (horometro_proximo_servicio - 25): Alerta Amarilla ("Próximo a servicio").
-        - Si horometro_actual >= horometro_proximo_servicio: Alerta Roja ("Mantenimiento Vencido").
-        - Si está por debajo: Verde ("Operativo").
+        - Para KILOMETRAJE:
+            * km_restantes = odometro_proximo_servicio - odometro_actual
+            * Rojo: km_restantes <= 0 (Llegó a mantenimiento o ya se pasó)
+            * Amarillo: km_restantes <= 1500 km (Próximo a servicio)
+            * Verde: km_restantes > 1500 km (Operativo)
+        - Para HOROMETRO:
+            * horas_restantes = horometro_proximo_servicio - horometro_actual
+            * Rojo: horas_restantes <= 0 (Llegó a mantenimiento o ya se pasó)
+            * Amarillo: horas_restantes <= 50.0 horas (Próximo a servicio)
+            * Verde: horas_restantes > 50.0 horas (Operativo)
         """
-        horas_restantes = round(equipo.horometro_proximo_servicio - equipo.horometro_actual, 1)
+        tipo_control = (equipo.tipo_control or "HOROMETRO").upper()
 
-        if equipo.horometro_actual >= equipo.horometro_proximo_servicio:
-            return "rojo", horas_restantes
-        elif equipo.horometro_actual >= (equipo.horometro_proximo_servicio - 25.0):
-            return "amarillo", horas_restantes
+        if tipo_control == "KILOMETRAJE":
+            actual = float(equipo.odometro_actual or 0.0)
+            proximo = float(equipo.odometro_proximo_servicio or 0.0)
+            if proximo <= 0:
+                # Si no se configuró, usar el horometro_proximo_servicio si es de magnitud de odómetro (>1000) o actual + 5000
+                proximo = float(equipo.horometro_proximo_servicio or 0.0)
+                if proximo < actual:
+                    proximo = actual + float(equipo.odometro_intervalo_servicio or 5000.0)
+            restantes = round(proximo - actual, 1)
+
+            if restantes <= 0:
+                return "rojo", restantes
+            elif restantes <= 1500.0:
+                return "amarillo", restantes
+            else:
+                return "verde", restantes
         else:
-            return "verde", horas_restantes
+            actual = float(equipo.horometro_actual or 0.0)
+            proximo = float(equipo.horometro_proximo_servicio or 250.0)
+            restantes = round(proximo - actual, 1)
+
+            if restantes <= 0:
+                return "rojo", restantes
+            elif restantes <= 50.0:
+                return "amarillo", restantes
+            else:
+                return "verde", restantes
 
     @staticmethod
     def verificar_licencia_operador(operador: Personal) -> Tuple[bool, str]:
@@ -113,7 +141,13 @@ class HeavyTrackService:
             if getattr(turno_in, "abastecio_combustible", False) and getattr(turno_in, "foto_combustible", None):
                 galones_in = getattr(turno_in, "combustible_galones", 0.0) or 0.0
                 precio_in = getattr(turno_in, "combustible_precio_galon", 0.0) or 0.0
-                total_in = getattr(turno_in, "combustible_total_soles", 0.0) or (galones_in * precio_in if precio_in > 0 else 0.0)
+                if precio_in <= 0:
+                    aj_precio = db.query(AjusteSistema).filter(AjusteSistema.clave == "precio_combustible_zona").first()
+                    precio_in = float(aj_precio.valor) if aj_precio and aj_precio.valor else 17.50
+                    turno.combustible_precio_galon = precio_in
+                total_in = getattr(turno_in, "combustible_total_soles", 0.0) or round(galones_in * precio_in, 2)
+                turno.combustible_total_soles = total_in
+
                 comb_rec = ControlCombustible(
                     uuid_local=f"comb-{turno_in.uuid_local}",
                     equipo_id=turno_in.equipo_id,
@@ -328,6 +362,13 @@ class HeavyTrackService:
                 ))
                 continue
 
+            precio_gal = getattr(c, "precio_por_galon", 0.0) or 0.0
+            if precio_gal <= 0:
+                aj_p = db.query(AjusteSistema).filter(AjusteSistema.clave == "precio_combustible_zona").first()
+                precio_gal = float(aj_p.valor) if aj_p and aj_p.valor else 17.50
+
+            total_comb = getattr(c, "costo_total", 0.0) or round((c.galones_cargados or 0.0) * precio_gal, 2)
+
             combustible = ControlCombustible(
                 uuid_local=c.uuid_local,
                 equipo_id=c.equipo_id,
@@ -335,9 +376,10 @@ class HeavyTrackService:
                 proyecto_id=c.proyecto_id,
                 horometro_tanqueo=c.horometro_tanqueo,
                 galones_cargados=c.galones_cargados,
+                precio_por_galon=precio_gal,
                 tipo_combustible=c.tipo_combustible,
                 foto_comprobante=c.foto_comprobante,
-                costo_total=c.costo_total,
+                costo_total=total_comb,
                 fecha_hora=c.fecha_hora or datetime.utcnow(),
                 estado_sync=EstadoSync.SINCRONIZADO.value
             )

@@ -138,6 +138,8 @@ class MaquinariaEquipo(Base):
     odometro_actual = Column(Float, default=0.0, nullable=False)
     horometro_proximo_servicio = Column(Float, default=250.0, nullable=False)
     intervalo_servicio = Column(Float, default=250.0, nullable=False)  # ciclos habituales de 250h / 500h
+    odometro_proximo_servicio = Column(Float, default=5000.0, nullable=True)
+    odometro_intervalo_servicio = Column(Float, default=5000.0, nullable=True)
     
     # Documentos y Seguros (Póliza / SOAT / Revisión Técnica)
     poliza_seguro = Column(String(100), nullable=True)
