@@ -42,6 +42,8 @@ def seed_flota_inicial(db: Session):
         ("maquinaria_equipos", "odometro_intervalo_servicio", "FLOAT DEFAULT 5000.0"),
         ("maquinaria_equipos", "revision_tecnica_numero", "VARCHAR(100)"),
         ("maquinaria_equipos", "revision_tecnica_vencimiento", "DATE"),
+        ("maquinaria_equipos", "modificaciones_lectura", "INTEGER DEFAULT 0"),
+        ("maquinaria_equipos", "lectura_bloqueada", "BOOLEAN DEFAULT 0"),
     ]
     for tabla, columna, definicion in columnas_nuevas:
         try:
@@ -49,6 +51,13 @@ def seed_flota_inicial(db: Session):
             db.commit()
         except Exception:
             db.rollback()
+
+    # Si hay equipos ya creados con lectura > 0 y modificaciones_lectura en 0, inicializar a 1 (1er registro consumido)
+    try:
+        db.execute(text("UPDATE maquinaria_equipos SET modificaciones_lectura = 1 WHERE (horometro_actual > 0 OR odometro_actual > 0) AND (modificaciones_lectura IS NULL OR modificaciones_lectura = 0)"))
+        db.commit()
+    except Exception:
+        db.rollback()
 
     # 2. Inicialización de Repuestos Críticos si el almacén está vacío
     if db.query(InventarioRepuesto).count() == 0:

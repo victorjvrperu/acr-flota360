@@ -80,6 +80,11 @@ def crear_equipo(equipo_in: MaquinariaEquipoCreate, db: Session = Depends(get_db
 
     datos = equipo_in.model_dump()
     datos["codigo_interno"] = datos["codigo_interno"].upper().strip()
+    horom_ini = float(datos.get("horometro_actual") or 0.0)
+    odom_ini = float(datos.get("odometro_actual") or 0.0)
+    datos["modificaciones_lectura"] = 1 if (horom_ini > 0 or odom_ini > 0) else 0
+    datos["lectura_bloqueada"] = False
+
     nuevo = MaquinariaEquipo(**datos)
     if (nuevo.tipo_control or '').upper() == 'KILOMETRAJE':
         if not nuevo.odometro_proximo_servicio or nuevo.odometro_proximo_servicio <= 0:
@@ -105,6 +110,37 @@ def actualizar_equipo(equipo_id: int, payload: dict, db: Session = Depends(get_d
     equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == equipo_id).first()
     if not equipo:
         raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+    # Control estricto de Bloqueo de Odómetro / Horómetro
+    esta_bloqueado = bool(equipo.lectura_bloqueada) or ((equipo.modificaciones_lectura or 0) >= 2)
+    nuevo_horom = payload.get("horometro_actual")
+    nuevo_odom = payload.get("odometro_actual")
+
+    cambio_lectura = False
+    if nuevo_horom is not None:
+        try:
+            if abs(float(nuevo_horom) - float(equipo.horometro_actual or 0.0)) > 0.01:
+                cambio_lectura = True
+        except (ValueError, TypeError):
+            pass
+
+    if nuevo_odom is not None:
+        try:
+            if abs(float(nuevo_odom) - float(equipo.odometro_actual or 0.0)) > 0.01:
+                cambio_lectura = True
+        except (ValueError, TypeError):
+            pass
+
+    if cambio_lectura:
+        if esta_bloqueado:
+            raise HTTPException(
+                status_code=400,
+                detail="🔒 El registro de kilometraje/horómetro está BLOQUEADO contra modificaciones directas porque ya fue registrado 2 veces. Las nuevas lecturas deben reportarse mediante Partes Diarios o Mantenimientos."
+            )
+        else:
+            equipo.modificaciones_lectura = (equipo.modificaciones_lectura or 0) + 1
+            if equipo.modificaciones_lectura >= 2:
+                equipo.lectura_bloqueada = True
 
     DATE_FIELDS = {"poliza_vencimiento", "soat_vencimiento", "revision_tecnica_vencimiento"}
     FLOAT_FIELDS = {
@@ -173,6 +209,26 @@ def actualizar_equipo(equipo_id: int, payload: dict, db: Session = Depends(get_d
     p_data["proyecto_nombre"] = equipo.proyecto_actual.nombre if equipo.proyecto_actual else "En Base / Taller"
     p_data["operador_asignado_nombre"] = f"{equipo.operador_asignado.nombres} {equipo.operador_asignado.apellidos}" if equipo.operador_asignado else "Sin Asignar"
     return MaquinariaEquipoResponse(**p_data)
+
+
+@router.post("/equipos/{equipo_id}/desbloquear-lectura")
+def desbloquear_lectura_equipo(equipo_id: int, db: Session = Depends(get_db)):
+    """Permite al Administrador desbloquear la lectura inicial para permitir 1 modificación de calibración."""
+    equipo = db.query(MaquinariaEquipo).filter(MaquinariaEquipo.id == equipo_id).first()
+    if not equipo:
+        raise HTTPException(status_code=404, detail="Equipo no encontrado")
+
+    equipo.lectura_bloqueada = False
+    equipo.modificaciones_lectura = 1  # Deja 1 modificación disponible
+    db.commit()
+    db.refresh(equipo)
+
+    return {
+        "success": True,
+        "mensaje": f"Lectura desbloqueada para la unidad {equipo.codigo_interno}. Se permite 1 ajuste de calibración.",
+        "modificaciones_lectura": equipo.modificaciones_lectura,
+        "lectura_bloqueada": equipo.lectura_bloqueada
+    }
 
 
 @router.delete("/equipos/{equipo_id}", status_code=status.HTTP_204_NO_CONTENT)

@@ -176,6 +176,8 @@ class MaquinariaEquipoBase(BaseModel):
     operador_asignado_id: Optional[int] = None
     estado_operativo: EstadoOperativo = EstadoOperativo.OPERATIVO
     ficha_tecnica_url: Optional[str] = None
+    modificaciones_lectura: Optional[int] = 0
+    lectura_bloqueada: Optional[bool] = False
 
 
 class MaquinariaEquipoCreate(MaquinariaEquipoBase):

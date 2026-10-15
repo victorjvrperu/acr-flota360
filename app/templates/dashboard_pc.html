@@ -1924,26 +1924,46 @@
 
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div id="editar-campo-horometro">
-              <label class="block font-bold text-gray-400 uppercase mb-1">Registro Horómetro Actual (h) *</label>
-              <input type="number" step="0.1" name="horometro_actual" id="editar-input-horometro-actual"
-                oninput="validarEdicionHorometroLive()" required
-                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none transition-all">
+              <div class="flex items-center justify-between mb-1">
+                <label class="block font-bold text-gray-400 uppercase text-[11px]">Registro Horómetro Actual (h) *</label>
+                <span id="editar-badge-bloqueo-h"></span>
+              </div>
+              <div class="relative">
+                <input type="number" step="0.1" name="horometro_actual" id="editar-input-horometro-actual"
+                  oninput="validarEdicionHorometroLive()" required
+                  class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-machinery font-mono font-bold focus:border-machinery focus:outline-none transition-all pr-8">
+                <span id="editar-lock-icon-h" class="hidden absolute right-2.5 top-2.5 text-xs text-rose-400" title="Campo Bloqueado">🔒</span>
+              </div>
+              <div id="editar-aviso-bloqueo-h" class="hidden text-[10px] text-amber-400 font-medium mt-1 leading-tight"></div>
               <div id="editar-aviso-horometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al
                 valor registrado (<span id="editar-valor-ant-h"></span> h)</div>
             </div>
             <div id="editar-campo-horometro-prox">
-              <label class="block font-bold text-gray-400 uppercase mb-1">Próx. Servicio (h) *</label>
+              <label class="block font-bold text-gray-400 uppercase mb-1 text-[11px]">Próx. Servicio (h) *</label>
               <input type="number" step="0.1" name="horometro_proximo_servicio" required
                 class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-white font-mono font-bold focus:border-machinery focus:outline-none">
             </div>
             <div id="editar-campo-km">
-              <label class="block font-bold text-gray-400 uppercase mb-1">Registro Kilometraje (Km)</label>
-              <input type="number" step="0.1" name="odometro_actual" id="editar-input-odometro-actual"
-                oninput="validarEdicionOdometroLive()" value="0.0"
-                class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none transition-all">
+              <div class="flex items-center justify-between mb-1">
+                <label class="block font-bold text-gray-400 uppercase text-[11px]">Registro Kilometraje (Km)</label>
+                <span id="editar-badge-bloqueo-km"></span>
+              </div>
+              <div class="relative">
+                <input type="number" step="0.1" name="odometro_actual" id="editar-input-odometro-actual"
+                  oninput="validarEdicionOdometroLive()" value="0.0"
+                  class="w-full bg-graphite border border-gray-700 rounded-lg px-3 py-2 text-blue-400 font-mono font-bold focus:border-machinery focus:outline-none transition-all pr-8">
+                <span id="editar-lock-icon-km" class="hidden absolute right-2.5 top-2.5 text-xs text-rose-400" title="Campo Bloqueado">🔒</span>
+              </div>
+              <div id="editar-aviso-bloqueo-km" class="hidden text-[10px] text-amber-400 font-medium mt-1 leading-tight"></div>
               <div id="editar-aviso-odometro-menor" class="hidden text-[11px] text-alertRed font-bold mt-1">⚠️ Menor al
                 valor registrado (<span id="editar-valor-ant-km"></span> km)</div>
             </div>
+          </div>
+          <div id="editar-bloqueo-acciones" class="hidden pt-1 flex items-center justify-between border-t border-gray-800/80">
+            <span class="text-[11px] text-gray-400">🔒 La lectura inicial solo permite hasta 2 modificaciones antes de ser bloqueada.</span>
+            <button type="button" id="btn-desbloquear-lectura" onclick="desbloquearLecturaAdmin()" class="text-[11px] text-amber-400 hover:text-amber-300 font-bold underline flex items-center gap-1 cursor-pointer">
+              <span>🔓</span> Desbloquear Lectura (Admin)
+            </button>
           </div>
         </div>
 
@@ -4468,11 +4488,110 @@ Cargando reporte de flota...
       const kmAviso = document.getElementById('editar-aviso-odometro-menor');
       if (kmAviso) kmAviso.classList.add('hidden');
 
+      // Control de bloqueo de lecturas (máximo 2 registros permitidos)
+      const count = eq.modificaciones_lectura || 0;
+      const bloqueado = !!(eq.lectura_bloqueada || count >= 2);
+
+      const hBadge = document.getElementById('editar-badge-bloqueo-h');
+      const kmBadge = document.getElementById('editar-badge-bloqueo-km');
+      const hLockIcon = document.getElementById('editar-lock-icon-h');
+      const kmLockIcon = document.getElementById('editar-lock-icon-km');
+      const hAvisoBloq = document.getElementById('editar-aviso-bloqueo-h');
+      const kmAvisoBloq = document.getElementById('editar-aviso-bloqueo-km');
+      const accionesBloqueo = document.getElementById('editar-bloqueo-acciones');
+
+      if (bloqueado) {
+        if (hInput) {
+          hInput.readOnly = true;
+          hInput.classList.add('opacity-50', 'cursor-not-allowed', 'bg-carbon');
+        }
+        if (kmInput) {
+          kmInput.readOnly = true;
+          kmInput.classList.add('opacity-50', 'cursor-not-allowed', 'bg-carbon');
+        }
+        if (hLockIcon) hLockIcon.classList.remove('hidden');
+        if (kmLockIcon) kmLockIcon.classList.remove('hidden');
+
+        const badgeHtml = '<span class="bg-rose-500/20 text-rose-400 border border-rose-500/30 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold">🔒 BLOQUEADO (2/2)</span>';
+        if (hBadge) hBadge.innerHTML = badgeHtml;
+        if (kmBadge) kmBadge.innerHTML = badgeHtml;
+
+        const avisoTxt = '🔒 Registro bloqueado de forma permanente contra modificaciones. Todo avance posterior debe registrarse mediante Partes Diarios o Mantenimientos.';
+        if (hAvisoBloq) {
+          hAvisoBloq.innerHTML = avisoTxt;
+          hAvisoBloq.classList.remove('hidden');
+        }
+        if (kmAvisoBloq) {
+          kmAvisoBloq.innerHTML = avisoTxt;
+          kmAvisoBloq.classList.remove('hidden');
+        }
+        if (accionesBloqueo) accionesBloqueo.classList.remove('hidden');
+      } else {
+        if (hInput) {
+          hInput.readOnly = false;
+          hInput.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-carbon');
+        }
+        if (kmInput) {
+          kmInput.readOnly = false;
+          kmInput.classList.remove('opacity-50', 'cursor-not-allowed', 'bg-carbon');
+        }
+        if (hLockIcon) hLockIcon.classList.add('hidden');
+        if (kmLockIcon) kmLockIcon.classList.add('hidden');
+
+        if (count === 1) {
+          const badgeHtml = '<span class="bg-amber-500/20 text-amber-400 border border-amber-500/30 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold">⚠️ 1/2 REGISTRO</span>';
+          if (hBadge) hBadge.innerHTML = badgeHtml;
+          if (kmBadge) kmBadge.innerHTML = badgeHtml;
+
+          const avisoTxt = '⚠️ Al guardar por 2da vez, el sistema <b>bloqueará</b> este campo definitivamente.';
+          if (hAvisoBloq) {
+            hAvisoBloq.innerHTML = avisoTxt;
+            hAvisoBloq.classList.remove('hidden');
+          }
+          if (kmAvisoBloq) {
+            kmAvisoBloq.innerHTML = avisoTxt;
+            kmAvisoBloq.classList.remove('hidden');
+          }
+        } else {
+          const badgeHtml = '<span class="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] px-1.5 py-0.5 rounded font-mono font-bold">🟢 0/2 REGISTROS</span>';
+          if (hBadge) hBadge.innerHTML = badgeHtml;
+          if (kmBadge) kmBadge.innerHTML = badgeHtml;
+          if (hAvisoBloq) hAvisoBloq.classList.add('hidden');
+          if (kmAvisoBloq) kmAvisoBloq.classList.add('hidden');
+        }
+        if (accionesBloqueo) accionesBloqueo.classList.add('hidden');
+      }
+
       toggleCamposControl('editar');
 
       const m = document.getElementById('modal-editar-equipo');
       m.classList.remove('hidden');
       m.classList.add('flex');
+    }
+
+    async function desbloquearLecturaAdmin() {
+      if (!equipoEnEdicion) return;
+      if (!confirm(`⚠️ ¿Deseas desbloquear la lectura para la unidad "${equipoEnEdicion.codigo_interno}"?\n\nEsta acción habilitará 1 registro adicional para calibrar o corregir el kilometraje/horómetro.`)) {
+        return;
+      }
+      try {
+        const res = await fetch(`/api/v1/heavy/equipos/${equipoEnEdicion.id}/desbloquear-lectura`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        if (res.ok) {
+          alert("✅ " + data.mensaje);
+          await cargarTablaFlota();
+          const eqActualizado = equiposCache.find(e => e.id === equipoEnEdicion.id);
+          if (eqActualizado) {
+            abrirModalEditarEquipo(eqActualizado.id);
+          }
+        } else {
+          alert("⚠️ " + (data.detail || "Error al desbloquear lectura"));
+        }
+      } catch (err) {
+        alert("Error de conexión al desbloquear: " + err.message);
+      }
     }
 
     function validarEdicionHorometroLive() {
@@ -4536,6 +4655,29 @@ Cargando reporte de flota...
         horomProx = 0.0;
       }
 
+      const eqBloqueado = eqExistente && (eqExistente.lectura_bloqueada || (eqExistente.modificaciones_lectura || 0) >= 2);
+      const nuevoHorom = parseFloat(form.horometro_actual.value) || 0.0;
+      const nuevoOdom = parseFloat(form.odometro_actual.value) || 0.0;
+
+      let horomFinal = nuevoHorom;
+      let odomFinal = nuevoOdom;
+
+      if (eqBloqueado) {
+        horomFinal = eqExistente.horometro_actual || 0.0;
+        odomFinal = eqExistente.odometro_actual || 0.0;
+      } else {
+        const cambioHorom = Math.abs(nuevoHorom - (eqExistente?.horometro_actual || 0.0)) > 0.01;
+        const cambioOdom = Math.abs(nuevoOdom - (eqExistente?.odometro_actual || 0.0)) > 0.01;
+        const vaABloquear = (eqExistente?.modificaciones_lectura || 0) === 1 && (cambioHorom || cambioOdom);
+
+        if (vaABloquear) {
+          const valTxt = (form.tipo_control.value === 'KILOMETRAJE') ? `${nuevoOdom} km` : `${nuevoHorom} h`;
+          if (!confirm(`🔒 CONFIRMACIÓN DE BLOQUEO DEFINITIVO:\n\nEstás a punto de registrar la lectura por 2da vez (${valTxt}).\n\nUna vez guardado, el sistema BLOQUEARÁ permanentemente este campo para evitar modificaciones. Todo avance futuro deberá reportarse mediante Partes Diarios.\n\n¿Deseas confirmar y bloquear ahora?`)) {
+            return;
+          }
+        }
+      }
+
       const payload = {
         nombre: form.nombre.value.trim(),
         codigo_interno: form.codigo_interno.value.trim().toUpperCase(),
@@ -4545,9 +4687,9 @@ Cargando reporte de flota...
         placa: form.placa.value.trim().toUpperCase() || null,
         tipo_control: form.tipo_control.value,
         tipo: form.tipo.value,
-        horometro_actual: parseFloat(form.horometro_actual.value) || 0.0,
+        horometro_actual: horomFinal,
         horometro_proximo_servicio: horomProx,
-        odometro_actual: parseFloat(form.odometro_actual.value) || 0.0,
+        odometro_actual: odomFinal,
         odometro_proximo_servicio: odomProx,
         poliza_seguro: form.poliza_seguro.value.trim() || null,
         poliza_vencimiento: form.poliza_vencimiento.value || null,
@@ -4560,7 +4702,7 @@ Cargando reporte de flota...
         operador_asignado_id: eqExistente ? eqExistente.operador_asignado_id : null
       };
 
-      if (equipoEnEdicion && equipoEnEdicion.horometro_actual > 0 && payload.horometro_actual < equipoEnEdicion.horometro_actual) {
+      if (!eqBloqueado && equipoEnEdicion && equipoEnEdicion.horometro_actual > 0 && payload.horometro_actual < equipoEnEdicion.horometro_actual) {
         if (!confirm(`⚠️ ALERTA DE HORÓMETRO MENOR: El valor ingresado (${payload.horometro_actual} h) es MENOR al registrado anteriormente (${equipoEnEdicion.horometro_actual} h).\n\n¿Está seguro de continuar con una lectura menor?`)) {
           return;
         }

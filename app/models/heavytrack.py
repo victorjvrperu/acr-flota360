@@ -159,6 +159,10 @@ class MaquinariaEquipo(Base):
     ultima_longitud = Column(Float, nullable=True)
     ultima_ubicacion_fecha = Column(DateTime, nullable=True)
 
+    # Bloqueo de Odómetro / Horómetro inicial contra modificaciones
+    modificaciones_lectura = Column(Integer, default=0, nullable=False)
+    lectura_bloqueada = Column(Boolean, default=False, nullable=False)
+
     creado_en = Column(DateTime, default=datetime.utcnow)
 
     # Relaciones
