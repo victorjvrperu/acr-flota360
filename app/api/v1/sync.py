@@ -59,6 +59,8 @@ def descargar_catalogos_offline(db: Session = Depends(get_db)):
             "horometro_actual": eq.horometro_actual or 0.0,
             "odometro_actual": eq.odometro_actual or 0.0,
             "horometro_proximo_servicio": eq.horometro_proximo_servicio,
+            "odometro_proximo_servicio": eq.odometro_proximo_servicio,
+            "odometro_intervalo_servicio": eq.odometro_intervalo_servicio or 5000.0,
             "horas_restantes": horas_restantes,
             "semaforo": color,
             "proyecto_id": eq.proyecto_actual_id,

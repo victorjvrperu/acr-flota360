@@ -2144,16 +2144,28 @@
       // Alerta Preventiva / Crítica del Equipo en Móvil
       const alertaBox = document.getElementById('info-eq-alerta-mantenimiento');
       if (alertaBox) {
-        const prox = eq.horometro_proximo_servicio || (esKm ? 5000 : 250);
-        const act = esKm ? (eq.odometro_actual || 0) : (eq.horometro_actual || 0);
-        const margen = prox - act;
-        const umbral = esKm ? 500 : 25;
+        let margen;
+        let prox;
+        if (esKm) {
+          prox = Number(eq.odometro_proximo_servicio) || (Number(eq.odometro_actual || 0) + (Number(eq.odometro_intervalo_servicio) || 5000));
+          margen = prox - Number(eq.odometro_actual || 0);
+        } else {
+          prox = Number(eq.horometro_proximo_servicio) || (Number(eq.horometro_actual || 0) + (Number(eq.intervalo_servicio) || 250));
+          margen = prox - Number(eq.horometro_actual || 0);
+        }
+
+        // Si el backend envió horas_restantes calculadas oficialmente
+        if (typeof eq.horas_restantes === 'number') {
+          margen = eq.horas_restantes;
+        }
+
+        const umbral = esKm ? 1500 : 25;
         if (margen <= 0) {
           alertaBox.className = 'p-2 rounded-lg text-[11px] font-black bg-rose-950/90 text-rose-300 border border-rose-800 block';
           alertaBox.innerHTML = `🔴 <strong>¡MANTENIMIENTO VENCIDO!</strong> Excedido por ${Math.abs(margen).toFixed(1)} ${esKm ? 'km' : 'h'}. Notificado al Jefe de Mantenimiento.`;
         } else if (margen <= umbral) {
           alertaBox.className = 'p-2 rounded-lg text-[11px] font-bold bg-amber-950/90 text-amber-300 border border-amber-800 block';
-          alertaBox.innerHTML = `🟡 <strong>Próximo a Mantenimiento:</strong> Faltan solo ${margen.toFixed(1)} ${esKm ? 'km' : 'h'} para el servicio.`;
+          alertaBox.innerHTML = `🟡 <strong>Próximo a Mantenimiento:</strong> Faltan solo ${margen.toFixed(1)} ${esKm ? 'km' : 'h'} para el servicio (${prox.toFixed(0)} ${esKm ? 'km' : 'h'}).`;
         } else {
           alertaBox.className = 'hidden';
           alertaBox.innerHTML = '';
