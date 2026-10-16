@@ -2154,17 +2154,25 @@
       catalogosLocales.proyectos = await window.heavyDB.obtenerCatalogoLocal('proyectos') || [];
       catalogosLocales.operadores = await window.heavyDB.obtenerCatalogoLocal('operadores') || [];
 
-      if (catalogosLocales.equipos.length === 0 && navigator.onLine) {
+      // Refrescar siempre desde el servidor cuando haya conexión para mantener datos al día
+      if (navigator.onLine) {
         try {
           const res = await fetch('/api/sync/catalogos');
           if (res.ok) {
             const data = await res.json();
-            catalogosLocales.equipos = data.equipos || [];
-            catalogosLocales.proyectos = data.proyectos || [];
-            catalogosLocales.operadores = data.operadores || [];
+            if (data.equipos && data.equipos.length > 0) catalogosLocales.equipos = data.equipos;
+            if (data.proyectos && data.proyectos.length > 0) catalogosLocales.proyectos = data.proyectos;
+            if (data.operadores && data.operadores.length > 0) catalogosLocales.operadores = data.operadores;
+            if (window.heavyDB) {
+              try {
+                await window.heavyDB.guardarCatalogoLocal('equipos', catalogosLocales.equipos);
+                await window.heavyDB.guardarCatalogoLocal('proyectos', catalogosLocales.proyectos);
+                await window.heavyDB.guardarCatalogoLocal('operadores', catalogosLocales.operadores);
+              } catch (dbErr) {}
+            }
           }
         } catch (e) {
-          console.warn("Fallo carga inicial de catálogos:", e);
+          console.warn("Fallo refresco de catálogos:", e);
         }
       }
 
