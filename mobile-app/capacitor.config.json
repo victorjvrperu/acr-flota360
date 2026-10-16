@@ -3,6 +3,7 @@
   "appName": "ACR Operadores",
   "webDir": "www",
   "server": {
+    "url": "https://flota.bodylab.net.pe/operador",
     "androidScheme": "https",
     "cleartext": true
   },

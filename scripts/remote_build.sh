@@ -57,6 +57,8 @@ with open("android/app/build.gradle", "r") as f:
 text = re.sub(r'signingConfigs\s*\{[\s\S]*?\}\s*\}\s*', '', text)
 text = text.replace("signingConfig signingConfigs.release", "")
 text = text.replace("signingConfig signingConfigs.acrRelease", "")
+text = re.sub(r'versionCode\s+\d+', 'versionCode 2', text)
+text = re.sub(r'versionName\s+"[^"]+"', 'versionName "1.1"', text)
 
 signing = """
     signingConfigs {
@@ -103,10 +105,13 @@ fi
 echo "📥 Publicando APK en servidor web..."
 echo "$SUDO_PASS" | sudo -S mkdir -p /var/www/acr-flota360/app/static/downloads
 echo "$SUDO_PASS" | sudo -S cp -f "$APK_OUT" /var/www/acr-flota360/app/static/downloads/acr-operadores.apk
-echo "$SUDO_PASS" | sudo -S chmod 644 /var/www/acr-flota360/app/static/downloads/acr-operadores.apk
+echo "$SUDO_PASS" | sudo -S cp -f "$APK_OUT" /var/www/acr-flota360/app/static/downloads/acr-operadores-v2.apk
+echo "$SUDO_PASS" | sudo -S chmod 644 /var/www/acr-flota360/app/static/downloads/*.apk
 
 mkdir -p /home/bodylab/maquinaria/app/static/downloads 2>/dev/null || true
 cp -f "$APK_OUT" /home/bodylab/maquinaria/app/static/downloads/acr-operadores.apk 2>/dev/null || true
+cp -f "$APK_OUT" /home/bodylab/maquinaria/app/static/downloads/acr-operadores-v2.apk 2>/dev/null || true
 
 cp "$APK_OUT" /tmp/acr-operadores.apk
-echo "✅ APK Compilado y listo en /tmp/acr-operadores.apk"
+cp "$APK_OUT" /tmp/acr-operadores-v2.apk
+echo "✅ APK Compilado y listo en /tmp/acr-operadores-v2.apk"

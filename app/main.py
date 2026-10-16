@@ -209,6 +209,24 @@ def serve_service_worker():
     return FileResponse(sw_path, media_type="application/javascript", headers={"Service-Worker-Allowed": "/"})
 
 
+@app.get("/descargar-apk", tags=["Descargas"])
+@app.get("/apk", tags=["Descargas"])
+def descargar_apk():
+    apk_path = os.path.join(static_dir, "downloads", "acr-operadores-v2.apk")
+    if not os.path.exists(apk_path):
+        apk_path = os.path.join(static_dir, "downloads", "acr-operadores.apk")
+    return FileResponse(
+        apk_path,
+        media_type="application/vnd.android.package-archive",
+        filename="acr-operadores-v2.apk",
+        headers={
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            "Pragma": "no-cache",
+            "Expires": "0"
+        }
+    )
+
+
 @app.get("/manifest.json", tags=["PWA Manifest"])
 def serve_manifest():
     manifest_path = os.path.join(static_dir, "manifest.json")

@@ -82,18 +82,22 @@ def main():
         )
 
         local_apk = os.path.join(repo_root, "app", "static", "downloads", "acr-operadores.apk")
+        local_apk_v2 = os.path.join(repo_root, "app", "static", "downloads", "acr-operadores-v2.apk")
         os.makedirs(os.path.dirname(local_apk), exist_ok=True)
 
         print("⬇️ Descargando APK generado a tu equipo local...")
         subprocess.run(
-            ["scp", "-O"] + ssh_opts + [f"{SERVER_USER}@{server_ip}:/tmp/acr-operadores.apk", local_apk],
+            ["scp", "-O"] + ssh_opts + [f"{SERVER_USER}@{server_ip}:/tmp/acr-operadores-v2.apk", local_apk_v2],
             env=env, stdin=subprocess.DEVNULL, check=True
         )
+        import shutil
+        shutil.copyfile(local_apk_v2, local_apk)
 
-        size_mb = os.path.getsize(local_apk) / (1024 * 1024)
+        size_mb = os.path.getsize(local_apk_v2) / (1024 * 1024)
         print("\n🎉 ¡COMPILACIÓN EXITOSA!")
-        print(f"📦 Archivo local: {local_apk} ({size_mb:.2f} MB)")
-        print(f"🌐 Enlace de descarga directa: http://{server_ip}:8001/static/downloads/acr-operadores.apk")
+        print(f"📦 Archivo local: {local_apk_v2} ({size_mb:.2f} MB)")
+        print(f"🌐 Enlace oficial: https://flota.bodylab.net.pe/descargar-apk")
+        print(f"🌐 Enlace directo v2: https://flota.bodylab.net.pe/static/downloads/acr-operadores-v2.apk")
 
     finally:
         if os.path.exists(askpass_path):
